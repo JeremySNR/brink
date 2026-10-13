@@ -286,7 +286,6 @@ trade_routes:
   - {id: TPA, name: Transpacific, ends: [CAL, TOK], path: [NEP, NWP]}
   - {id: SPR, name: South Pacific, ends: [CAL, AUS], path: [NEP, CPA, CTS]}
   - {id: PSA, name: Pacific–Southern Cone, ends: [GUA, ARG], path: [SCS, PHS, CPA, SPA]}
-  - {id: JSE, name: Japan–Southeast Asia, ends: [OSA, IDN], path: [PHS, JAV]}
   - {id: INT, name: Interoceanic, ends: [WAS, CAL], path: [CAR, PAN, EPA]}
   - {id: CSE, name: China Seas, ends: [GUA, OKI], path: [TWS, ECS]}
   - {id: MLR, name: Malacca, ends: [CHE, GUA], path: [BOB, MLC, SCS]}
@@ -300,9 +299,9 @@ trade_routes:
 start:
   year: 2031
   crisis: 3
-  umbrellas: [[USA, JPN]]
+  umbrellas: [[USA, JPN], [USA, GLF]]   # the US guarantees both non-nuclear powers at the start
   units:
-    USA: [F WAS, F CAL, A TEX, C CAL]
+    USA: [F WAS, A TEX, C CAL]
     CHN: [C GUA, I XIN, C BEI]     # economic opening: homes can't be attacked, armies come later
     EU:  [A BER, C PAR, A ROM]
     RUS: [A MOS, A SIB, I VLA]

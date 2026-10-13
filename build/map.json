@@ -3255,19 +3255,6 @@
    "opens": null
   },
   {
-   "id": "JSE",
-   "name": "Japan–Southeast Asia",
-   "ends": [
-    "OSA",
-    "IDN"
-   ],
-   "path": [
-    "PHS",
-    "JAV"
-   ],
-   "opens": null
-  },
-  {
    "id": "INT",
    "name": "Interoceanic",
    "ends": [
@@ -3402,6 +3389,10 @@
    [
     "USA",
     "JPN"
+   ],
+   [
+    "USA",
+    "GLF"
    ]
   ],
   "units": [
@@ -3409,11 +3400,6 @@
     "power": "USA",
     "type": "F",
     "at": "WAS"
-   },
-   {
-    "power": "USA",
-    "type": "F",
-    "at": "CAL"
    },
    {
     "power": "USA",

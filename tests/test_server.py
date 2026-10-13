@@ -58,12 +58,12 @@ def test_start_game_and_pending_orders(server):
     assert p["kind"] == "orders" and p["power"] == "USA"
     assert p["phase"]["name"] == "S2031M" and p["phase"]["kind"] == "movement"
     units = {(u["unit"]["type"], u["unit"]["at"]): u for u in p["units"]}
-    assert set(units) == {("F", "WAS"), ("F", "CAL"), ("A", "TEX"), ("C", "CAL")}
+    assert set(units) == {("F", "WAS"), ("A", "TEX"), ("C", "CAL")}
     texts = {o["text"] for o in units[("A", "TEX")]["options"]}
     assert "A TEX H" in texts and "A TEX - CAN" in texts
     kinds = {o["kind"] for u in p["units"] for o in u["options"]}
     assert {"hold", "move", "support", "commons", "sanction"} <= kinds
-    assert p["withdraw"] == ["JPN"]                      # USA starts with an umbrella over Japan
+    assert p["withdraw"] == ["GLF", "JPN"]               # USA starts with umbrellas over the Gulf and Japan
     assert p["status"]["nuclear"] and p["status"]["centres"] == 3
     assert st["record"]["phases"] == [] and st["record"]["human"] == "USA"
     code, games = call(base, "GET", "/api/games")
@@ -92,7 +92,7 @@ def test_submit_orders_resolves_phase(server):
     _, st = call(base, "POST", "/api/games", {"power": "USA", "seed": 5})
     p = st["pending"]
     code, r = call(base, "POST", f"/api/games/{st['id']}/orders",
-                   {"orders": ["A TEX - CAN", "F WAS H", "C CAL COMMONS", "garbage"], "decision": p["id"]})
+                   {"orders": ["A TEX - CAN", "C CAL COMMONS", "garbage"], "decision": p["id"]})
     assert code == 200 and r["accepted"]
     st2 = r["state"]
     ph = st2["record"]["phases"][0]
@@ -101,7 +101,7 @@ def test_submit_orders_resolves_phase(server):
     assert usa["A TEX - CAN"]["result"] in ("ok", "bounce")
     assert usa["C CAL COMMONS"]["result"] == "ok"
     assert usa["garbage"]["result"] == "void"
-    assert "F CAL H" in usa                       # unordered units hold
+    assert "F WAS H" in usa                       # unordered units hold
     assert st2["pending"]["id"] > p["id"]
     # the old decision can't be answered twice
     code, r = call(base, "POST", f"/api/games/{st['id']}/orders", {"orders": [], "decision": p["id"]})

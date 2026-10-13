@@ -15,10 +15,11 @@ src/brink/map.py           loads build/map.json into a BrinkMap (graph queries)
 src/brink/orders.py        order dataclasses, text notation parse/format
 src/brink/adjudicator.py   two-layer simultaneous resolution (movement phases)
 src/brink/game.py          game state + phase loop: movement, retreats, winter
-src/brink/bots/            bots (random, heuristic, alliance-aware)
+src/brink/bots/            random, strategist (heuristic), search (adjudicator lookahead), human (server)
 src/brink/sim.py           batch simulation + metrics
 src/brink/analysis.py      static graph analysis (reach, exposure)
-src/brink/cli.py           `brink build-map | analyse | play | sim`
+src/brink/cli.py           `brink analyse | play | sim | serve | validate-orders`
+src/brink/server.py        local HTTP API for human-vs-bots play (`brink serve`, web `?play`)
 tests/                     pytest; military layer is differential-tested against MILA `diplomacy`
 web/                       Vite + TypeScript board viewer (reads board.json + game records)
 build/                     generated artifacts (map.json is committed; cache/ is not)
@@ -155,7 +156,8 @@ Winter, in order:
    If >= 10: game ends, Collapse.
 3. Assembly: chair = fewest centres (ties: USA, CHN, EU, RUS, IND, JPN, GLF). Proposal, votes
    (1 + floor(swing/3) each), one veto per power per game. Effects last next Spring + Fall + Winter builds.
-4. Adjustments: centres = owned homes + aligned swing. builds = max(0, centres - units - sanctions
+4. Adjustments: centres = owned homes + aligned swing; supply = centres minus contested states (an aligned
+   swing state with another power's unit in either slot; Rules.contested_supply). builds = max(0, supply - units - sanctions
    - (1 if crisis >= 6) - (1 if climate accord and no COMMONS this year)). Disband if units > centres.
    A, F: original home centre still owned, military slot empty (F coastal). One forward-base A per year:
    aligned swing state where the power has a civil unit, military slot empty.
