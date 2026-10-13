@@ -137,6 +137,10 @@ alter table public.submissions   enable row level security;
 alter table public.messages      enable row level security;
 alter table public.notifications enable row level security;
 
+-- The helper functions are for the trigger only: nobody calls them through the Data API.
+revoke execute on function public.brink_unique_name(text) from public, anon, authenticated;
+revoke execute on function public.brink_handle_new_user() from public, anon, authenticated;
+
 -- ------------------------------------------------------------------------------------------- deadlines
 -- Every minute, Supabase calls the API's idempotent tick (it advances every game past its deadline).
 -- Not applied automatically: enable the pg_cron and pg_net extensions (Database > Extensions), then
