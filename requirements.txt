@@ -1,0 +1,8 @@
+# Runtime dependencies of the Vercel Python function (api/index.py): the engine and the hosted API.
+# The engine's geo pipeline and the test oracle (geopandas, diplomacy) are not needed here.
+# Keep in step with the `hosted` extra in pyproject.toml.
+pyyaml==6.0.3
+networkx==3.6.1
+fastapi==0.143.0
+psycopg[binary]==3.3.6
+pyjwt[crypto]==2.15.1
