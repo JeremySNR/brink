@@ -1,0 +1,701 @@
+{
+ "version": 1,
+ "seam_lon": -168.6,
+ "powers": {
+  "USA": {
+   "name": "United States",
+   "adjective": "American",
+   "nuclear": true,
+   "homes": [
+    "WAS",
+    "TEX"
+   ]
+  },
+  "CHN": {
+   "name": "China",
+   "adjective": "Chinese",
+   "nuclear": true,
+   "homes": [
+    "BEI",
+    "GUA"
+   ]
+  },
+  "JPN": {
+   "name": "Japan",
+   "adjective": "Japanese",
+   "nuclear": false,
+   "homes": [
+    "TOK",
+    "OSA"
+   ]
+  }
+ },
+ "provinces": {
+  "WAS": {
+   "name": "Washington",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "USA"
+  },
+  "TEX": {
+   "name": "Texas",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "USA"
+  },
+  "CAN": {
+   "name": "Canada",
+   "kind": "land",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARC": {
+   "name": "Arctic Shelf",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": 2034
+  },
+  "MEX": {
+   "name": "Mexico",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAM": {
+   "name": "Central America",
+   "kind": "land",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BRA": {
+   "name": "Brazil",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARG": {
+   "name": "Argentina",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BEI": {
+   "name": "Beijing",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "CHN"
+  },
+  "GUA": {
+   "name": "Guangzhou",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "CHN"
+  },
+  "KOR": {
+   "name": "Korea",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "VNM": {
+   "name": "Vietnam",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MAL": {
+   "name": "Malaya",
+   "kind": "land",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "IDN": {
+   "name": "Indonesia",
+   "kind": "land",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TOK": {
+   "name": "Tokyo",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "JPN"
+  },
+  "OSA": {
+   "name": "Osaka",
+   "kind": "land",
+   "centre": "home",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null,
+   "home_of": "JPN"
+  },
+  "TWN": {
+   "name": "Taiwan",
+   "kind": "land",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": true,
+   "opens": null
+  },
+  "NAO": {
+   "name": "North Atlantic",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAR": {
+   "name": "Caribbean",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PAN": {
+   "name": "Panama",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "impassable": false,
+   "opens": null
+  },
+  "PAC": {
+   "name": "Pacific",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ECS": {
+   "name": "East China Sea",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SCS": {
+   "name": "South China Sea",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MLC": {
+   "name": "Malacca",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "impassable": false,
+   "opens": null
+  },
+  "IOC": {
+   "name": "Indian Ocean",
+   "kind": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  }
+ },
+ "adj": {
+  "army": {
+   "WAS": [
+    "CAN",
+    "TEX"
+   ],
+   "TEX": [
+    "CAN",
+    "MEX",
+    "WAS"
+   ],
+   "CAN": [
+    "ARC",
+    "TEX",
+    "WAS"
+   ],
+   "ARC": [
+    "CAN"
+   ],
+   "MEX": [
+    "CAM",
+    "TEX"
+   ],
+   "CAM": [
+    "BRA",
+    "MEX"
+   ],
+   "BRA": [
+    "ARG",
+    "CAM"
+   ],
+   "ARG": [
+    "BRA"
+   ],
+   "BEI": [
+    "GUA",
+    "KOR"
+   ],
+   "GUA": [
+    "BEI",
+    "VNM"
+   ],
+   "KOR": [
+    "BEI"
+   ],
+   "VNM": [
+    "GUA",
+    "MAL"
+   ],
+   "MAL": [
+    "VNM"
+   ],
+   "TOK": [
+    "OSA"
+   ],
+   "OSA": [
+    "TOK"
+   ]
+  },
+  "fleet": {
+   "NAO": [
+    "ARC",
+    "BRA",
+    "CAN",
+    "CAR",
+    "WAS"
+   ],
+   "CAR": [
+    "BRA",
+    "CAM",
+    "MEX",
+    "NAO",
+    "PAN",
+    "TEX",
+    "WAS"
+   ],
+   "PAN": [
+    "CAM",
+    "CAR",
+    "PAC"
+   ],
+   "PAC": [
+    "CAM",
+    "ECS",
+    "MEX",
+    "OSA",
+    "PAN",
+    "TOK"
+   ],
+   "ECS": [
+    "BEI",
+    "GUA",
+    "KOR",
+    "OSA",
+    "PAC",
+    "SCS",
+    "TOK"
+   ],
+   "SCS": [
+    "ECS",
+    "GUA",
+    "MLC",
+    "VNM"
+   ],
+   "MLC": [
+    "IDN",
+    "IOC",
+    "MAL",
+    "SCS",
+    "VNM"
+   ],
+   "IOC": [
+    "IDN",
+    "MAL",
+    "MLC"
+   ],
+   "WAS": [
+    "CAN",
+    "CAR",
+    "NAO",
+    "TEX"
+   ],
+   "TEX": [
+    "CAR",
+    "MEX",
+    "WAS"
+   ],
+   "CAN": [
+    "ARC",
+    "NAO",
+    "WAS"
+   ],
+   "ARC": [
+    "CAN",
+    "NAO"
+   ],
+   "MEX": [
+    "CAM",
+    "CAR",
+    "PAC",
+    "TEX"
+   ],
+   "CAM": [
+    "BRA",
+    "CAR",
+    "MEX",
+    "PAC",
+    "PAN"
+   ],
+   "BRA": [
+    "CAM",
+    "CAR",
+    "NAO"
+   ],
+   "BEI": [
+    "ECS",
+    "GUA",
+    "KOR"
+   ],
+   "GUA": [
+    "BEI",
+    "ECS",
+    "SCS",
+    "VNM"
+   ],
+   "KOR": [
+    "BEI",
+    "ECS"
+   ],
+   "VNM": [
+    "GUA",
+    "MAL",
+    "MLC",
+    "SCS"
+   ],
+   "MAL": [
+    "IOC",
+    "MLC",
+    "VNM"
+   ],
+   "IDN": [
+    "IOC",
+    "MLC"
+   ],
+   "TOK": [
+    "ECS",
+    "OSA",
+    "PAC"
+   ],
+   "OSA": [
+    "ECS",
+    "PAC",
+    "TOK"
+   ]
+  },
+  "any": {
+   "WAS": [
+    "CAN",
+    "CAR",
+    "NAO",
+    "TEX"
+   ],
+   "TEX": [
+    "CAN",
+    "CAR",
+    "MEX",
+    "WAS"
+   ],
+   "CAN": [
+    "ARC",
+    "NAO",
+    "TEX",
+    "WAS"
+   ],
+   "ARC": [
+    "CAN",
+    "NAO"
+   ],
+   "MEX": [
+    "CAM",
+    "CAR",
+    "PAC",
+    "TEX"
+   ],
+   "CAM": [
+    "BRA",
+    "CAR",
+    "MEX",
+    "PAC",
+    "PAN"
+   ],
+   "BRA": [
+    "ARG",
+    "CAM",
+    "CAR",
+    "NAO"
+   ],
+   "ARG": [
+    "BRA"
+   ],
+   "BEI": [
+    "ECS",
+    "GUA",
+    "KOR"
+   ],
+   "GUA": [
+    "BEI",
+    "ECS",
+    "SCS",
+    "VNM"
+   ],
+   "KOR": [
+    "BEI",
+    "ECS"
+   ],
+   "VNM": [
+    "GUA",
+    "MAL",
+    "MLC",
+    "SCS"
+   ],
+   "MAL": [
+    "IOC",
+    "MLC",
+    "VNM"
+   ],
+   "IDN": [
+    "IOC",
+    "MLC"
+   ],
+   "TOK": [
+    "ECS",
+    "OSA",
+    "PAC"
+   ],
+   "OSA": [
+    "ECS",
+    "PAC",
+    "TOK"
+   ],
+   "NAO": [
+    "ARC",
+    "BRA",
+    "CAN",
+    "CAR",
+    "WAS"
+   ],
+   "CAR": [
+    "BRA",
+    "CAM",
+    "MEX",
+    "NAO",
+    "PAN",
+    "TEX",
+    "WAS"
+   ],
+   "PAN": [
+    "CAM",
+    "CAR",
+    "PAC"
+   ],
+   "PAC": [
+    "CAM",
+    "ECS",
+    "MEX",
+    "OSA",
+    "PAN",
+    "TOK"
+   ],
+   "ECS": [
+    "BEI",
+    "GUA",
+    "KOR",
+    "OSA",
+    "PAC",
+    "SCS",
+    "TOK"
+   ],
+   "SCS": [
+    "ECS",
+    "GUA",
+    "MLC",
+    "VNM"
+   ],
+   "MLC": [
+    "IDN",
+    "IOC",
+    "MAL",
+    "SCS",
+    "VNM"
+   ],
+   "IOC": [
+    "IDN",
+    "MAL",
+    "MLC"
+   ]
+  }
+ },
+ "coasts": {},
+ "trade_routes": [
+  {
+   "id": "SAT",
+   "name": "South Atlantic",
+   "ends": [
+    "TEX",
+    "BRA"
+   ],
+   "path": [
+    "CAR"
+   ],
+   "opens": null
+  },
+  {
+   "id": "TPA",
+   "name": "Transpacific",
+   "ends": [
+    "TEX",
+    "TOK"
+   ],
+   "path": [
+    "CAR",
+    "PAN",
+    "PAC"
+   ],
+   "opens": null
+  },
+  {
+   "id": "MLR",
+   "name": "Malacca",
+   "ends": [
+    "GUA",
+    "MAL"
+   ],
+   "path": [
+    "SCS",
+    "MLC"
+   ],
+   "opens": null
+  },
+  {
+   "id": "NSR",
+   "name": "Northern",
+   "ends": [
+    "WAS",
+    "BEI"
+   ],
+   "path": [
+    "NAO",
+    "PAC"
+   ],
+   "opens": 2034
+  }
+ ],
+ "start": {
+  "year": 2031,
+  "crisis": 3,
+  "umbrellas": [
+   [
+    "USA",
+    "JPN"
+   ]
+  ],
+  "units": [
+   {
+    "power": "USA",
+    "type": "F",
+    "at": "WAS"
+   },
+   {
+    "power": "USA",
+    "type": "C",
+    "at": "TEX"
+   },
+   {
+    "power": "CHN",
+    "type": "A",
+    "at": "BEI"
+   },
+   {
+    "power": "CHN",
+    "type": "C",
+    "at": "GUA"
+   },
+   {
+    "power": "JPN",
+    "type": "C",
+    "at": "TOK"
+   },
+   {
+    "power": "JPN",
+    "type": "I",
+    "at": "OSA"
+   }
+  ]
+ }
+}
