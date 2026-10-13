@@ -9,7 +9,14 @@ What makes it different from classic Diplomacy:
 - **The Crisis track.** Closing chokepoints and wars between nuclear powers push it up; Commons orders pull it down. At 10 the game ends and everyone scores zero.
 - **Balanced by simulation.** Rules and starting positions were tuned over tens of thousands of bot games; every power ends within about one centre of the others.
 
-## Play in the browser
+## Play with friends
+
+https://brink-sepia.vercel.app hosts multiplayer games: sign in with your email, start a game, send the
+invite link. Each friend takes a power and bots play the empty seats; orders are due by a deadline (12 to
+72 hours a phase), and a phase resolves as soon as everyone is ready. Private press between players, and
+every phase replays on the board. How it's built and deployed: [docs/HOSTING.md](docs/HOSTING.md).
+
+## Play in the browser, locally
 
 You against six bots:
 
@@ -30,9 +37,11 @@ Click one of your counters, then a highlighted province to move there (its own p
 | `data/provinces.yaml` | The board: provinces, sea zones, chokepoints, trade routes, starting position |
 | `src/brink/geo/` | Builds the board from Natural Earth data: geometry, sea zones, adjacency |
 | `src/brink/` | Rules engine (two-layer adjudicator, Winter, Assembly, scoring), bots, simulator, local server |
+| `src/brink/hosted/`, `api/`, `supabase/` | Hosted multiplayer: the API (FastAPI on Vercel), its Postgres schema |
 | `tests/` | Engine tests, including differential tests against MILA's `diplomacy` adjudicator and the DATC cases |
 | `web/` | The board and play client (Vite + TypeScript) |
 | `docs/ARCHITECTURE.md` | Engine semantics and file formats |
+| `docs/HOSTING.md` | Hosted multiplayer: architecture, API, deployment, local development |
 | `DESIGN.md`, `PRODUCT.md` | The visual design system and product brief |
 
 ```sh

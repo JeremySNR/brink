@@ -7,3 +7,7 @@ node_modules/
 web/dist/
 runs/
 .DS_Store
+.env
+.env.*
+*.local
+.vercel/

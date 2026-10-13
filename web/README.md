@@ -12,9 +12,19 @@ npm run sync-map   # only needed if build/map.json changed without re-running th
 npm run dev        # or: npm run build && npm run preview
 ```
 
+## Modes
+
+- `?game=<url>`: replay a game record (`?game=sample-game.json`, `?game=games/sim-1000.json`).
+- `?play`: one human against six bots through `brink serve` (below).
+- no query: hosted multiplayer (docs/HOSTING.md), on hash routes: `#/` landing or My games and the lobby,
+  `#/signin`, `#/me`, `#/new`, `#/join/<code>`, `#/g/<id>` (a forming game's seats, or the board for an
+  active or finished one). `src/hosted/` holds the pages (`pages.ts`, styles in `src/pages.css`), auth
+  (`auth.ts`, Supabase magic links), the API client (`api.ts`) and the board's hosted backend (`game.ts`:
+  players, press, deadline).
+
 ## Replay
 
-URL parameters: `?game=<url>` loads another game record (default `sample-game.json`),
+URL parameters: `?game=<url>` loads another game record,
 `?focus=<province id>` zooms to a province, `#S2032M` opens a phase. The turn record track under the top
 bar is the timeline: click a Spring, Fall or Winter box to jump there.
 Keyboard: ←/→ phases (including retreats and winter), Home/End, +/− zoom, 0 fit, Esc clears a selection.
@@ -32,7 +42,9 @@ port 8765 (`BRINK_API=http://host:port npm run dev` to change it), so `http://lo
 
 The board shows the game's phases followed by a live phase, **Now**: the current position with your
 drafted orders drawn as arrows. `src/play.ts` (PlayController) owns that phase; `main.ts` delegates unit
-and province clicks, keys and the panel to it while the live phase is shown.
+and province clicks, keys and the panel to it while the live phase is shown. The controller talks to a
+`PlayBackend`: `LocalBackend` (in `play.ts`) for `brink serve`, `HostedBackend` (`src/hosted/game.ts`) for
+hosted games, where drafts autosave and **Ready** replaces Commit.
 
 | Decision | On the board | Keys |
 | --- | --- | --- |
