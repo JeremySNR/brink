@@ -290,3 +290,20 @@ def test_migration_is_idempotent(db_url):
                            "and relkind = 'r' and not relrowsecurity").fetchall()
         policies = conn.execute("select count(*) as n from pg_policies where schemaname = 'public'").fetchone()
     assert rls == [] and policies["n"] == 0          # RLS on everywhere, no policies: the Data API sees nothing
+
+
+def test_dsn_cleaning_drops_parameters_libpq_rejects():
+    from brink.hosted.db import clean_dsn
+    url = "postgres://postgres.ref:pw@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x"
+    assert clean_dsn(url) == "postgres://postgres.ref:pw@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?sslmode=require"
+    assert clean_dsn("postgres://u@h/db?pgbouncer=true&connect_timeout=5").endswith("/db?connect_timeout=5")
+
+
+def test_dev_auth_cannot_run_on_vercel(monkeypatch):
+    from brink.hosted import auth
+    monkeypatch.setenv("BRINK_DEV_AUTH", "1")
+    monkeypatch.delenv("VERCEL", raising=False)
+    assert auth.verify_token("dev:ada").dev
+    monkeypatch.setenv("VERCEL", "1")
+    with pytest.raises(auth.AuthError):
+        auth.verify_token("dev:ada")
