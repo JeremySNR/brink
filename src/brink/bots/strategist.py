@@ -78,6 +78,7 @@ class StrategistBot(Player):
         civil_near = set(my_civil)
         for p in my_civil:
             civil_near |= m.any_adj.get(p, frozenset())
+        ceded = self._ceded_to_allies(game, power, pos)
         base = {CIVIL: {}, MILITARY: {}}
         for pid, p in m.provinces.items():
             if not m.is_open(pid, game.year):
@@ -86,7 +87,7 @@ class StrategistBot(Player):
             civ = mil = 0.0
             if p.centre == "swing":
                 if owner is None:
-                    civ = 10.0
+                    civ = 2.0 if pid in ceded else 10.0
                 elif owner == power:
                     civ = 3.0 + 2.5 * threats.get((pid, CIVIL), 0)
                     mil = 2.0 + 2.0 * threats.get((pid, MILITARY), 0)
@@ -119,6 +120,33 @@ class StrategistBot(Player):
         self._cache = {"key": key, "val": val}
         return val
 
+    def _ceded_to_allies(self, game: "Game", power: str, pos) -> set[str]:
+        """Unaligned swing states an ally's civil units are strictly closer to: leave them to the ally."""
+        allies = self.allies(game, power)
+        if not allies:
+            return set()
+        m = game.map
+
+        def nearest(p: str, s: str) -> int:
+            ds = [m.distance(u.prov, s) for u in pos.units if u.power == p and u.layer == CIVIL]
+            return min((d for d in ds if d is not None), default=99)
+
+        out = set()
+        for s in m.swing_states():
+            if game.ownership.get(s) is None:
+                mine = nearest(power, s)
+                if any(nearest(a, s) < mine for a in allies):
+                    out.add(s)
+        return out
+
+    def _recent_bounces(self, game: "Game", power: str) -> set[tuple[str, str]]:
+        """(unit location, destination) of this power's moves that bounced last movement phase."""
+        for ph in reversed(game.phases):
+            if ph["kind"] == "movement":
+                return {(o["unit"]["at"], o.get("to")) for o in ph["orders"]
+                        if o.get("power") == power and o.get("kind") == "move" and o.get("result") == "bounce"}
+        return set()
+
     # ------------------------------------------------------------------ movement
     def orders(self, game: "Game", power: str) -> list[str]:
         pos = game.position()
@@ -126,6 +154,7 @@ class StrategistBot(Player):
         base, spread, threats = self._values(game, power)
         mine = [u for u in pos.units if u.power == power]
         occupied = {u.slot: u for u in pos.units}
+        bounced = self._recent_bounces(game, power)
 
         # 1. score every candidate (unit, order)
         cands: list[tuple[float, Unit, Order]] = []
@@ -147,6 +176,8 @@ class StrategistBot(Player):
                     score *= 0.55 + 0.5 * self.t.aggression
                     rivals = max(0, rivals - 1)
                 score -= 0.7 * rivals
+                if (u.loc, mv.to) in bounced:
+                    score -= 2.5
                 score += self.rng.random() * 0.6
                 cands.append((score, u, mv))
         cands.sort(key=lambda c: -c[0])

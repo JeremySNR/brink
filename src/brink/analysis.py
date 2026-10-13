@@ -30,6 +30,7 @@ class Board:
     any: dict[str, list[str]]
     routes: list[dict]
     start_year: int
+    raw: dict
 
     @classmethod
     def load(cls, path: str | Path) -> "Board":
@@ -42,6 +43,7 @@ class Board:
             any=data["adj"]["any"],
             routes=data["trade_routes"],
             start_year=data["start"]["year"],
+            raw=data,
         )
 
     def is_open(self, pid: str, year: int) -> bool:
@@ -87,15 +89,11 @@ def capital_graph(b: Board, power: str, year: int) -> dict[str, set[str]]:
 
 
 def influence_graph(b: Board, power: str, year: int) -> dict[str, set[str]]:
+    from .map import BrinkMap
+    m = BrinkMap(b.raw)
     foreign_homes = {h for pw in b.powers if pw != power for h in b.homes(pw)}
-    g: dict[str, set[str]] = defaultdict(set)
-    for p in b.land():
-        if not b.is_open(p, year):
-            continue
-        for q, d in bfs(b.any, [p], lambda x: b.is_open(x, year), limit=2).items():
-            if 0 < d and b.provinces[q]["kind"] == "land" and q not in foreign_homes:
-                g[p].add(q)
-    return g
+    return {p: {q for q in m.influence_moves(p, year) if q not in foreign_homes}
+            for p in b.land() if b.is_open(p, year)}
 
 
 def bfs(graph, sources, passable=lambda _: True, limit=INF) -> dict[str, int]:

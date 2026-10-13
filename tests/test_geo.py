@@ -32,7 +32,7 @@ def test_counts(m):
     groups = {}
     for p in m["provinces"].values():
         groups[p["group"]] = groups.get(p["group"], 0) + 1
-    assert groups == {"home": 22, "swing": 20, "filler": 19, "impassable": 4, "sea": 28, "chokepoint": 7}
+    assert groups == {"home": 21, "swing": 20, "filler": 19, "impassable": 4, "sea": 28, "chokepoint": 7}
 
 
 def test_adjacency_symmetric_and_no_impassable(m):

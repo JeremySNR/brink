@@ -110,7 +110,10 @@ def assemble_land(spec: Spec, countries, admin1, board: Board) -> LandResult:
             if "lon_between" in sel:
                 lo, hi = sel["lon_between"]
                 n0 = len(chosen)
+                skip = set(sel.get("exclude_iso", []))
                 for i, row in regions.iterrows():
+                    if row.iso_3166_2 in skip:
+                        continue
                     g = ll("a", i, row.geometry)
                     if g.is_empty:
                         continue

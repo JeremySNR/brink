@@ -256,30 +256,27 @@ class BrinkMap:
 
     @lru_cache(maxsize=None)
     def influence_moves(self, pid: str, year: int) -> frozenset[str]:
-        """Land provinces within 2 steps of adj.any; jumps over units and closed chokepoints,
-        but not through impassable or not-yet-open provinces."""
-        out = set()
-        for n in self.any_adj.get(pid, ()):
-            if not self.is_open(n, year):
-                continue
-            if self.provinces[n].is_land:
-                out.add(n)
-            for m in self.any_adj.get(n, ()):
-                if m != pid and self.is_open(m, year) and self.provinces[m].is_land:
-                    out.add(m)
-        out.discard(pid)
-        return frozenset(out)
+        """Land provinces within range 2 (an ocean costs 2 steps); jumps over units and closed
+        chokepoints, but not through impassable or not-yet-open provinces."""
+        return frozenset(q for q in self.within_two(pid, year) if self.provinces[q].is_land)
+
+    def step_cost(self, pid: str) -> int:
+        """Range cost of entering a province: 2 for an open ocean, 1 otherwise."""
+        return 2 if self.provinces[pid].ocean else 1
 
     @lru_cache(maxsize=None)
     def within_two(self, pid: str, year: int) -> frozenset[str]:
-        """Any province (land or sea) within 2 steps of adj.any (Disrupt range)."""
+        """Any province (land or sea) within range 2 of adj.any, oceans costing 2 (Influence and Disrupt range)."""
         out = set()
         for n in self.any_adj.get(pid, ()):
             if not self.is_open(n, year):
                 continue
+            c = self.step_cost(n)
+            if c > 2:
+                continue
             out.add(n)
             for m in self.any_adj.get(n, ()):
-                if self.is_open(m, year):
+                if self.is_open(m, year) and c + self.step_cost(m) <= 2:
                     out.add(m)
         out.discard(pid)
         return frozenset(out)

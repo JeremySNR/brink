@@ -14,3 +14,12 @@ def test_no_short_hop_across_an_ocean():
     m = BrinkMap(data)
     assert "OSA" not in m.capital_moves("MEX", 2031)
     assert "TEX" in m.capital_moves("MEX", 2031)               # land step unaffected
+
+
+def test_influence_cannot_jump_an_ocean():
+    data = json.loads(FIXTURE.read_text())
+    before = BrinkMap(data).influence_moves("MEX", 2031)
+    data["provinces"]["PAC"]["ocean"] = True
+    after = BrinkMap(data).influence_moves("MEX", 2031)
+    assert "OSA" in before and "OSA" not in after
+    assert "PAC" in BrinkMap(data).within_two("MEX", 2031)     # the ocean itself is still in Disrupt range

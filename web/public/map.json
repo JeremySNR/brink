@@ -9,8 +9,7 @@
    "homes": [
     "WAS",
     "TEX",
-    "CAL",
-    "ALA"
+    "CAL"
    ]
   },
   "CHN": {
@@ -98,18 +97,7 @@
    "opens": null
   },
   "CAL": {
-   "name": "California",
-   "kind": "land",
-   "group": "home",
-   "centre": "home",
-   "home_of": "USA",
-   "coastal": true,
-   "chokepoint": false,
-   "impassable": false,
-   "opens": null
-  },
-  "ALA": {
-   "name": "Alaska",
+   "name": "California & Alaska",
    "kind": "land",
    "group": "home",
    "centre": "home",
@@ -338,7 +326,7 @@
    "opens": null
   },
   "ARG": {
-   "name": "Argentina",
+   "name": "Southern Cone",
    "kind": "land",
    "group": "swing",
    "centre": "swing",
@@ -1150,9 +1138,6 @@
     "MEX",
     "TEX"
    ],
-   "ALA": [
-    "CAN"
-   ],
    "BEI": [
     "GUA",
     "MNG",
@@ -1346,7 +1331,6 @@
    ],
    "ARC": [],
    "CAN": [
-    "ALA",
     "CAL",
     "TEX",
     "WAS"
@@ -1500,15 +1484,11 @@
     "WAS"
    ],
    "CAL": [
-    "CAN",
-    "EPA",
-    "MEX",
-    "NEP"
-   ],
-   "ALA": [
     "ARO",
     "BRS",
     "CAN",
+    "EPA",
+    "MEX",
     "NEP"
    ],
    "BEI": [
@@ -1632,7 +1612,9 @@
    "ARG": [
     "AND",
     "BRA",
-    "SAO"
+    "EPA",
+    "SAO",
+    "SPA"
    ],
    "UKR": [
     "BLK",
@@ -1729,7 +1711,6 @@
     "NWS"
    ],
    "CAN": [
-    "ALA",
     "ARO",
     "CAL",
     "NAO",
@@ -1748,9 +1729,7 @@
     "BRA",
     "CAM",
     "CAR",
-    "EPA",
-    "SAO",
-    "SPA"
+    "EPA"
    ],
    "GBR": [
     "NAO",
@@ -1852,7 +1831,6 @@
     "WME"
    ],
    "SAO": [
-    "AND",
     "ARG",
     "BRA",
     "GOG",
@@ -1875,7 +1853,6 @@
     "AND",
     "BRA",
     "CAM",
-    "EPA",
     "MAO",
     "MEX",
     "NAO",
@@ -1907,9 +1884,9 @@
     "SIB"
    ],
    "ARO": [
-    "ALA",
     "ARC",
     "BRS",
+    "CAL",
     "CAN",
     "MOS",
     "NAO",
@@ -1984,7 +1961,6 @@
     "ZAF"
    ],
    "SCS": [
-    "ECS",
     "GUA",
     "IDN",
     "JAV",
@@ -2002,7 +1978,6 @@
     "OKI",
     "OSA",
     "PHS",
-    "SCS",
     "SOJ",
     "TWS"
    ],
@@ -2061,7 +2036,6 @@
     "SPA"
    ],
    "NEP": [
-    "ALA",
     "BRS",
     "CAL",
     "CAN",
@@ -2072,9 +2046,9 @@
    ],
    "EPA": [
     "AND",
+    "ARG",
     "CAL",
     "CAM",
-    "CAR",
     "CPA",
     "MEX",
     "NEP",
@@ -2082,7 +2056,7 @@
     "SPA"
    ],
    "SPA": [
-    "AND",
+    "ARG",
     "AUS",
     "CPA",
     "CTS",
@@ -2136,8 +2110,8 @@
     "EPA"
    ],
    "BRS": [
-    "ALA",
     "ARO",
+    "CAL",
     "NEP",
     "VLA"
    ]
@@ -2157,17 +2131,13 @@
     "WAS"
    ],
    "CAL": [
+    "ARO",
+    "BRS",
     "CAN",
     "EPA",
     "MEX",
     "NEP",
     "TEX"
-   ],
-   "ALA": [
-    "ARO",
-    "BRS",
-    "CAN",
-    "NEP"
    ],
    "BEI": [
     "ECS",
@@ -2330,7 +2300,9 @@
    "ARG": [
     "AND",
     "BRA",
-    "SAO"
+    "EPA",
+    "SAO",
+    "SPA"
    ],
    "UKR": [
     "BER",
@@ -2448,7 +2420,6 @@
     "NWS"
    ],
    "CAN": [
-    "ALA",
     "ARO",
     "CAL",
     "NAO",
@@ -2468,9 +2439,7 @@
     "BRA",
     "CAM",
     "CAR",
-    "EPA",
-    "SAO",
-    "SPA"
+    "EPA"
    ],
    "GBR": [
     "NAO",
@@ -2610,7 +2579,6 @@
     "WME"
    ],
    "SAO": [
-    "AND",
     "ARG",
     "BRA",
     "GOG",
@@ -2633,7 +2601,6 @@
     "AND",
     "BRA",
     "CAM",
-    "EPA",
     "MAO",
     "MEX",
     "NAO",
@@ -2665,9 +2632,9 @@
     "SIB"
    ],
    "ARO": [
-    "ALA",
     "ARC",
     "BRS",
+    "CAL",
     "CAN",
     "MOS",
     "NAO",
@@ -2742,7 +2709,6 @@
     "ZAF"
    ],
    "SCS": [
-    "ECS",
     "GUA",
     "IDN",
     "JAV",
@@ -2760,7 +2726,6 @@
     "OKI",
     "OSA",
     "PHS",
-    "SCS",
     "SOJ",
     "TWS"
    ],
@@ -2819,7 +2784,6 @@
     "SPA"
    ],
    "NEP": [
-    "ALA",
     "BRS",
     "CAL",
     "CAN",
@@ -2830,9 +2794,9 @@
    ],
    "EPA": [
     "AND",
+    "ARG",
     "CAL",
     "CAM",
-    "CAR",
     "CPA",
     "MEX",
     "NEP",
@@ -2840,7 +2804,7 @@
     "SPA"
    ],
    "SPA": [
-    "AND",
+    "ARG",
     "AUS",
     "CPA",
     "CTS",
@@ -2894,8 +2858,8 @@
     "EPA"
    ],
    "BRS": [
-    "ALA",
     "ARO",
+    "CAL",
     "NEP",
     "VLA"
    ]
@@ -2907,17 +2871,11 @@
   "AFG-IRN": 867.9,
   "AFG-PAK": 2246.5,
   "AFG-XIN": 84.7,
-  "ALA-ARO": 3560.6,
-  "ALA-BRS": 713.0,
-  "ALA-CAN": 2165.0,
-  "ALA-NEP": 21908.3,
-  "AND-ARG": 6466.6,
+  "AND-ARG": 2445.9,
   "AND-BRA": 8087.1,
   "AND-CAM": 273.3,
   "AND-CAR": 5964.4,
-  "AND-EPA": 8569.3,
-  "AND-SAO": 7671.7,
-  "AND-SPA": 7759.1,
+  "AND-EPA": 5857.6,
   "ARA-BOB": 688.6,
   "ARA-DUB": 1637.6,
   "ARA-EAF": 73.4,
@@ -2934,8 +2892,11 @@
   "ARC-NAO": 16159.0,
   "ARC-NWS": 8403.1,
   "ARG-BRA": 2767.3,
-  "ARG-SAO": 6344.6,
+  "ARG-EPA": 2712.9,
+  "ARG-SAO": 14017.7,
+  "ARG-SPA": 7759.1,
   "ARO-BRS": 375.4,
+  "ARO-CAL": 3560.6,
   "ARO-CAN": 63282.9,
   "ARO-MOS": 1478.2,
   "ARO-NAO": 1773.5,
@@ -2966,10 +2927,10 @@
   "BER-UKR": 500.6,
   "BLK-BOS": 366.6,
   "BLK-CAU": 309.0,
-  "BLK-MOS": 2399.4,
+  "BLK-MOS": 1476.2,
   "BLK-ROM": 771.7,
   "BLK-TUR": 1159.1,
-  "BLK-UKR": 1706.4,
+  "BLK-UKR": 2627.3,
   "BLR-MOS": 920.6,
   "BLR-UKR": 862.4,
   "BOB-CHE": 4898.1,
@@ -2987,16 +2948,17 @@
   "BRA-CAR": 2351.9,
   "BRA-MAO": 6590.7,
   "BRA-SAO": 9161.7,
+  "BRS-CAL": 713.0,
   "BRS-NEP": 456.8,
   "BRS-VLA": 1040.1,
   "CAF-COD": 2144.3,
   "CAF-GOG": 2899.3,
   "CAF-NGA": 1585.6,
   "CAF-SAH": 1812.6,
-  "CAL-CAN": 1370.0,
+  "CAL-CAN": 3535.7,
   "CAL-EPA": 469.0,
   "CAL-MEX": 1115.7,
-  "CAL-NEP": 4573.9,
+  "CAL-NEP": 26482.4,
   "CAL-TEX": 2517.5,
   "CAM-CAR": 10893.5,
   "CAM-EPA": 3574.0,
@@ -3141,7 +3103,7 @@
   "MNG-XIN": 1345.2,
   "MOS-NWS": 11280.4,
   "MOS-SIB": 3699.0,
-  "MOS-UKR": 1672.5,
+  "MOS-UKR": 1524.7,
   "MOZ-SAO": 3291.7,
   "MOZ-SAR": 8936.8,
   "MOZ-ZAF": 2734.4,
@@ -3239,6 +3201,18 @@
    "opens": null
   },
   {
+   "id": "IBR",
+   "name": "Ibero-American",
+   "ends": [
+    "PAR",
+    "BRA"
+   ],
+   "path": [
+    "MAO"
+   ],
+   "opens": null
+  },
+  {
    "id": "TPA",
    "name": "Transpacific",
    "ends": [
@@ -3262,6 +3236,34 @@
     "NEP",
     "CPA",
     "CTS"
+   ],
+   "opens": null
+  },
+  {
+   "id": "PSA",
+   "name": "Pacific–Southern Cone",
+   "ends": [
+    "GUA",
+    "ARG"
+   ],
+   "path": [
+    "SCS",
+    "PHS",
+    "CPA",
+    "SPA"
+   ],
+   "opens": null
+  },
+  {
+   "id": "JSE",
+   "name": "Japan–Southeast Asia",
+   "ends": [
+    "OSA",
+    "IDN"
+   ],
+   "path": [
+    "PHS",
+    "JAV"
    ],
    "opens": null
   },
@@ -3421,16 +3423,16 @@
    {
     "power": "USA",
     "type": "C",
-    "at": "ALA"
+    "at": "CAL"
    },
    {
     "power": "CHN",
-    "type": "F",
+    "type": "C",
     "at": "GUA"
    },
    {
     "power": "CHN",
-    "type": "A",
+    "type": "I",
     "at": "XIN"
    },
    {
@@ -3450,7 +3452,7 @@
    },
    {
     "power": "EU",
-    "type": "I",
+    "type": "A",
     "at": "ROM"
    },
    {
@@ -3485,7 +3487,7 @@
    },
    {
     "power": "JPN",
-    "type": "F",
+    "type": "I",
     "at": "OKI"
    },
    {

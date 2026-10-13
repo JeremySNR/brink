@@ -21,7 +21,7 @@ from .state import CIVIL, MILITARY, TYPE_NAMES, Effects, Resolution, TurnContext
 class Rules:
     """Tuning values (rulebook section 15)."""
 
-    primacy: int = 11
+    primacy: int = 9
     collapse: int = 10
     last_year: int = 2040
     baseline: int = 1

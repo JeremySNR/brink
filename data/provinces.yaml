@@ -53,14 +53,12 @@ homes:
     owner: USA
     admin1: {country: USA, iso: [US-TX, US-OK, US-KS, US-NE, US-SD, US-ND, US-MN, US-IA, US-MO, US-AR, US-LA]}
   CAL:
-    name: California
+    # Alaska is part of this home: nuclear homes can't be attacked, so a fourth US home was pure bonus
+    name: California & Alaska
     owner: USA
-    admin1: {country: USA, iso: [US-CA, US-OR, US-WA, US-NV, US-ID, US-MT, US-WY, US-UT, US-CO, US-AZ, US-NM]}
-  ALA:
-    name: Alaska
-    owner: USA
-    admin1: {country: USA, iso: [US-AK]}
-    clip: [-168.6, 50, -129, 72]
+    admin1: {country: USA, iso: [US-CA, US-OR, US-WA, US-NV, US-ID, US-MT, US-WY, US-UT, US-CO, US-AZ, US-NM, US-AK]}
+    clip: [-168.6, 25, -95, 72]
+    label_at: [-117, 40]
 
   # China
   BEI:
@@ -102,7 +100,7 @@ homes:
   MOS:
     name: Moscow
     owner: RUS
-    admin1: {country: RUS, lon_between: [0, 60]}
+    admin1: {country: RUS, lon_between: [0, 60], exclude_iso: [UA-43, UA-40]}   # Crimea goes to Ukraine
   SIB:
     name: Siberia
     owner: RUS
@@ -171,8 +169,8 @@ homes:
 swing:
   MEX: {name: Mexico, countries: [MEX]}
   BRA: {name: Brazil, countries: [BRA, GUY, SUR, BRI]}     # BRI: Brazilian Island (NE disputed unit)
-  ARG: {name: Argentina, countries: [ARG, URY, PRY]}
-  UKR: {name: Ukraine, countries: [UKR, MDA]}
+  ARG: {name: Southern Cone, countries: [ARG, URY, PRY, CHL, SPI]}   # Chile gives it a Pacific coast
+  UKR: {name: Ukraine, countries: [UKR, MDA], admin1: {country: RUS, iso: [UA-43, UA-40]}}   # incl. Crimea
   TUR: {name: Turkey, countries: [TUR]}
   MAG: {name: Maghreb, countries: [MAR, SAH, DZA, TUN, LBY]}
   EGY: {name: Egypt, countries: [EGY, BRT]}               # BRT: Bir Tawil, else a hole
@@ -194,7 +192,7 @@ swing:
 filler:
   CAN: {name: Canada, countries: [CAN]}
   CAM: {name: Central America, countries: [GTM, BLZ, HND, SLV, NIC, CRI, PAN, CUB, HTI, DOM, JAM, BHS, PRI, USG]}  # USG: Guantanamo
-  AND: {name: Andes, countries: [COL, VEN, ECU, PER, BOL, CHL, SPI]}   # SPI: S. Patagonian Ice Field
+  AND: {name: Andes, countries: [COL, VEN, ECU, PER, BOL]}
   GBR: {name: Britain, countries: [GBR]}
   BLR: {name: Belarus, countries: [BLR]}
   CAU: {name: Caucasus, countries: [GEO, ARM, AZE]}
@@ -276,14 +274,19 @@ adjacency_overrides:
     - [GBR, PAR, army]         # Channel Tunnel
     - [BER, PAR, fleet]        # Kiel/Danish straits handled by shared coast; keep explicit
   remove:
+    - [CAR, EPA, fleet]        # no way past the isthmus except the Panama chokepoint
+    - [ECS, SCS, fleet]        # the Taiwan Strait is the direct link; the long way round is via the Philippine Sea
     - [RIY, SUZ, fleet]        # NE's Al Jawf region has a ~60 km Gulf of Aqaba coast; Riyadh shouldn't reach the Red Sea
 
 trade_routes:
   - {id: TRA, name: Transatlantic, ends: [WAS, PAR], path: [NAO]}
   - {id: SAT, name: South Atlantic, ends: [TEX, BRA], path: [CAR, MAO]}
   - {id: CAP, name: Cape, ends: [PAR, ZAF], path: [MAO, SAO]}
+  - {id: IBR, name: Ibero-American, ends: [PAR, BRA], path: [MAO]}
   - {id: TPA, name: Transpacific, ends: [CAL, TOK], path: [NEP, NWP]}
   - {id: SPR, name: South Pacific, ends: [CAL, AUS], path: [NEP, CPA, CTS]}
+  - {id: PSA, name: Pacific–Southern Cone, ends: [GUA, ARG], path: [SCS, PHS, CPA, SPA]}
+  - {id: JSE, name: Japan–Southeast Asia, ends: [OSA, IDN], path: [PHS, JAV]}
   - {id: INT, name: Interoceanic, ends: [WAS, CAL], path: [CAR, PAN, EPA]}
   - {id: CSE, name: China Seas, ends: [GUA, OKI], path: [TWS, ECS]}
   - {id: MLR, name: Malacca, ends: [CHE, GUA], path: [BOB, MLC, SCS]}
@@ -299,10 +302,10 @@ start:
   crisis: 3
   umbrellas: [[USA, JPN]]
   units:
-    USA: [F WAS, F CAL, A TEX, C ALA]
-    CHN: [F GUA, A XIN, C BEI]
-    EU:  [A BER, C PAR, I ROM]
+    USA: [F WAS, F CAL, A TEX, C CAL]
+    CHN: [C GUA, I XIN, C BEI]     # economic opening: homes can't be attacked, armies come later
+    EU:  [A BER, C PAR, A ROM]
     RUS: [A MOS, A SIB, I VLA]
     IND: [A DEL, F CHE, C MUM]
-    JPN: [F OKI, C TOK, I OSA]
+    JPN: [I OKI, C TOK, I OSA]
     GLF: [F DUB, C RIY, C JED]
