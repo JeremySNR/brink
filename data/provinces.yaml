@@ -1,0 +1,300 @@
+# Brink board definition: the single source of truth for the map.
+#
+# The geometry pipeline (src/brink/geo) turns this file plus Natural Earth data
+# into build/map.json (the engine's graph) and web/public/board.json (the drawn board).
+#
+# Coordinates are [lon, lat] in degrees. The board is cut at the seam meridian below,
+# so the Pacific wraps off both edges (like a Risk board). Longitudes west of the seam
+# are shifted +360 so every coordinate sits in [seam, seam + 360).
+#
+# Land provinces say how to assemble them from Natural Earth:
+#   countries: [ISO_A3, ...]         whole countries (ne_10m_admin_0_countries, ADM0_A3)
+#   admin1: {country: ISO_A3, ...}   part of a country, by first-level region:
+#       iso: [ISO 3166-2 codes]       or
+#       names: [region names]         or
+#       lon_between: [min, max]       region centroid longitude range (used for Russia)
+#   clip: [min_lon, min_lat, max_lon, max_lat]   drop parts outside this box (overseas territories)
+#   min_area_km2: drop islands smaller than this (default 2500)
+#
+# Sea zones are Voronoi cells of their seed points, clipped to the ocean.
+# Chokepoints are carved out of the surrounding seas, either as a circle
+# (point + radius_km) or from their own seeds.
+
+board:
+  name: Brink
+  version: 0
+  seam_lon: -168.6          # board edge; Alaska sits just east of it, Chukotka just west
+  projection: eqearth       # Equal Earth, central meridian = seam_lon + 180
+  lat_range: [-58, 84]
+  start_year: 2031
+
+powers:
+  USA: {name: United States, adjective: American, nuclear: true}
+  CHN: {name: China, adjective: Chinese, nuclear: true}
+  EU:  {name: European Union, adjective: European, nuclear: true}
+  RUS: {name: Russia, adjective: Russian, nuclear: true}
+  IND: {name: India, adjective: Indian, nuclear: true}
+  JPN: {name: Japan, adjective: Japanese, nuclear: false}
+  GLF: {name: Gulf, adjective: Gulf, nuclear: false}
+
+# ---------------------------------------------------------------- home centres (22)
+homes:
+  # United States
+  WAS:
+    name: Washington
+    owner: USA
+    admin1: {country: USA, iso: [US-ME, US-NH, US-VT, US-MA, US-RI, US-CT, US-NY, US-NJ, US-PA, US-DE, US-MD, US-DC,
+                                  US-VA, US-WV, US-NC, US-SC, US-GA, US-FL, US-AL, US-MS, US-TN, US-KY, US-OH,
+                                  US-IN, US-IL, US-MI, US-WI]}
+  TEX:
+    name: Texas
+    owner: USA
+    admin1: {country: USA, iso: [US-TX, US-OK, US-KS, US-NE, US-SD, US-ND, US-MN, US-IA, US-MO, US-AR, US-LA]}
+  CAL:
+    name: California
+    owner: USA
+    admin1: {country: USA, iso: [US-CA, US-OR, US-WA, US-NV, US-ID, US-MT, US-WY, US-UT, US-CO, US-AZ, US-NM]}
+  ALA:
+    name: Alaska
+    owner: USA
+    admin1: {country: USA, iso: [US-AK]}
+    clip: [-168.6, 50, -129, 72]
+
+  # China
+  BEI:
+    name: Beijing
+    owner: CHN
+    admin1: {country: CHN, names: [Beijing, Tianjin, Hebei, Shanxi, Inner Mongolia, Liaoning, Jilin, Heilongjiang,
+                                   Shanghai, Jiangsu, Zhejiang, Anhui, Shandong, Henan, Hubei, Shaanxi, Ningxia]}
+  GUA:
+    name: Guangzhou
+    owner: CHN
+    admin1: {country: CHN, names: [Guangdong, Guangxi, Hainan, Fujian, Jiangxi, Hunan, Yunnan, Guizhou, Sichuan,
+                                   Chongqing, Hong Kong, Macau]}
+  XIN:
+    name: Xinjiang
+    owner: CHN
+    admin1: {country: CHN, names: [Xinjiang, Xizang, Tibet, Qinghai, Gansu]}
+
+  # European Union (expanded, 2030s)
+  PAR:
+    name: Paris
+    owner: EU
+    countries: [FRA, BEL, NLD, LUX, ESP, PRT, IRL, AND, MCO]
+    clip: [-25, 34, 20, 60]
+  BER:
+    name: Berlin
+    owner: EU
+    countries: [DEU, POL, CZE, SVK, AUT, CHE, LIE, DNK, SWE, FIN, NOR, ISL, EST, LVA, LTU]
+    clip: [-25, 45, 45, 72]
+  ROM:
+    name: Rome
+    owner: EU
+    countries: [ITA, SVN, HRV, HUN, ROU, BGR, GRC, CYP, MLT, BIH, SRB, MNE, MKD, ALB, KOS, SMR, VAT]
+    clip: [5, 34, 35, 49]
+
+  # Russia (split by region centroid longitude)
+  MOS:
+    name: Moscow
+    owner: RUS
+    admin1: {country: RUS, lon_between: [0, 60]}
+  SIB:
+    name: Siberia
+    owner: RUS
+    admin1: {country: RUS, lon_between: [60, 108]}
+  VLA:
+    name: Vladivostok
+    owner: RUS
+    admin1: {country: RUS, lon_between: [108, 191.4]}
+
+  # India
+  DEL:
+    name: Delhi
+    owner: IND
+    admin1: {country: IND, names: [Jammu and Kashmir, Ladakh, Himachal Pradesh, Punjab, Chandigarh, Haryana, Delhi,
+                                   Uttarakhand, Uttar Pradesh, Rajasthan, Bihar, Madhya Pradesh]}
+  MUM:
+    name: Mumbai
+    owner: IND
+    admin1: {country: IND, names: [Gujarat, Maharashtra, Goa, Karnataka, Kerala, Dadra and Nagar Haveli and Daman and Diu,
+                                   Dadra and Nagar Haveli, Daman and Diu, Lakshadweep]}
+  CHE:
+    name: Chennai
+    owner: IND
+    admin1: {country: IND, names: [Tamil Nadu, Puducherry, Andhra Pradesh, Telangana, Odisha, Chhattisgarh, Jharkhand,
+                                   West Bengal, Sikkim, Assam, Meghalaya, Tripura, Mizoram, Manipur, Nagaland,
+                                   Arunachal Pradesh, Andaman and Nicobar]}
+
+  # Japan
+  TOK:
+    name: Tokyo
+    owner: JPN
+    admin1: {country: JPN, names: [Hokkaido, Aomori, Iwate, Miyagi, Akita, Yamagata, Fukushima, Ibaraki, Tochigi,
+                                   Gunma, Saitama, Chiba, Tokyo, Kanagawa, Niigata, Nagano, Yamanashi]}
+    min_area_km2: 500
+  OSA:
+    name: Osaka
+    owner: JPN
+    admin1: {country: JPN, names: [Toyama, Ishikawa, Fukui, Gifu, Shizuoka, Aichi, Mie, Shiga, Kyoto, Osaka, Hyogo,
+                                   Nara, Wakayama, Tottori, Shimane, Okayama, Hiroshima, Yamaguchi, Tokushima,
+                                   Kagawa, Ehime, Kochi]}
+    min_area_km2: 500
+  OKI:
+    name: Kyushu & Okinawa
+    owner: JPN
+    admin1: {country: JPN, names: [Fukuoka, Saga, Nagasaki, Kumamoto, Oita, Miyazaki, Kagoshima, Okinawa]}
+    min_area_km2: 100
+
+  # Gulf
+  RIY:
+    name: Riyadh
+    owner: GLF
+    countries: [KWT, BHR, QAT]
+    admin1: {country: SAU, names: [Riyadh, Eastern Province, Ash Sharqiyah, Al Qassim, Ha'il, Al Jawf,
+                                   Northern Borders, Al Hudud ash Shamaliyah]}
+  DUB:
+    name: Dubai
+    owner: GLF
+    countries: [ARE, OMN]
+  JED:
+    name: Jeddah
+    owner: GLF
+    admin1: {country: SAU, names: [Makkah, Mecca, Medina, Al Madinah, Tabuk, Asir, 'Asir, Al Bahah, Jizan, Jazan, Najran]}
+
+# ---------------------------------------------------------------- swing states (20)
+swing:
+  MEX: {name: Mexico, countries: [MEX]}
+  BRA: {name: Brazil, countries: [BRA, GUY, SUR]}
+  ARG: {name: Argentina, countries: [ARG, URY, PRY]}
+  UKR: {name: Ukraine, countries: [UKR, MDA]}
+  TUR: {name: Turkey, countries: [TUR]}
+  MAG: {name: Maghreb, countries: [MAR, SAH, DZA, TUN, LBY]}
+  EGY: {name: Egypt, countries: [EGY]}
+  IRN: {name: Iran, countries: [IRN]}
+  NGA: {name: Nigeria, countries: [NGA]}
+  ETH: {name: Ethiopia, countries: [ETH, ERI, DJI, SOM, SOL]}
+  COD: {name: DR Congo, countries: [COD, COG]}
+  ZAF: {name: South Africa, countries: [ZAF, LSO, SWZ, NAM, BWA]}
+  KAZ: {name: Kazakhstan, countries: [KAZ]}
+  PAK: {name: Pakistan, countries: [PAK]}
+  KOR: {name: Korea, countries: [KOR]}
+  VNM: {name: Vietnam, countries: [VNM, LAO, KHM]}
+  PHL: {name: Philippines, countries: [PHL]}
+  IDN: {name: Indonesia, countries: [IDN, TLS]}
+  AUS: {name: Australia, countries: [AUS, NZL, PNG]}
+  ARC: {name: Arctic Shelf, countries: [GRL], opens: 2034}
+
+# ---------------------------------------------------------------- other land (no centre, open to all)
+filler:
+  CAN: {name: Canada, countries: [CAN]}
+  CAM: {name: Central America, countries: [GTM, BLZ, HND, SLV, NIC, CRI, PAN, CUB, HTI, DOM, JAM, BHS, PRI]}
+  AND: {name: Andes, countries: [COL, VEN, ECU, PER, BOL, CHL]}
+  GBR: {name: Britain, countries: [GBR]}
+  BLR: {name: Belarus, countries: [BLR]}
+  CAU: {name: Caucasus, countries: [GEO, ARM, AZE]}
+  LEV: {name: Levant, countries: [SYR, LBN, JOR, ISR, PSX, PSE]}
+  IRQ: {name: Iraq, countries: [IRQ]}
+  YEM: {name: Yemen, countries: [YEM]}
+  WAF: {name: West Africa, countries: [MRT, SEN, GMB, GNB, GIN, SLE, LBR, CIV, GHA, TGO, BEN, BFA, MLI]}
+  SAH: {name: Sahel, countries: [NER, TCD, SDN, SSD, CAF]}
+  CAF: {name: Central Africa, countries: [CMR, GAB, GNQ]}
+  EAF: {name: East Africa, countries: [KEN, TZA, UGA, RWA, BDI]}
+  SAR: {name: Southern Africa, countries: [AGO, ZMB, ZWE, MOZ, MWI, MDG]}
+  CAS: {name: Central Asia, countries: [UZB, TKM, TJK, KGZ]}
+  AFG: {name: Afghanistan, countries: [AFG]}
+  MNG: {name: Mongolia, countries: [MNG]}
+  MMR: {name: Myanmar & Bangladesh, countries: [MMR, BGD]}
+  MAL: {name: Malaya, countries: [THA, MYS, SGP, BRN]}
+
+# ---------------------------------------------------------------- impassable land (drawn, never entered)
+impassable:
+  TWN: {name: Taiwan, countries: [TWN]}
+  PRK: {name: North Korea, countries: [PRK]}
+  HIM: {name: Nepal & Bhutan, countries: [NPL, BTN]}
+  LKA: {name: Sri Lanka, countries: [LKA]}
+
+# ---------------------------------------------------------------- sea zones
+seas:
+  # Atlantic and Arctic approaches
+  NAO: {name: North Atlantic, seeds: [[-40, 50], [-30, 58], [-55, 40], [-65, 33], [-55, 60]]}
+  MAO: {name: Mid-Atlantic, seeds: [[-30, 28], [-22, 14], [-40, 20]]}
+  SAO: {name: South Atlantic, seeds: [[-25, -15], [-20, -35], [0, -25], [-45, -50]]}
+  GOG: {name: Gulf of Guinea, seeds: [[2, -1], [-5, 2]]}
+  CAR: {name: Caribbean & Gulf of Mexico, seeds: [[-78, 15], [-90, 25], [-68, 15]]}
+  NTH: {name: North Sea, seeds: [[3, 56], [-5, 50]]}
+  BAL: {name: Baltic Sea, seeds: [[19, 57], [20, 61]]}
+  NWS: {name: Norwegian & Barents Sea, seeds: [[5, 68], [35, 73], [-10, 70]]}
+  ARO: {name: Arctic Ocean, seeds: [[0, 86], [90, 80], [-120, 78], [150, 78], [-75, 78], [45, 82]], opens: 2034}
+
+  # Mediterranean
+  WME: {name: Western Mediterranean, seeds: [[5, 39], [-2, 36.5]]}
+  EME: {name: Eastern Mediterranean, seeds: [[25, 34], [19, 38], [32, 34]]}
+  BLK: {name: Black Sea, seeds: [[34, 43]]}
+
+  # Indian Ocean
+  ARA: {name: Arabian Sea, seeds: [[63, 15], [55, 12], [48, 12.5]]}
+  BOB: {name: Bay of Bengal, seeds: [[88, 15], [94, 9]]}
+  IOC: {name: Indian Ocean, seeds: [[75, -10], [90, -20], [105, -25], [70, -35]]}
+  MOZ: {name: Mozambique Channel, seeds: [[42, -18], [52, -30], [35, -38]]}
+
+  # Pacific
+  SCS: {name: South China Sea, seeds: [[113, 12], [110, 5]]}
+  ECS: {name: East China & Yellow Sea, seeds: [[124, 31], [122, 37]]}
+  SOJ: {name: Sea of Japan, seeds: [[135, 40]]}
+  OKH: {name: Sea of Okhotsk, seeds: [[148, 53]]}
+  PHS: {name: Philippine Sea, seeds: [[133, 20], [138, 28]]}
+  JAV: {name: Java & Banda Sea, seeds: [[120, -5], [112, -6], [128, -6], [135, -10]]}
+  NWP: {name: Northwest Pacific, seeds: [[160, 38], [155, 25], [170, 50]]}
+  CPA: {name: Central Pacific, seeds: [[175, 10], [188, 20], [-160, 15], [160, 5]]}
+  NEP: {name: Northeast Pacific, seeds: [[-140, 45], [-145, 55], [-130, 33], [-165, 45]]}
+  EPA: {name: East Pacific, seeds: [[-110, 10], [-95, 0], [-120, -10], [-85, -20]]}
+  SPA: {name: South Pacific, seeds: [[-120, -35], [-150, -20], [-100, -45], [-160, -45], [185, -30]]}
+  CTS: {name: Coral & Tasman Sea, seeds: [[157, -25], [160, -40], [150, -12]]}
+
+# Chokepoints are sea zones too; the pipeline carves them out of the zones above.
+chokepoints:
+  BOS: {name: Bosphorus, point: [29.0, 41.1], radius_km: 160}
+  SUZ: {name: Suez & Red Sea, seeds: [[38, 21], [35, 26], [41.5, 15.5], [43.3, 12.6]], bounds: [32, 12, 44, 30]}
+  HOR: {name: Hormuz & Persian Gulf, seeds: [[50.5, 27.5], [56.3, 26.5], [53, 25.5]], bounds: [47.5, 23.5, 57.2, 30.5]}
+  MLC: {name: Malacca, point: [100.0, 3.5], radius_km: 280}
+  TWS: {name: Taiwan Strait, point: [119.7, 24.2], radius_km: 170}
+  PAN: {name: Panama, point: [-79.6, 8.5], radius_km: 200}
+  BRS: {name: Bering Strait, point: [-168.9, 65.5], radius_km: 220, opens: 2034}
+
+# Links the geometry can't see: canals, narrow straits, wraps across the seam.
+adjacency_overrides:
+  add:
+    - [SUZ, EME, fleet]        # Suez Canal
+    - [BRS, ARO, fleet]
+    - [GBR, PAR, army]         # Channel Tunnel
+    - [BER, PAR, fleet]        # Kiel/Danish straits handled by shared coast; keep explicit
+  remove: []
+
+trade_routes:
+  - {id: TRA, name: Transatlantic, ends: [WAS, PAR], path: [NAO]}
+  - {id: SAT, name: South Atlantic, ends: [TEX, BRA], path: [CAR, MAO]}
+  - {id: CAP, name: Cape, ends: [PAR, ZAF], path: [MAO, SAO]}
+  - {id: TPA, name: Transpacific, ends: [CAL, TOK], path: [NEP, NWP]}
+  - {id: SPR, name: South Pacific, ends: [CAL, AUS], path: [NEP, CPA, CTS]}
+  - {id: INT, name: Interoceanic, ends: [WAS, CAL], path: [CAR, PAN, EPA]}
+  - {id: CSE, name: China Seas, ends: [GUA, OKI], path: [TWS, ECS]}
+  - {id: MLR, name: Malacca, ends: [CHE, GUA], path: [BOB, MLC, SCS]}
+  - {id: SUR, name: Suez, ends: [ROM, MUM], path: [EME, SUZ, ARA]}
+  - {id: GLR, name: Gulf, ends: [RIY, MUM], path: [HOR, ARA]}
+  - {id: GAR, name: Gulf–Asia, ends: [RIY, GUA], path: [HOR, ARA, BOB, MLC, SCS]}
+  - {id: IOR, name: Indian Ocean, ends: [MUM, ZAF], path: [ARA, IOC, MOZ]}
+  - {id: BSR, name: Black Sea, ends: [ROM, UKR], path: [EME, BOS, BLK]}
+  - {id: NSR, name: Northern Sea, ends: [VLA, PAR], path: [BRS, ARO, NWS, NTH], opens: 2034}
+
+start:
+  year: 2031
+  crisis: 3
+  umbrellas: [[USA, JPN]]
+  units:
+    USA: [F WAS, F CAL, A TEX, C ALA]
+    CHN: [F GUA, A XIN, C BEI]
+    EU:  [A BER, C PAR, I ROM]
+    RUS: [A MOS, A SIB, I VLA]
+    IND: [A DEL, F CHE, C MUM]
+    JPN: [F OKI, C TOK, I OSA]
+    GLF: [F DUB, C RIY, C JED]
