@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Brink · Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111827;--ink2:#4B5563;--ink3:#9CA3AF;--line:#E5E7EB;--bg:#F3F4F6;--white:#FFFFFF;--blue:#2563EB;--blue-d:#1D4ED8;
+--us:#3B82F6;--cn:#EF4444;--eu:#FBBF24;--ru:#8B5CF6;--in:#F97316;--jp:#EC4899;--gf:#10B981;--sea:#DCEAF7;--land:#E2E4E8;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.top{height:56px;background:var(--white);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:20px}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.logo i{width:20px;height:20px;border-radius:5px;background:var(--blue);display:block;position:relative}
+.logo i:after{content:"";position:absolute;inset:5px 5px 9px 5px;border-radius:1px;background:#fff}
+.crumb{color:var(--ink2);font-size:13px}.crumb b{color:var(--ink);font-weight:600}
+.sp{flex:1}
+.pill{font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;background:var(--bg);color:var(--ink2)}
+.pill.live{background:#ECFDF5;color:#047857}.pill.live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#10B981;margin-right:6px;vertical-align:1px}
+.av{width:30px;height:30px;border-radius:50%;background:var(--us);color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center}
+.main{display:flex;height:844px}
+.board{flex:1;position:relative;background:var(--sea)}
+.board svg{position:absolute;inset:0;width:100%;height:100%}
+.tools{position:absolute;left:16px;top:16px;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.tools span{width:34px;height:34px;display:grid;place-items:center;color:var(--ink2);font-size:16px;border-bottom:1px solid var(--line)}.tools span:last-child{border:0}
+.legend{position:absolute;left:16px;bottom:16px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;gap:14px;font-size:12px;color:var(--ink2);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.panel{width:380px;background:var(--white);border-left:1px solid var(--line);display:flex;flex-direction:column}
+.ph{padding:20px 24px 18px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}
+.ph h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:4px 0 10px}
+.you{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--ink)}
+.you b{width:12px;height:12px;border-radius:3px;background:var(--us)}
+.crisis{margin-top:16px}
+.crisis .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.crisis .row span{color:var(--ink2)}
+.bars{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.bars i{height:6px;border-radius:2px;background:var(--line)}.bars i.on{background:#F59E0B}
+.sec{padding:16px 24px;border-bottom:1px solid var(--line)}
+.sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.sh h2{font-size:13px;font-weight:600}.sh span{font-size:12px;color:var(--ink3)}
+.order{display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;font:500 13px "JetBrains Mono",ui-monospace,monospace}
+.order .u{width:22px;height:22px;border-radius:4px;background:#EFF6FF;color:var(--blue);display:grid;place-items:center;font-size:11px;font-weight:700}
+.order .x{margin-left:auto;color:var(--ink3);font-family:Inter,sans-serif;font-size:12px}
+.add{height:36px;border:1px dashed #D1D5DB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink2)}
+.pw{display:grid;grid-template-columns:1fr auto;row-gap:7px;font-size:13px}
+.pw div{display:flex;align-items:center;gap:8px}.pw b{width:10px;height:10px;border-radius:2px}
+.pw .n{color:var(--ink2);font-variant-numeric:tabular-nums;text-align:right}.pw .me{font-weight:600}
+.foot{margin-top:auto;padding:16px 24px 20px;border-top:1px solid var(--line)}
+.foot p{font-size:12px;color:var(--ink2);margin-bottom:10px;display:flex;justify-content:space-between}
+.btn{height:44px;width:100%;border:0;border-radius:8px;background:var(--blue);color:#fff;font:600 15px Inter,system-ui,sans-serif;box-shadow:0 1px 2px rgba(37,99,235,.3)}
+.lbl{font:600 9px Inter,sans-serif;fill:#374151;letter-spacing:.04em}
+</style></head><body>
+<header class="top"><div class="logo"><i></i>Brink</div><div class="crumb">Games / <b>Thursday Night Table</b></div><div class="sp"></div>
+<span class="pill live">7 of 7 online</span><span class="pill">Deadline 18h 42m</span><div class="av">JS</div></header>
+<div class="main"><section class="board">
+<svg viewBox="80 20 880 500" preserveAspectRatio="xMidYMid slice">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#111827"/></marker></defs>
+<g stroke="#fff" stroke-width="1.4" stroke-linejoin="round">
+<path fill="var(--land)" d="M70,80L150,58L260,52L330,68L300,108L270,140L120,148L80,120Z"/>
+<path fill="var(--us)" d="M110,148L270,140L252,182L218,204L190,214L165,206L130,192Z"/>
+<path fill="var(--land)" d="M130,192L165,206L190,214L196,240L180,252L160,232Z"/>
+<path fill="var(--land)" d="M330,30L390,25L380,70L345,75Z"/>
+<path fill="var(--land)" d="M226,262L290,264L330,300L310,370L280,430L260,462L250,410L235,340L218,290Z"/>
+<path fill="var(--eu)" d="M452,92L540,82L556,112L540,150L500,166L466,160L450,130Z"/>
+<path fill="var(--land)" d="M418,96L440,92L444,118L424,122Z"/>
+<path fill="var(--ru)" d="M540,62L880,50L930,90L880,130L840,130L700,130L640,140L556,130L556,112Z"/>
+<path fill="var(--land)" d="M450,190L560,184L600,230L620,280L580,340L545,400L520,400L500,330L470,280L440,240Z"/>
+<path fill="var(--gf)" d="M578,178L640,174L660,214L622,240L596,214Z"/>
+<path fill="var(--land)" d="M640,140L700,130L712,170L672,188L642,176Z"/>
+<path fill="var(--in)" d="M672,188L734,184L722,240L702,272L686,240Z"/>
+<path fill="var(--cn)" d="M700,130L840,130L862,170L812,210L742,200L712,170Z"/>
+<path fill="var(--land)" d="M742,200L812,210L800,252L760,250Z"/>
+<path fill="var(--jp)" d="M880,138L896,132L906,174L886,196L878,170Z"/>
+<path fill="var(--land)" d="M800,330L900,320L922,370L870,402L810,386Z"/>
+</g>
+<g stroke="#fff" stroke-width=".8" fill="none" opacity=".9"><path d="M190,146L190,214M232,144L222,202"/></g>
+<g fill="#fff" stroke="#374151" stroke-width="1.2"><circle cx="150" cy="168" r="3"/><circle cx="205" cy="178" r="3"/><circle cx="246" cy="160" r="3"/><circle cx="180" cy="104" r="3"/><circle cx="172" cy="232" r="3"/></g>
+<g stroke="#111827" stroke-width="2" fill="none" marker-end="url(#ah)">
+<path d="M205,186Q200,140 184,114"/><path d="M146,176Q150,215 166,228"/><path d="M252,165Q300,140 352,150" stroke-dasharray="5 3"/></g>
+<g font-family="Inter,sans-serif" font-size="8" font-weight="700" text-anchor="middle">
+<circle cx="205" cy="190" r="8" fill="#1D4ED8" stroke="#fff" stroke-width="1.5"/><text x="205" y="193" fill="#fff">A</text>
+<circle cx="146" cy="180" r="8" fill="#1D4ED8" stroke="#fff" stroke-width="1.5"/><text x="146" y="183" fill="#fff">C</text>
+<path d="M248,160l9,14h-18z" fill="#1D4ED8" stroke="#fff" stroke-width="1.5"/><text x="248" y="172" fill="#fff" font-size="7">F</text>
+<circle cx="508" cy="128" r="8" fill="#B45309" stroke="#fff" stroke-width="1.5"/><text x="508" y="131" fill="#fff">A</text>
+<circle cx="770" cy="166" r="8" fill="#B91C1C" stroke="#fff" stroke-width="1.5"/><text x="770" y="169" fill="#fff">A</text>
+<circle cx="640" cy="98" r="8" fill="#6D28D9" stroke="#fff" stroke-width="1.5"/><text x="640" y="101" fill="#fff">A</text></g>
+<g class="lbl" text-anchor="middle"><text x="180" y="96">CAN</text><text x="196" y="210" fill="#fff">TEX</text><text x="136" y="166" fill="#fff">CAL</text><text x="260" y="152" fill="#fff">WAS</text><text x="180" y="246">MEX</text><text x="362" y="170" fill="#64748B">N. ATLANTIC</text>
+<text x="270" y="340" fill="#6B7280">BRA</text><text x="530" y="270" fill="#6B7280">NIG</text><text x="676" y="160" fill="#6B7280">KAZ</text><text x="780" y="232" fill="#6B7280">VNM</text><text x="860" y="365" fill="#6B7280">AUS</text><text x="430" y="112" fill="#6B7280">UK</text></g>
+</svg>
+<div class="tools"><span>+</span><span>&minus;</span><span>&#9744;</span></div>
+<div class="legend"><span><b style="background:var(--us)"></b>United States</span><span><b style="background:var(--cn)"></b>China</span><span><b style="background:var(--eu)"></b>EU</span><span><b style="background:var(--ru)"></b>Russia</span><span><b style="background:var(--in)"></b>India</span><span><b style="background:var(--jp)"></b>Japan</span><span><b style="background:var(--gf)"></b>Gulf</span><span><b style="background:var(--land);border:1px solid #D1D5DB"></b>Swing state</span></div>
+</section>
+<aside class="panel">
+<div class="ph"><div class="eyebrow">Movement phase</div><h1>Spring 2031 · your move</h1><div class="you"><b></b>United States</div>
+<div class="crisis"><div class="row"><strong>Crisis 3 of 10</strong><span>Brink at 10</span></div><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+<div class="sec"><div class="sh"><h2>Your orders</h2><span>3 of 3 units</span></div>
+<div class="order"><span class="u">A</span>A TEX – CAN<span class="x">Move</span></div>
+<div class="order"><span class="u">C</span>C CAL – MEX<span class="x">Move</span></div>
+<div class="order"><span class="u">F</span>F WAS – NAO<span class="x">Move</span></div>
+<div class="add">+ Add or change an order</div></div>
+<div class="sec"><div class="sh"><h2>Centres</h2><span>Supply held</span></div>
+<div class="pw"><div class="me"><b style="background:var(--us)"></b>United States</div><span class="n me">3</span><div><b style="background:var(--cn)"></b>China</div><span class="n">3</span><div><b style="background:var(--eu)"></b>European Union</div><span class="n">3</span><div><b style="background:var(--ru)"></b>Russia</div><span class="n">3</span><div><b style="background:var(--in)"></b>India</div><span class="n">3</span><div><b style="background:var(--jp)"></b>Japan</div><span class="n">3</span><div><b style="background:var(--gf)"></b>Gulf</div><span class="n">3</span></div></div>
+<div class="foot"><p><span>4 of 7 powers have committed</span><span>Saved as draft</span></p><button class="btn">Commit orders</button></div>
+</aside></div>
+</body></html>

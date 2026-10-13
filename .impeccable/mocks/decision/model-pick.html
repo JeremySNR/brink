@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Brink · Play</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Archivo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--sea:#D9E2E4;--land:#E4DCC2;--ink:#1D1D1B;--red:#B3261E;--olive:#4B5D3A;--paper:#F2EEE2;
+--us:#8FAFC6;--cn:#D9776A;--eu:#E6CB5A;--ru:#A9A190;--in:#E7A35A;--jp:#F4F1E8;--gu:#8DAA74}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Archivo,sans-serif}
+.cond{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.04em}
+header{height:48px;display:flex;align-items:center;border-bottom:3px solid var(--ink);padding:0 20px;gap:28px}
+.logo{font:800 22px Archivo;letter-spacing:.18em}
+.logo span{background:var(--red);color:var(--paper);padding:0 6px;margin-right:2px}
+header nav{display:flex;gap:22px;font-size:15px;font-weight:600}
+header nav a{color:var(--ink);text-decoration:none;padding:13px 0}
+header nav a.on{border-bottom:3px solid var(--red)}
+.hr{margin-left:auto;display:flex;gap:16px;align-items:center;font-size:15px}
+.chip{border:1.5px solid var(--ink);padding:3px 8px;font-weight:600}
+.grid{display:grid;grid-template-columns:1050px 390px;height:852px}
+.board{border-right:3px solid var(--ink);display:grid;grid-template-rows:56px 1fr;position:relative}
+.trt{display:flex;align-items:center;gap:0;padding:0 16px;border-bottom:2px solid var(--ink);background:var(--land)}
+.trt b{font-size:13px;margin-right:12px;line-height:1}
+.box{width:78px;height:38px;border:1.5px solid var(--ink);margin-left:-1.5px;position:relative;background:var(--paper);font:600 14px "Barlow Condensed";padding:2px 5px}
+.box.past{background:repeating-linear-gradient(135deg,transparent 0 5px,rgba(29,29,27,.14) 5px 6px)}
+.box i{position:absolute;right:5px;bottom:4px;width:24px;height:24px;background:var(--red);border:1.5px solid var(--ink);color:var(--paper);font:700 10px/21px "Barlow Condensed";text-align:center;font-style:normal;box-shadow:2px 2px 0 var(--ink)}
+.box.mark{background:#fff}
+svg{display:block}
+.key{position:absolute;left:16px;bottom:16px;width:256px;background:var(--paper);border:2px solid var(--ink);font-size:12px}
+.key h4{background:var(--ink);color:var(--paper);font:600 14px "Barlow Condensed";letter-spacing:.06em;padding:3px 8px}
+.key .r{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 10px;padding:8px}
+.key .r div{display:flex;align-items:center;gap:6px}
+.sw{width:16px;height:16px;border:1.5px solid var(--ink);flex:none}
+.zoom{position:absolute;right:16px;bottom:16px;display:flex;border:2px solid var(--ink);background:var(--paper)}
+.zoom button{width:34px;height:32px;border:0;border-right:1.5px solid var(--ink);background:none;font:700 17px Archivo;color:var(--ink)}
+.zoom button:last-child{border:0;width:auto;padding:0 10px;font:600 14px "Barlow Condensed"}
+aside{display:flex;flex-direction:column;background:var(--paper)}
+.turn{padding:16px 20px 14px;border-bottom:2px solid var(--ink)}
+.turn small{font:600 13px "Barlow Condensed";letter-spacing:.08em;color:var(--olive)}
+.turn h1{font:800 28px/1.05 Archivo;margin-top:2px}
+.turn h1 em{font-style:normal;color:var(--red)}
+.turn p{font-size:13px;margin-top:6px}
+sec{display:block;padding:12px 20px;border-bottom:1.5px solid var(--ink)}
+sec h3{font:700 17px "Barlow Condensed";letter-spacing:.04em;margin-bottom:8px}
+sec h3 span{color:var(--red);margin-right:8px}
+.ord{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed rgba(29,29,27,.4);font:600 17px "Barlow Condensed";letter-spacing:.05em}
+.ord:first-of-type{border-top:0}
+.ct{width:30px;height:30px;background:var(--us);border:1.5px solid var(--ink);font:700 13px/27px "Barlow Condensed";text-align:center}
+.ord a{font:500 12px Archivo;color:var(--ink);text-transform:none;letter-spacing:0}
+.add{font-size:13px;font-weight:600;border:1.5px dashed var(--ink);padding:6px;text-align:center;margin-top:6px}
+.track{display:grid;grid-template-columns:repeat(11,1fr);border:1.5px solid var(--ink)}
+.track div{height:34px;border-left:1.5px solid var(--ink);font:600 14px/32px "Barlow Condensed";text-align:center;position:relative}
+.track div:first-child{border:0}
+.track .t{background:#EBC9C3}.track .t10{background:var(--red);color:var(--paper)}
+.track .on{background:var(--ink);color:var(--paper)}
+.tl{display:flex;justify-content:space-between;font-size:11px;margin-top:5px}
+.sc{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:13px}
+.sc div{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:1px dotted rgba(29,29,27,.4)}
+.sc b{margin-left:auto;font:700 16px "Barlow Condensed"}
+.foot{margin-top:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--ink)}
+.commit{height:50px;background:var(--red);color:#fff;border:2px solid var(--ink);font:700 18px "Barlow Condensed";letter-spacing:.1em;box-shadow:3px 3px 0 var(--ink)}
+.foot p{font-size:12px;display:flex;justify-content:space-between}
+</style></head><body>
+<header><div class="logo"><span>B</span>RINK</div>
+<nav><a class="on" href="#">Board</a><a href="#">Diplomacy</a><a href="#">History</a><a href="#">Rules</a></nav>
+<div class="hr"><span class="cond" style="font-weight:600">Game 14 · Seven powers</span><span class="chip">Orders due 18h 22m</span><span class="chip" style="background:var(--us)">United States</span></div></header>
+<div class="grid">
+<section class="board">
+<div class="trt"><b class="cond">Turn<br>Record</b>
+<div class="box past">2031</div><div class="box mark">2031<i>SPR</i></div><div class="box">2032</div><div class="box">2033</div><div class="box">2034</div><div class="box">2035</div><div class="box">2036</div><div class="box">2037</div><div class="box">2038</div><div class="box" style="border-color:var(--red);color:var(--red)">2040 END</div></div>
+<svg viewBox="0 0 1050 796" width="1050" height="796" font-family="Barlow Condensed" font-weight="600">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#B3261E"/></marker>
+<pattern id="g" width="70" height="70" patternUnits="userSpaceOnUse"><path d="M70 0H0V70" fill="none" stroke="#1D1D1B" stroke-opacity=".08"/></pattern></defs>
+<rect width="1050" height="796" fill="#D9E2E4"/><rect width="1050" height="796" fill="url(#g)"/>
+<g stroke="#1D1D1B" stroke-width="1.5" stroke-linejoin="round">
+<path d="M70 110L230 80L360 92L400 150L350 200L330 260L300 300L260 330L240 370L210 352L180 300L120 250L80 200Z" fill="#E4DCC2"/>
+<path d="M120 170L330 150L345 200L320 255L200 262L150 230Z" fill="#8FAFC6"/>
+<path d="M210 352L240 370L268 410L250 418L222 392Z" fill="#E4DCC2"/>
+<path d="M268 430L350 445L392 505L360 580L320 660L300 720L282 660L262 560L250 480Z" fill="#E4DCC2"/>
+<path d="M492 130L560 112L598 150L590 200L548 236L494 222L476 180Z" fill="#E6CB5A"/>
+<path d="M598 150L620 96L780 78L930 88L980 150L900 205L800 220L700 222L640 210L590 200Z" fill="#A9A190"/>
+<path d="M700 222L800 220L840 260L820 300L760 292L716 262Z" fill="#D9776A"/>
+<path d="M480 270L600 262L632 330L612 420L580 520L540 540L512 450L470 360Z" fill="#E4DCC2"/>
+<path d="M612 250L690 262L676 330L630 330Z" fill="#8DAA74"/>
+<path d="M705 280L758 296L742 380Z" fill="#E7A35A"/>
+<path d="M800 310L860 300L870 350L820 360Z" fill="#E4DCC2"/>
+<path d="M904 172L918 160L930 210L912 236L900 220Z" fill="#F4F1E8"/>
+<path d="M816 400L900 392L946 430Z" fill="#E4DCC2"/>
+<path d="M820 498L940 482L974 560L900 600L836 580Z" fill="#E4DCC2"/>
+</g>
+<g fill="#1D1D1B" font-size="13" letter-spacing=".08em">
+<text x="160" y="140">CANADA</text><text x="190" y="225">TEXAS</text><text x="128" y="205">CAL</text><text x="270" y="190">WAS</text>
+<text x="222" y="330">MEXICO</text><text x="300" y="530">BRAZIL</text><text x="282" y="640">S. CONE</text>
+<text x="516" y="170">EUROPE</text><text x="740" y="140">RUSSIA</text><text x="610" y="250">UKR</text><text x="560" y="250">TURKEY</text>
+<text x="740" y="250">CHINA</text><text x="522" y="320">EGYPT</text><text x="500" y="400">NIGERIA</text><text x="640" y="300">GULF</text>
+<text x="684" y="246">IRAN</text><text x="704" y="320">INDIA</text><text x="672" y="212">KAZ</text><text x="846" y="236">KOR</text>
+<text x="934" y="200">JAPAN</text><text x="810" y="336">VIET</text><text x="852" y="420">INDONESIA</text><text x="860" y="540">AUSTRALIA</text>
+<text x="640" y="276" font-size="11">PAK</text></g>
+<g fill="#4B5D3A" font-size="15" font-style="italic" letter-spacing=".3em" opacity=".75">
+<text x="420" y="300">NORTH ATLANTIC</text><text x="60" y="440">PACIFIC</text><text x="640" y="470">INDIAN OCEAN</text></g>
+<g stroke="#B3261E" stroke-width="3.5" fill="none" marker-end="url(#ah)">
+<path d="M212 224Q196 176 196 156"/><path d="M146 214Q170 300 232 312"/><path d="M300 196Q370 240 420 278"/></g>
+<g stroke="#1D1D1B" stroke-width="1.5" font-size="12" text-anchor="middle">
+<g transform="translate(200,228)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#8FAFC6"/><rect x="7" y="5" width="18" height="12" fill="none"/><path d="M7 5L25 17M25 5L7 17"/><text x="16" y="29" stroke="none" fill="#1D1D1B">3</text></g>
+<g transform="translate(128,212)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#8FAFC6"/><text x="16" y="17" stroke="none" fill="#1D1D1B" font-size="14">C</text><text x="16" y="29" stroke="none" fill="#1D1D1B">2</text></g>
+<g transform="translate(280,196)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#8FAFC6"/><path d="M7 12H25L21 17H11Z" fill="#1D1D1B"/><text x="16" y="29" stroke="none" fill="#1D1D1B">4</text></g>
+<g transform="translate(520,184)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#E6CB5A"/><rect x="7" y="5" width="18" height="12" fill="none"/><path d="M7 5L25 17M25 5L7 17"/><text x="16" y="29" stroke="none" fill="#1D1D1B">3</text></g>
+<g transform="translate(700,160)"><rect x="6" y="6" width="32" height="32" fill="#1D1D1B"/><rect x="3" y="3" width="32" height="32" fill="#A9A190"/><rect width="32" height="32" fill="#A9A190"/><rect x="7" y="5" width="18" height="12" fill="none"/><path d="M7 5L25 17M25 5L7 17"/><text x="16" y="29" stroke="none" fill="#1D1D1B">5</text></g>
+<g transform="translate(770,256)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#D9776A"/><rect x="7" y="5" width="18" height="12" fill="none"/><path d="M7 5L25 17M25 5L7 17"/><text x="16" y="29" stroke="none" fill="#1D1D1B">4</text></g>
+<g transform="translate(870,300)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#D9776A"/><path d="M7 12H25L21 17H11Z" fill="#1D1D1B"/><text x="16" y="29" stroke="none" fill="#1D1D1B">3</text></g>
+<g transform="translate(712,330)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#E7A35A"/><rect x="7" y="5" width="18" height="12" fill="none"/><path d="M7 5L25 17M25 5L7 17"/><text x="16" y="29" stroke="none" fill="#1D1D1B">3</text></g>
+<g transform="translate(944,222)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#F4F1E8"/><path d="M7 12H25L21 17H11Z" fill="#1D1D1B"/><text x="16" y="29" stroke="none" fill="#1D1D1B">3</text></g>
+<g transform="translate(624,300)"><rect x="3" y="3" width="32" height="32" fill="#1D1D1B"/><rect width="32" height="32" fill="#8DAA74"/><text x="16" y="17" stroke="none" fill="#1D1D1B" font-size="14">C</text><text x="16" y="29" stroke="none" fill="#1D1D1B">2</text></g></g>
+<g font-size="12" fill="#1D1D1B"><circle cx="300" cy="320" r="6" fill="none" stroke="#1D1D1B" stroke-width="2"/><circle cx="330" cy="520" r="6" fill="none" stroke="#1D1D1B" stroke-width="2"/><circle cx="548" cy="340" r="6" fill="none" stroke="#1D1D1B" stroke-width="2"/><circle cx="880" cy="430" r="6" fill="none" stroke="#1D1D1B" stroke-width="2"/></g>
+</svg>
+<div class="key"><h4>TERRAIN &amp; UNIT KEY</h4><div class="r">
+<div><svg width="22" height="16"><rect x="1" y="1" width="20" height="14" fill="#fff" stroke="#1D1D1B"/><path d="M1 1L21 15M21 1L1 15" stroke="#1D1D1B"/></svg>Army (A)</div>
+<div><svg width="22" height="16"><path d="M1 5H21L16 12H6Z" fill="#1D1D1B"/></svg>Fleet (F)</div>
+<div><svg width="22" height="16"><text x="6" y="13" font-weight="700" font-size="14">C</text></svg>Cyber (C)</div>
+<div><svg width="22" height="16"><circle cx="11" cy="8" r="6" fill="none" stroke="#1D1D1B" stroke-width="2"/></svg>Swing state</div>
+<div><span class="sw" style="background:var(--land)"></span>Neutral land</div><div><span class="sw" style="background:var(--sea)"></span>Sea zone</div>
+<div><svg width="22" height="16"><path d="M1 8H17" stroke="#B3261E" stroke-width="3"/><path d="M15 3L21 8L15 13Z" fill="#B3261E"/></svg>Your order</div>
+<div><span class="cond" style="font-weight:700">3</span>&nbsp;Strength</div></div></div>
+<div class="zoom"><button>+</button><button>&minus;</button><button class="cond">FIT</button></div>
+</section>
+<aside>
+<div class="turn"><small class="cond">6.0 Order Phase · Turn 2 of 20</small><h1>Spring 2031 · <em>your move</em></h1><p>United States. 3 of 4 units ordered. Orders resolve together when all seven powers commit.</p></div>
+<sec><h3 class="cond"><span>6.1</span>Orders</h3>
+<div class="ord"><span class="ct">A3</span>A TEX – CAN<a href="#">Edit</a></div>
+<div class="ord"><span class="ct">C2</span>C CAL – MEX<a href="#">Edit</a></div>
+<div class="ord"><span class="ct">F4</span>F WAS – NAO<a href="#">Edit</a></div>
+<div class="add">+ Add order · 1 unit holding by default</div></sec>
+<sec><h3 class="cond"><span>6.2</span>Crisis Track</h3>
+<div class="track"><div>0</div><div>1</div><div>2</div><div class="on">3</div><div>4</div><div>5</div><div class="t">6</div><div>7</div><div class="t">8</div><div>9</div><div class="t10">10</div></div>
+<div class="tl"><span>Now 3</span><span>6 Sanctions · 8 Blockade · 10 War</span></div></sec>
+<sec><h3 class="cond"><span>6.3</span>Supply Centres</h3><div class="sc">
+<div><span class="sw" style="background:var(--us)"></span>United States<b>3</b></div><div><span class="sw" style="background:var(--cn)"></span>China<b>3</b></div>
+<div><span class="sw" style="background:var(--eu)"></span>European Union<b>3</b></div><div><span class="sw" style="background:var(--ru)"></span>Russia<b>3</b></div>
+<div><span class="sw" style="background:var(--in)"></span>India<b>3</b></div><div><span class="sw" style="background:var(--jp)"></span>Japan<b>3</b></div>
+<div><span class="sw" style="background:var(--gu)"></span>Gulf<b>3</b></div><div style="color:var(--olive)">Unaligned swing<b>14</b></div></div></sec>
+<div class="foot"><button class="commit">COMMIT ORDERS</button><p><span>4 of 7 powers committed</span><a href="#" style="color:var(--ink)">Save draft</a></p></div>
+</aside></div></body></html>

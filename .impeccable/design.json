@@ -1,0 +1,801 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T13:17:51.331361+00:00",
+  "title": "Design System: Brink",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Sheet Paper",
+        "canonical": "#f2eee2",
+        "tonalRamp": [
+          "#352e18",
+          "#5f522b",
+          "#89763e",
+          "#b29a52",
+          "#c5b37d",
+          "#d8cba7",
+          "#e9e2ce",
+          "#f7f5ed"
+        ]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Shaded Stock",
+        "canonical": "#e8e2d1",
+        "tonalRamp": [
+          "#332c1a",
+          "#5c502e",
+          "#857342",
+          "#ac9658",
+          "#c0b081",
+          "#d4c9aa",
+          "#e7e1cf",
+          "#f6f4ee"
+        ]
+      },
+      "paper-hi": {
+        "role": "neutral",
+        "displayName": "Bright Stock",
+        "canonical": "#fbf9f3",
+        "tonalRamp": [
+          "#393013",
+          "#675622",
+          "#957c32",
+          "#c1a144",
+          "#d0b871",
+          "#dfcf9f",
+          "#ede4c9",
+          "#f9f5ec"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Press Black",
+        "canonical": "#1d1d1b",
+        "tonalRamp": [
+          "#282825",
+          "#474742",
+          "#676760",
+          "#87877e",
+          "#a4a49d",
+          "#c2c2bd",
+          "#ddddda",
+          "#f3f3f2"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Second Ink",
+        "canonical": "#47433b",
+        "tonalRamp": [
+          "#2a2723",
+          "#4b473e",
+          "#6d675a",
+          "#8e8677",
+          "#a9a498",
+          "#c5c1b9",
+          "#dfdcd8",
+          "#f3f3f1"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Third Ink",
+        "canonical": "#635d52",
+        "tonalRamp": [
+          "#2a2723",
+          "#4b473e",
+          "#6d665a",
+          "#8e8676",
+          "#aaa398",
+          "#c5c1b9",
+          "#dfdcd8",
+          "#f3f3f1"
+        ]
+      },
+      "rule-soft": {
+        "role": "neutral",
+        "displayName": "Soft Rule",
+        "canonical": "#a49e90",
+        "tonalRamp": [
+          "#2a2822",
+          "#4c483e",
+          "#6d675a",
+          "#8e8776",
+          "#aaa497",
+          "#c6c2b9",
+          "#dfddd8",
+          "#f4f3f1"
+        ]
+      },
+      "edge-ink": {
+        "role": "neutral",
+        "displayName": "Edge Black",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#636363",
+          "#828282",
+          "#a1a1a1",
+          "#bfbfbf",
+          "#dbdbdb",
+          "#f2f2f2"
+        ]
+      },
+      "red": {
+        "role": "primary",
+        "displayName": "Spot Red",
+        "canonical": "#b3261e",
+        "tonalRamp": [
+          "#420e0b",
+          "#761914",
+          "#aa241d",
+          "#db3329",
+          "#e4655d",
+          "#ed9792",
+          "#f5c5c2",
+          "#fbeae9"
+        ]
+      },
+      "red-deep": {
+        "role": "primary",
+        "displayName": "Spot Red Edge",
+        "canonical": "#6e1510",
+        "tonalRamp": [
+          "#430d0a",
+          "#781711",
+          "#ae2119",
+          "#df2f25",
+          "#e7625a",
+          "#ef9590",
+          "#f6c4c1",
+          "#fceae9"
+        ]
+      },
+      "red-hover": {
+        "role": "primary",
+        "displayName": "Spot Red Pressed",
+        "canonical": "#9c2019",
+        "tonalRamp": [
+          "#420e0b",
+          "#771813",
+          "#ab231b",
+          "#dc3128",
+          "#e5645c",
+          "#ed9691",
+          "#f5c4c1",
+          "#fbeae9"
+        ]
+      },
+      "red-tint": {
+        "role": "primary",
+        "displayName": "Crisis Tint 8",
+        "canonical": "#ebc9c3",
+        "tonalRamp": [
+          "#391913",
+          "#672d22",
+          "#954132",
+          "#c15644",
+          "#d08071",
+          "#dfa99f",
+          "#edcfc9",
+          "#f9eeec"
+        ]
+      },
+      "red-tint-2": {
+        "role": "primary",
+        "displayName": "Crisis Tint 6",
+        "canonical": "#f3e0dc",
+        "tonalRamp": [
+          "#391a14",
+          "#672f23",
+          "#944433",
+          "#bf5a45",
+          "#cf8372",
+          "#deaba0",
+          "#edd0ca",
+          "#f8eeec"
+        ]
+      },
+      "select": {
+        "role": "primary",
+        "displayName": "Selection Tint",
+        "canonical": "#e9c9c2",
+        "tonalRamp": [
+          "#381b14",
+          "#653024",
+          "#924535",
+          "#bd5c47",
+          "#cd8474",
+          "#ddaca1",
+          "#ecd1cb",
+          "#f8eeec"
+        ]
+      },
+      "olive": {
+        "role": "secondary",
+        "displayName": "Accord Olive",
+        "canonical": "#4b5d3a",
+        "tonalRamp": [
+          "#262f1d",
+          "#445535",
+          "#637b4c",
+          "#819f65",
+          "#a0b78b",
+          "#bfceb0",
+          "#dbe4d3",
+          "#f2f5ef"
+        ]
+      },
+      "sea": {
+        "role": "neutral",
+        "displayName": "Marginal Sea",
+        "canonical": "#d9e2e4",
+        "tonalRamp": [
+          "#202a2d",
+          "#394c51",
+          "#536e74",
+          "#6d9097",
+          "#91abb1",
+          "#b4c6ca",
+          "#d5dfe1",
+          "#f0f4f4"
+        ]
+      },
+      "ocean": {
+        "role": "neutral",
+        "displayName": "Open Ocean",
+        "canonical": "#c9d6d9",
+        "tonalRamp": [
+          "#202a2d",
+          "#394c51",
+          "#526e75",
+          "#6c9098",
+          "#90abb1",
+          "#b4c6ca",
+          "#d5dfe2",
+          "#f0f4f4"
+        ]
+      },
+      "sea-hover": {
+        "role": "neutral",
+        "displayName": "Sea Hover",
+        "canonical": "#e3eaec",
+        "tonalRamp": [
+          "#1f2a2e",
+          "#384c52",
+          "#506e76",
+          "#6a8f9a",
+          "#8fabb3",
+          "#b3c6cb",
+          "#d4dfe2",
+          "#f0f4f5"
+        ]
+      },
+      "sea-ink": {
+        "role": "neutral",
+        "displayName": "Sea Ink",
+        "canonical": "#34525e",
+        "tonalRamp": [
+          "#1b2b31",
+          "#314d59",
+          "#477080",
+          "#5e91a6",
+          "#86acbc",
+          "#adc7d2",
+          "#d1e0e6",
+          "#eff4f6"
+        ]
+      },
+      "sea-line": {
+        "role": "neutral",
+        "displayName": "Sea Line",
+        "canonical": "#8aa1a9",
+        "tonalRamp": [
+          "#20292c",
+          "#3a4a4f",
+          "#546b73",
+          "#6f8b95",
+          "#92a8af",
+          "#b6c4c9",
+          "#d6dee1",
+          "#f0f3f4"
+        ]
+      },
+      "buff": {
+        "role": "neutral",
+        "displayName": "Swing Buff",
+        "canonical": "#e4dcc2",
+        "tonalRamp": [
+          "#352e17",
+          "#5f532a",
+          "#8a783d",
+          "#b29c52",
+          "#c5b47c",
+          "#d8cca7",
+          "#e9e3ce",
+          "#f7f5ed"
+        ]
+      },
+      "filler": {
+        "role": "neutral",
+        "displayName": "Filler Cream",
+        "canonical": "#ebe7d9",
+        "tonalRamp": [
+          "#322d1a",
+          "#5a512f",
+          "#827545",
+          "#a9985b",
+          "#beb183",
+          "#d3caab",
+          "#e6e1d0",
+          "#f6f4ee"
+        ]
+      },
+      "imp-bg": {
+        "role": "neutral",
+        "displayName": "Impassable Grey",
+        "canonical": "#c9c7c0",
+        "tonalRamp": [
+          "#292823",
+          "#4a4840",
+          "#6b685c",
+          "#8c8778",
+          "#a8a599",
+          "#c4c2ba",
+          "#deddd9",
+          "#f3f3f1"
+        ]
+      },
+      "imp-line": {
+        "role": "neutral",
+        "displayName": "Impassable Hatch",
+        "canonical": "#85817a",
+        "tonalRamp": [
+          "#282725",
+          "#484642",
+          "#68655f",
+          "#87847d",
+          "#a5a29d",
+          "#c2c0bc",
+          "#dddcda",
+          "#f3f2f2"
+        ]
+      },
+      "decor": {
+        "role": "neutral",
+        "displayName": "Off-board Land",
+        "canonical": "#dedacd",
+        "tonalRamp": [
+          "#2e2a1e",
+          "#534c37",
+          "#786e4f",
+          "#9c9068",
+          "#b4ab8d",
+          "#ccc6b2",
+          "#e3dfd4",
+          "#f5f4f0"
+        ]
+      },
+      "brown": {
+        "role": "neutral",
+        "displayName": "Border Brown",
+        "canonical": "#5a4836",
+        "tonalRamp": [
+          "#30261d",
+          "#564534",
+          "#7c634b",
+          "#a18263",
+          "#b8a189",
+          "#cfbfaf",
+          "#e4dbd2",
+          "#f5f2ef"
+        ]
+      },
+      "power-usa": {
+        "role": "power",
+        "displayName": "United States Stock",
+        "canonical": "#8FAFC6",
+        "tonalRamp": [
+          "#1a2833",
+          "#2e495b",
+          "#436984",
+          "#5989ab",
+          "#82a6bf",
+          "#abc3d4",
+          "#d0dde7",
+          "#eef3f6"
+        ],
+        "derived": {
+          "edge": "#566670",
+          "arrow": "#7892a4",
+          "home": "#adc2ce",
+          "swing": "#c0c9c4"
+        }
+      },
+      "power-chn": {
+        "role": "power",
+        "displayName": "China Stock",
+        "canonical": "#D9776A",
+        "tonalRamp": [
+          "#3d1510",
+          "#6e261c",
+          "#9e3628",
+          "#cc4938",
+          "#d97669",
+          "#e5a299",
+          "#f0cbc6",
+          "#faeceb"
+        ],
+        "derived": {
+          "edge": "#7b4a42",
+          "arrow": "#b3655a",
+          "home": "#e09b8e",
+          "swing": "#dfb29d"
+        }
+      },
+      "power-eu": {
+        "role": "power",
+        "displayName": "European Union Stock",
+        "canonical": "#E6CB5A",
+        "tonalRamp": [
+          "#42380a",
+          "#786412",
+          "#ad901a",
+          "#debb26",
+          "#e6cb5b",
+          "#eedc90",
+          "#f6ebc1",
+          "#fcf8e9"
+        ],
+        "derived": {
+          "edge": "#82743a",
+          "arrow": "#bea84d",
+          "home": "#ead683",
+          "swing": "#e5d596"
+        }
+      },
+      "power-rus": {
+        "role": "power",
+        "displayName": "Russia Stock",
+        "canonical": "#B0A794",
+        "tonalRamp": [
+          "#2c2820",
+          "#4f493a",
+          "#726954",
+          "#95896f",
+          "#afa692",
+          "#c9c3b6",
+          "#e1ddd6",
+          "#f4f3f0"
+        ],
+        "derived": {
+          "edge": "#666258",
+          "arrow": "#938b7c",
+          "home": "#c4bcab",
+          "swing": "#cec6af"
+        }
+      },
+      "power-ind": {
+        "role": "power",
+        "displayName": "India Stock",
+        "canonical": "#E7A35A",
+        "tonalRamp": [
+          "#43270a",
+          "#784711",
+          "#ae6619",
+          "#df8525",
+          "#e7a35a",
+          "#efc190",
+          "#f6dcc1",
+          "#fcf3e9"
+        ],
+        "derived": {
+          "edge": "#82603a",
+          "arrow": "#bf884d",
+          "home": "#eaba83",
+          "swing": "#e5c496"
+        }
+      },
+      "power-jpn": {
+        "role": "power",
+        "displayName": "Japan Stock",
+        "canonical": "#F4F1E8",
+        "tonalRamp": [
+          "#342d19",
+          "#5d512d",
+          "#877540",
+          "#ae9856",
+          "#c2b17f",
+          "#d6caa9",
+          "#e8e2cf",
+          "#f7f4ee"
+        ],
+        "derived": {
+          "edge": "#3A3833",
+          "arrow": "#F4F1E8",
+          "home": "#FBFAF5",
+          "swing": "#F6F3EA"
+        }
+      },
+      "power-glf": {
+        "role": "power",
+        "displayName": "Gulf Stock",
+        "canonical": "#84A56C",
+        "tonalRamp": [
+          "#252f1d",
+          "#425534",
+          "#607b4c",
+          "#7da064",
+          "#9db78a",
+          "#bdcfb0",
+          "#dae4d3",
+          "#f2f5ef"
+        ],
+        "derived": {
+          "edge": "#506144",
+          "arrow": "#6f8a5c",
+          "home": "#a5bb8f",
+          "swing": "#bcc59e"
+        }
+      },
+      "power-none": {
+        "role": "power",
+        "displayName": "Unowned Stock",
+        "canonical": "#C9C4B6",
+        "tonalRamp": [
+          "#2c2921",
+          "#4f4a3b",
+          "#726a55",
+          "#958b6f",
+          "#afa793",
+          "#c9c4b6",
+          "#e1ded6",
+          "#f4f3f0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "logotype": {
+        "displayName": "Logotype",
+        "purpose": "BRINK with the B reversed out of a red box; top bar 22px, cartouche 15px, box lid 88px/56px."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Phase title at the head of the player aid (28px on phones); modal titles 26px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Player-aid section heads after the red rulebook number; top-bar phase label."
+      },
+      "notation": {
+        "displayName": "Notation",
+        "purpose": "Order notation such as A TEX - MEX; drafts 17px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base reading text; rows 13px."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Help text, notes, tooltips."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase condensed keys, track labels, buttons (15px), result words."
+      },
+      "sea-name": {
+        "displayName": "Sea name",
+        "purpose": "Italic, 0.2em spaced sea names in sea-ink on the map; size set per zone."
+      }
+    },
+    "shadows": [
+      {
+        "name": "counter-edge",
+        "value": "solid offset fill, 1.3 units down-right (SVG); 2px right/bottom border on HTML counters",
+        "purpose": "Die-cut thickness on counters, control markers, the turn counter and the Crisis marker only."
+      },
+      {
+        "name": "tooltip",
+        "value": "0 6px 16px rgba(29, 29, 27, 0.16)",
+        "purpose": "Map hover card."
+      },
+      {
+        "name": "sheet",
+        "value": "0 -6px 18px rgba(29, 29, 27, 0.14)",
+        "purpose": "Phone bottom-sheet player aid."
+      },
+      {
+        "name": "modal",
+        "value": "0 18px 44px rgba(29, 29, 27, 0.3)",
+        "purpose": "Dialogs and the box lid, over a rgba(29, 29, 27, 0.5) backdrop."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-set",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All placement motion: counter lift, turn counter, modal, bottom sheet."
+      },
+      {
+        "name": "counter-lift",
+        "value": "0.18s",
+        "purpose": "Selected counter lifts 1.2 units up-left off its edge."
+      },
+      {
+        "name": "counter-set",
+        "value": "0.42s",
+        "purpose": "Turn counter drops onto the current half from translate(-3px,-7px) rotate(-6deg)."
+      },
+      {
+        "name": "sheet-in",
+        "value": "0.32s",
+        "purpose": "Modal rises 10px."
+      },
+      {
+        "name": "sheet-height",
+        "value": "0.3s",
+        "purpose": "Phone bottom sheet opening."
+      },
+      {
+        "name": "land-fill",
+        "value": "0.3s ease-out",
+        "purpose": "Province fills change between phases."
+      },
+      {
+        "name": "map-zoom",
+        "value": "300-600ms",
+        "purpose": "d3 zoom transitions (zoom 300, focus 500-600, fit 450)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "prefers-reduced-motion removes all animation and transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "phone",
+        "value": "860px"
+      },
+      {
+        "name": "small-phone",
+        "value": "420px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Die-cut Counters",
+      "kind": "custom",
+      "refersTo": "counter",
+      "description": "Square die-cut counters in each power's stock: black unit symbol, power code, 1.3-unit edge. Army, Fleet, Capital, Influence.",
+      "html": "<div class=\"ds-tray\"><svg class=\"ds-counter\" viewBox=\"-7.6 -7.6 16.5 16.5\" width=\"52\" height=\"52\" aria-hidden=\"true\"><rect x=\"-5.7\" y=\"-5.7\" width=\"14\" height=\"14\" fill=\"#566670\"/><rect x=\"-7\" y=\"-7\" width=\"14\" height=\"14\" fill=\"#8FAFC6\" stroke=\"#1d1d1b\" stroke-width=\"0.9\"/><g fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"0.95\" stroke-linejoin=\"round\"><rect x=\"-4.4\" y=\"-5.2\" width=\"8.8\" height=\"5.6\"/><path d=\"M-4.4 -5.2L4.4 0.4M4.4 -5.2L-4.4 0.4\"/></g><text x=\"0\" y=\"5.25\" text-anchor=\"middle\" font-family=\"Barlow Condensed, Archivo, sans-serif\" font-weight=\"700\" font-size=\"4.5\" letter-spacing=\"0.04em\" fill=\"#1d1d1b\">USA</text></svg><svg class=\"ds-counter\" viewBox=\"-7.6 -7.6 16.5 16.5\" width=\"52\" height=\"52\" aria-hidden=\"true\"><rect x=\"-5.7\" y=\"-5.7\" width=\"14\" height=\"14\" fill=\"#7b4a42\"/><rect x=\"-7\" y=\"-7\" width=\"14\" height=\"14\" fill=\"#D9776A\" stroke=\"#1d1d1b\" stroke-width=\"0.9\"/><g fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"0.95\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M-5 -1.6H5L3.3 0.9H-3.3Z\" fill=\"#1d1d1b\" stroke=\"none\"/><path d=\"M-2.4 -1.6V-3.4H0.9V-1.6M-0.6 -3.4V-5.1\"/></g><text x=\"0\" y=\"5.25\" text-anchor=\"middle\" font-family=\"Barlow Condensed, Archivo, sans-serif\" font-weight=\"700\" font-size=\"4.5\" letter-spacing=\"0.04em\" fill=\"#1d1d1b\">CHN</text></svg><svg class=\"ds-counter\" viewBox=\"-7.6 -7.6 16.5 16.5\" width=\"52\" height=\"52\" aria-hidden=\"true\"><rect x=\"-5.7\" y=\"-5.7\" width=\"14\" height=\"14\" fill=\"#82743a\"/><rect x=\"-7\" y=\"-7\" width=\"14\" height=\"14\" fill=\"#E6CB5A\" stroke=\"#1d1d1b\" stroke-width=\"0.9\"/><path d=\"M-4.75 0.8L-4.05 -1.2H-0.85L-0.15 0.8ZM0.15 0.8L0.85 -1.2H4.05L4.75 0.8ZM-2.3 -1.6L-1.6 -3.6H1.6L2.3 -1.6Z\" fill=\"#1d1d1b\"/><text x=\"0\" y=\"5.25\" text-anchor=\"middle\" font-family=\"Barlow Condensed, Archivo, sans-serif\" font-weight=\"700\" font-size=\"4.5\" letter-spacing=\"0.04em\" fill=\"#1d1d1b\">EU</text></svg><svg class=\"ds-counter\" viewBox=\"-7.6 -7.6 16.5 16.5\" width=\"52\" height=\"52\" aria-hidden=\"true\"><rect x=\"-5.7\" y=\"-5.7\" width=\"14\" height=\"14\" fill=\"#3A3833\"/><rect x=\"-7\" y=\"-7\" width=\"14\" height=\"14\" fill=\"#F4F1E8\" stroke=\"#1d1d1b\" stroke-width=\"0.9\"/><g fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"0.95\" stroke-linecap=\"round\"><path d=\"M-1.9 -2.3A2.6 2.6 0 0 1 1.9 -2.3M-3.5 -3.9A4.9 4.9 0 0 1 3.5 -3.9M0 -1.2V0.6\"/><circle cx=\"0\" cy=\"-1.4\" r=\"0.85\" fill=\"#1d1d1b\" stroke=\"none\"/></g><text x=\"0\" y=\"5.25\" text-anchor=\"middle\" font-family=\"Barlow Condensed, Archivo, sans-serif\" font-weight=\"700\" font-size=\"4.5\" letter-spacing=\"0.04em\" fill=\"#1d1d1b\">JPN</text></svg><svg class=\"ds-counter\" viewBox=\"-7.6 -7.6 16.5 16.5\" width=\"52\" height=\"52\" aria-hidden=\"true\"><rect x=\"-5.7\" y=\"-5.7\" width=\"14\" height=\"14\" fill=\"#506144\"/><rect x=\"-7\" y=\"-7\" width=\"14\" height=\"14\" fill=\"#84A56C\" stroke=\"#1d1d1b\" stroke-width=\"0.9\"/><g fill=\"none\" stroke=\"#1d1d1b\" stroke-width=\"0.95\" stroke-linejoin=\"round\"><rect x=\"-4.4\" y=\"-5.2\" width=\"8.8\" height=\"5.6\"/><path d=\"M-4.4 -5.2L4.4 0.4M4.4 -5.2L-4.4 0.4\"/></g><text x=\"0\" y=\"5.25\" text-anchor=\"middle\" font-family=\"Barlow Condensed, Archivo, sans-serif\" font-weight=\"700\" font-size=\"4.5\" letter-spacing=\"0.04em\" fill=\"#1d1d1b\">GLF</text></svg></div>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-tray{display:flex;gap:14px;padding:16px;background:#c9d6d9;border:2px solid #1d1d1b;outline:1px solid #1d1d1b;outline-offset:-7px;} .ds-counter{display:block;overflow:visible;transition:transform .18s cubic-bezier(.16,1,.3,1);cursor:pointer;} .ds-counter:hover{transform:translate(-1px,-1px);}"
+    },
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Square paper button, condensed caps, 1.5px ink rule.",
+      "html": "<button class=\"ds-btn\" type=\"button\">Pass</button>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:36px;padding:0 14px;border:1.5px solid var(--ink);border-radius:0;background:var(--paper-hi);color:var(--ink);font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;} .ds-btn:hover{background:var(--paper-2);} .ds-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;} "
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-filled for the main non-commit action.",
+      "html": "<button class=\"ds-btn ds-btn-primary\" type=\"button\">Next phase</button>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:36px;padding:0 14px;border:1.5px solid var(--ink);border-radius:0;background:var(--paper-hi);color:var(--ink);font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;} .ds-btn:hover{background:var(--paper-2);} .ds-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;} .ds-btn-primary{background:var(--ink);color:var(--paper-hi);} .ds-btn-primary:hover{background:var(--ink-2);}"
+    },
+    {
+      "name": "Commit Orders",
+      "kind": "button",
+      "refersTo": "button-commit",
+      "description": "The player's own action in spot red, with a pressable bottom lip. Anchors the aid column foot.",
+      "html": "<button class=\"ds-btn ds-commit\" type=\"button\">Commit orders</button>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:36px;padding:0 14px;border:1.5px solid var(--ink);border-radius:0;background:var(--paper-hi);color:var(--ink);font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;} .ds-btn:hover{background:var(--paper-2);} .ds-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;} .ds-commit{background:var(--red);color:var(--paper-hi);border:2px solid var(--red-deep);border-bottom-width:4px;height:52px;width:320px;font-size:20px;letter-spacing:.1em;} .ds-commit:hover{background:var(--red-hover);} .ds-commit:active{border-bottom-width:2px;transform:translateY(2px);} .ds-commit:focus-visible{outline-color:var(--ink);}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Square paper field with an ink rule.",
+      "html": "<input class=\"ds-field\" placeholder=\"Proposal\" />",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-field{height:34px;border:1.5px solid var(--ink);border-radius:0;background:var(--paper-hi);color:var(--ink);font-family:var(--f-ui);font-size:14px;padding:0 8px;} .ds-field::placeholder{color:var(--ink-3);} .ds-field:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}"
+    },
+    {
+      "name": "Turn Record Track",
+      "kind": "nav",
+      "refersTo": "turn-record-box",
+      "description": "Joined year boxes with Spring/Fall halves and a Winter cell; past halves hatched; the game-turn counter sits on the current half. Doubles as the replay scrubber.",
+      "html": "<ol class=\"ds-trt\"><li class=\"ds-year\"><span class=\"ds-yl\">2031</span><div class=\"ds-halves\"><button class=\"ds-half ds-past\"><span class=\"ds-hl\">S</span></button><button class=\"ds-half ds-past\"><span class=\"ds-hl\">F</span></button><button class=\"ds-half ds-w ds-past\"><span class=\"ds-hl\">W</span></button></div></li><li class=\"ds-year\"><span class=\"ds-yl\">2032</span><div class=\"ds-halves\"><button class=\"ds-half ds-past\"><span class=\"ds-hl\">S</span></button><button class=\"ds-half ds-past\"><span class=\"ds-hl\">F</span></button><button class=\"ds-half ds-w ds-past\"><span class=\"ds-hl\">W</span></button></div></li><li class=\"ds-year\"><span class=\"ds-yl\">2033</span><div class=\"ds-halves\"><button class=\"ds-half\"><span class=ds-tc>S</span><span class=\"ds-hl\">S</span></button><button class=\"ds-half\"><span class=\"ds-hl\">F</span></button><button class=\"ds-half ds-w\"><span class=\"ds-hl\">W</span></button></div></li><li class=\"ds-year\"><span class=\"ds-yl\">2034</span><div class=\"ds-halves\"><button class=\"ds-half\"><span class=\"ds-hl\">S</span></button><button class=\"ds-half\"><span class=\"ds-hl\">F</span></button><button class=\"ds-half ds-w\"><span class=\"ds-hl\">W</span></button></div></li><li class=\"ds-year\"><span class=\"ds-yl\">2035</span><div class=\"ds-halves\"><button class=\"ds-half\"><span class=\"ds-hl\">S</span></button><button class=\"ds-half\"><span class=\"ds-hl\">F</span></button><button class=\"ds-half ds-w\"><span class=\"ds-hl\">W</span></button></div></li></ol>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-trt{list-style:none;margin:0;padding:8px 8px 8px 9.5px;display:flex;background:var(--buff);} .ds-year{flex:1 1 0;min-width:66px;height:46px;margin-left:-1.5px;border:1.5px solid var(--ink);background:var(--paper);display:grid;grid-template-rows:15px 1fr;} .ds-yl{padding:1px 5px 0;font-family:var(--f-cond);font-weight:600;font-size:13px;line-height:14px;} .ds-halves{display:grid;grid-template-columns:1fr 1fr 15px;border-top:1px solid var(--rule-soft);} .ds-half{position:relative;border:0;border-left:1px dashed var(--rule-soft);background:transparent;padding:0;cursor:pointer;} .ds-half:first-child{border-left:0;} .ds-w{border-left:1px solid var(--ink);} .ds-half:hover{background-color:var(--paper-hi);} .ds-half:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;} .ds-past{background-image:repeating-linear-gradient(45deg,rgba(29,29,27,.2) 0 1px,transparent 1px 4px);} .ds-hl{position:absolute;left:3px;bottom:2px;font-family:var(--f-cond);font-weight:600;font-size:10px;letter-spacing:.06em;color:var(--ink-3);} .ds-tc{position:absolute;z-index:1;left:50%;top:50%;width:26px;height:18px;margin:-10px 0 0 -14px;display:grid;place-items:center;background:var(--red);color:var(--paper);border-right:2px solid var(--red-deep);border-bottom:2px solid var(--red-deep);font-family:var(--f-cond);font-weight:700;font-size:12px;}"
+    },
+    {
+      "name": "Crisis Track",
+      "kind": "custom",
+      "refersTo": "crisis-box",
+      "description": "Player-aid §10: boxes 0 to 10, thresholds printed in red tints, a die-cut marker on the current value.",
+      "html": "<section class=\"ds-aid\"><h3 class=\"ds-aid-h\"><span class=\"ds-ref\">10</span>Crisis track</h3><ol class=\"ds-ct\"><li class=\"ds-cb\">0</li><li class=\"ds-cb\">1</li><li class=\"ds-cb\">2</li><li class=\"ds-cb\">3</li><li class=\"ds-cb\">4</li><li class=\"ds-cb\">5</li><li class=\"ds-cb t6 step\">6<span class=ds-cm>6</span></li><li class=\"ds-cb t6\">7</li><li class=\"ds-cb t8 step\">8</li><li class=\"ds-cb t8\">9</li><li class=\"ds-cb t10 step\">10</li></ol></section>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-aid{padding:13px 20px 15px;background:var(--paper);border-bottom:1.5px solid var(--ink);width:352px;} .ds-aid-h{display:flex;gap:8px;margin:0 0 9px;font-family:var(--f-cond);font-weight:700;font-size:18px;letter-spacing:.04em;text-transform:uppercase;} .ds-ref{color:var(--red);} .ds-ct{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(11,1fr);border:1.5px solid var(--ink);} .ds-cb{position:relative;height:36px;border-left:1px solid var(--ink);display:grid;place-items:center;font-family:var(--f-cond);font-weight:600;font-size:15px;background:var(--paper-hi);} .ds-cb:first-child{border-left:0;} .ds-cb.step{border-left-width:3px;} .t6{background:var(--red-tint-2);} .t8{background:var(--red-tint);} .t10{background:var(--red);color:var(--paper-hi);} .ds-cm{position:absolute;inset:3px 3px 3px 2px;display:grid;place-items:center;background:var(--red);color:var(--paper-hi);border-right:2px solid var(--red-deep);border-bottom:2px solid var(--red-deep);font-weight:700;font-size:17px;}"
+    },
+    {
+      "name": "Player-aid Section",
+      "kind": "card",
+      "refersTo": "aid-card",
+      "description": "A numbered player-aid section: red rulebook number, condensed-caps head, dotted-rule rows with a 96px key column.",
+      "html": "<section class=\"ds-aid\"><h3 class=\"ds-aid-h\"><span class=\"ds-ref\">9</span>Security</h3><div class=\"ds-row\"><span class=\"ds-k\">Umbrellas</span><span>USA over JPN, GLF</span></div><div class=\"ds-row\"><span class=\"ds-k\">Closed <span class=\"ds-x\">§8</span></span><span class=\"ds-muted\">All chokepoints open</span></div></section>",
+      "css": ":host{--paper:#f2eee2;--paper-2:#e8e2d1;--paper-hi:#fbf9f3;--ink:#1d1d1b;--ink-2:#47433b;--ink-3:#635d52;--rule-soft:#a49e90;--red:#b3261e;--red-deep:#6e1510;--red-hover:#9c2019;--red-tint:#ebc9c3;--red-tint-2:#f3e0dc;--edge-ink:#000;--buff:#e4dcc2;--f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;--f-cond:'Barlow Condensed','Archivo','Arial Narrow',sans-serif;} .ds-aid{padding:13px 20px 15px;background:var(--paper);border-bottom:1.5px solid var(--ink);width:352px;font-family:var(--f-ui);font-size:13px;color:var(--ink);} .ds-aid-h{display:flex;gap:8px;margin:0 0 9px;font-family:var(--f-cond);font-weight:700;font-size:18px;letter-spacing:.04em;text-transform:uppercase;} .ds-ref{color:var(--red);} .ds-row{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:6px 0;border-top:1px dotted var(--rule-soft);} .ds-aid-h+.ds-row{border-top:0;padding-top:0;} .ds-k{font-family:var(--f-cond);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);} .ds-x{font-size:12px;color:var(--ink-3);letter-spacing:0;} .ds-muted{color:var(--ink-3);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Wargame Box",
+    "overview": "Brink is the 1970s Avalon Hill / SPI boxed wargame it descends from, printed and played on screen. The board is an offset-printed map sheet: flat blue-grey sea, buff and cream land stock, power homes as flat printed tints, black coastlines and dark-brown borders, italic letter-spaced sea names, condensed-caps lettering. Units are square die-cut counters in each power's printed stock, carrying a black NATO-style symbol and the power code, with a sliver of counter thickness showing at the bottom-right. Everything around the map is a player-aid card: black rules, numbered printed tracks, rulebook section numbers.\n\nThe density is a wargame's: a lot of state at once, held together by rules and type rather than by cards and whitespace. There is one theme, the light printed sheet (`color-scheme: light`; no dark mode). Corners are square everywhere. Depth is physical only where a physical object exists (a counter on the sheet); everything else is flat ink on paper.\n\nThe world explicitly rejects the flat SaaS dashboard that online Diplomacy boards default to: white cards, pill chips, Inter, big-number tiles.",
+    "keyCharacteristics": [
+      "Printed map sheet with a double-rule neatline and a title cartouche; real Natural Earth geometry, never redrawn.",
+      "Die-cut counters (14-unit square, 1.3-unit edge) used identically on the map, in the player aid, the key and the start screen.",
+      "Every counter and control marker prints its power code; ownership never relies on colour alone.",
+      "Turn record track across the top: the game's clock and the replay scrubber.",
+      "Player-aid column of numbered sections keyed to the rulebook.",
+      "Two families only: Archivo (UI, body, logotype) and Barlow Condensed (all lettering, labels, numbers, notation).",
+      "Red is a spot colour with a job, never decoration."
+    ],
+    "rules": [
+      {
+        "name": "The Spot Red Rule",
+        "body": "Red marks the player's own action and Crisis danger. Beyond that it appears only as printed spot colour on the logotype box and rulebook section numbers. Other powers, failures and errors never get red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Code-on-Every-Counter Rule",
+        "body": "No power is ever shown by colour alone. Counters, control markers and swatches all print the three-letter power code.",
+        "section": "colors"
+      },
+      {
+        "name": "The Derived Tint Rule",
+        "body": "Homes, swing states, edges and arrows are computed from the seven stocks by `mix()`. Add a power by adding one stock, never a hand-picked tint.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Family Rule",
+        "body": "Archivo and Barlow Condensed only. Numbers that count (supply centres, scores, tally, Crisis) set in condensed 700 with tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Spaced Sea Rule",
+        "body": "Sea names are italic and widely spaced (0.2em); land names are upright. The difference reads sea from land without colour.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thickness-Is-Physical Rule",
+        "body": "A solid offset edge appears only on things that are counters: units, control markers, the game-turn counter, the Crisis marker. Don't use an offset edge to make a button or card look raised (the Commit button's 4px bottom lip, which presses to 2px, is the only pressable exception).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do draw every unit, swatch and marker with the shared counter drawing in `src/counter.ts`, printing the power code.",
+      "Do derive every power tint from the seven stocks in `src/theme.ts`.",
+      "Do head every player-aid section with its rulebook section number in red and condensed caps.",
+      "Do set lettering, labels, buttons, tracks and order notation in Barlow Condensed caps, with tabular figures for counts.",
+      "Do separate with ink rules (3 / 2 / 1.5 / 1px dotted) and keep corners square.",
+      "Do keep the map's projected geometry exactly as supplied in `board.json`, printed to the neatline.",
+      "Do keep the light printed sheet as the only theme."
+    ],
+    "donts": [
+      "Don't use white cards, pill chips, Inter or big-number tiles; this is the SaaS dashboard the world refuses.",
+      "Don't round corners on anything.",
+      "Don't use red for another power, a failed order, or general emphasis.",
+      "Don't show ownership by colour alone.",
+      "Don't give a non-counter element a die-cut edge to fake depth.",
+      "Don't use Unicode glyphs as icons; draw them as SVG at the controls' stroke weight."
+    ]
+  }
+}

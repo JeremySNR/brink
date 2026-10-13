@@ -36,6 +36,13 @@ class Rules:
     contested_supply: bool = True    # a swing state with a foreign unit in it gives its owner no supply
 
 
+def _and(items) -> str:
+    items = list(items)
+    if len(items) <= 1:
+        return "".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
 SEASON_CODE = {"spring": "S", "fall": "F", "winter": "W"}
 
 
@@ -256,16 +263,24 @@ class Game:
         delta = (baseline + len(self.year_closed) + (1 if self.year_clash else 0)
                  - total_commons // rules.commons_per_point)
         self.crisis = max(0, self.crisis + delta)
-        parts = [f"baseline +{baseline}"]
+        parts = [f"+{baseline} for the year"]
         if self.year_closed:
-            parts.append(f"chokepoints closed +{len(self.year_closed)}")
+            n_closed = len(self.year_closed)
+            parts.append(f"+{n_closed} for {n_closed} closed chokepoint" + ("s" if n_closed > 1 else ""))
         if self.year_clash:
-            parts.append("nuclear powers clashed +1")
-        if total_commons // rules.commons_per_point:
-            parts.append(f"commons -{total_commons // rules.commons_per_point}")
-        events.append(f"Crisis {before} -> {self.crisis} ({', '.join(parts)})")
+            parts.append("+1 because nuclear powers fought")
+        relief = total_commons // rules.commons_per_point
+        if relief:
+            parts.append(f"\u2212{relief} for {total_commons} Commons points")
+        if self.crisis > before:
+            head = f"The Crisis track rises from {before} to {self.crisis}"
+        elif self.crisis < before:
+            head = f"The Crisis track falls from {before} to {self.crisis}"
+        else:
+            head = f"The Crisis track holds at {self.crisis}"
+        events.append(f"{head}: {', '.join(parts)}.")
         if self.crisis >= rules.collapse:
-            events.append("Collapse: the Crisis track reached %d; every power scores 0" % rules.collapse)
+            events.append(f"Collapse. The Crisis track reached {rules.collapse} and every power scores 0.")
             rec["events"] = events
             rec["orders"] = orders_rec
             self.phases.append(rec)
@@ -345,7 +360,7 @@ class Game:
                 proposal = od.resolution
         info = {"chair": chair, "proposal": proposal.text() if proposal else None, "votes": {}, "passed": False}
         if proposal is None:
-            events.append(f"Assembly: {self.name(chair)} chairs and proposes nothing")
+            events.append(f"The Assembly meets; {self.name(chair)}, in the chair, proposes nothing.")
             return info
         yes = no = 0
         vetoed_by = []
@@ -376,17 +391,25 @@ class Game:
                 vetoed_by.append(p)
                 self.vetoes_used.add(p)
         if vetoed_by:
-            events.append(f"Assembly: {proposal.text()} vetoed by {', '.join(self.name(p) for p in vetoed_by)}")
+            events.append(f"{_and(self.name(p) for p in vetoed_by)} veto{'es' if len(vetoed_by) == 1 else ''} "
+                          f"{self.describe(proposal)} in the Assembly.")
         elif yes > no:
             info["passed"] = True
             self.pending = proposal
-            events.append(f"Assembly passes {proposal.text()} ({yes}-{no})")
+            events.append(f"The Assembly passes {self.describe(proposal)}, {yes} votes to {no}.")
             if proposal.kind == "recognition" and self.ownership.get(proposal.arg):
                 events.append(f"{self.name(proposal.arg)} is recognised and becomes unaligned")
                 self.ownership[proposal.arg] = None
         else:
-            events.append(f"Assembly rejects {proposal.text()} ({yes}-{no})")
+            events.append(f"The Assembly rejects {self.describe(proposal)}, {yes} votes to {no}.")
         return info
+
+    def describe(self, res: Resolution) -> str:
+        """A resolution in plain words: 'a sanctions regime on China'."""
+        arg = self.name(res.arg) if res.arg else ""
+        return {"sanctions": f"a sanctions regime on {arg}", "peacekeeping": f"peacekeeping in {arg}",
+                "navigation": f"freedom of navigation at {arg}", "accord": "a climate accord",
+                "recognition": f"recognition of {arg}"}.get(res.kind, res.text())
 
     def build_options(self, power: str) -> list[Build]:
         """Every build site open to `power` right now (before any build this Winter)."""
@@ -447,8 +470,9 @@ class Game:
         rules = self.rules
         c = self.supply(power)
         if c < self.centres(power):
-            events.append(f"{self.name(power)} gets no supply from contested "
-                          + ", ".join(self.name(x) for x in self.contested(power)))
+            states = [self.name(x) for x in self.contested(power)]
+            events.append(f"{_and(states)} {'is' if len(states) == 1 else 'are'} contested, so "
+                          f"{self.name(power)} gets no supply from {'it' if len(states) == 1 else 'them'} this Winter.")
         mine = self.units_of(power)
         n = len(mine)
         if n > c:
@@ -483,8 +507,11 @@ class Game:
         accord = 1 if self.effects.climate_accord and power not in self.year_commons_issued else 0
         builds = max(0, c - n - sanctions - recession - accord)
         if c - n > 0 and builds < c - n:
-            events.append(f"{self.name(power)} loses {c - n - builds} build(s) "
-                          f"(sanctions {sanctions}, recession {recession}, accord {accord})")
+            lost = c - n - builds
+            why = [w for w, k in (("sanctions", sanctions), ("the recession", recession),
+                                  ("the climate accord", accord)) if k]
+            events.append(f"{self.name(power)} loses {lost} build{'s' if lost > 1 else ''}"
+                          + (f" to {_and(why)}." if why else "."))
         if builds == 0:
             return
         texts = self.players[power].adjust(self, power, builds) or []

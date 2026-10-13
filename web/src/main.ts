@@ -1,51 +1,26 @@
-import "@fontsource-variable/inter";
+import "@fontsource/archivo/400.css";
+import "@fontsource/archivo/500.css";
+import "@fontsource/archivo/600.css";
+import "@fontsource/archivo/700.css";
+import "@fontsource/archivo/800.css";
+import "@fontsource/barlow-condensed/500.css";
+import "@fontsource/barlow-condensed/600.css";
+import "@fontsource/barlow-condensed/700.css";
+import "@fontsource/barlow-condensed/500-italic.css";
+import "@fontsource/barlow-condensed/600-italic.css";
 import "./style.css";
 import { BoardView } from "./board";
+import { codeCounter, counterSvg } from "./counter";
 import { Overlay } from "./overlay";
 import { Panel } from "./panel";
 import { PlayController } from "./play";
-import { POWER_COLOURS, POWER_ORDER, UNIT_NAMES, powerColour } from "./theme";
+import { BUFF, POWER_COLOURS, RED, UNIT_NAMES, arrowInk, homeFill, swingFill } from "./theme";
 import type { Board, GameRecord, MapData, Phase, Unit } from "./types";
 import { html, loadJSON, normaliseRecord, seasonLabel, svg } from "./util";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
-// ------------------------------------------------------------------ theme
-const THEME_KEY = "brink.theme";
-function initTheme() {
-  let saved: string | null = null;
-  try {
-    saved = localStorage.getItem(THEME_KEY);
-  } catch {
-    /* storage unavailable */
-  }
-  const q = new URLSearchParams(location.search).get("theme");
-  if (q === "light" || q === "dark") saved = q;
-  const sys = window.matchMedia("(prefers-color-scheme: dark)");
-  const apply = () => {
-    const t = saved === "light" || saved === "dark" ? saved : sys.matches ? "dark" : "light";
-    document.documentElement.dataset.theme = t;
-    const btn = document.getElementById("theme-toggle");
-    if (btn) {
-      btn.setAttribute("aria-pressed", String(t === "dark"));
-      btn.setAttribute("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-  };
-  sys.addEventListener("change", apply);
-  apply();
-  return (next: "light" | "dark") => {
-    saved = next;
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {
-      /* ignore */
-    }
-    apply();
-  };
-}
-
 async function main() {
-  const setTheme = initTheme();
   const params = new URLSearchParams(location.search);
   const playMode = params.has("play");
   const gameUrl = params.get("game") || "sample-game.json";
@@ -62,7 +37,7 @@ async function main() {
     return;
   }
   rec = normaliseRecord(rec, map);
-  $("#game-name").textContent = playMode ? "Play" : gameUrl === "sample-game.json" ? "Sample game" : gameUrl.split("/").slice(-2).join("/");
+  $("#game-name").textContent = playMode ? "Play against six bots" : gameUrl === "sample-game.json" ? "Sample game" : `Replay: ${gameUrl.split("/").pop()!.replace(/\.json$/, "")}`;
   document.body.classList.toggle("play-mode", playMode);
 
   const view = new BoardView($("#map"), board, map);
@@ -158,21 +133,17 @@ async function main() {
     for (const pid of reach) {
       const p = board.provinces[pid];
       if (!p) continue;
-      const el = svg("path", { d: p.d, class: "reach" }, L);
-      el.style.setProperty("--c", powerColour(selected.power));
+      svg("path", { d: p.d, class: "reach ink" }, L);
     }
     const here = board.provinces[selected.at];
-    if (here) {
-      const el = svg("path", { d: here.d, class: "reach origin" }, L);
-      el.style.setProperty("--c", powerColour(selected.power));
-    }
+    if (here) svg("path", { d: here.d, class: "reach ink origin" }, L);
     info.hidden = false;
     info.replaceChildren();
-    const sw = html("span", { class: "dot" }, info);
-    sw.style.background = powerColour(selected.power);
-    html("strong", {}, info, ` ${map.powers[selected.power]?.adjective ?? selected.power} ${UNIT_NAMES[selected.type]} · ${map.provinces[selected.at]?.name}`);
-    html("span", { class: "muted" }, info, ` — ${reach.size} reachable ${selected.type === "I" ? "(2 steps)" : selected.type === "C" ? "(land, hops, routes)" : ""}`);
-    const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Clear selection" }, info, "×");
+    info.append(counterSvg(selected.type, selected.power, 24));
+    html("strong", {}, info, `${map.powers[selected.power]?.adjective ?? selected.power} ${UNIT_NAMES[selected.type]} in ${map.provinces[selected.at]?.name}`);
+    html("span", { class: "hint" }, info, `${reach.size} provinces in reach${selected.type === "I" ? " (2 steps)" : selected.type === "C" ? " (land, hops, routes)" : ""}`);
+    const x = html("button", { class: "x-btn", type: "button", "aria-label": "Clear selection" }, info);
+    x.append(xIcon());
     x.addEventListener("click", () => {
       selected = null;
       overlay.selected = null;
@@ -209,16 +180,18 @@ async function main() {
     let type = "";
     if (mp.impassable) type = "Impassable";
     else if (mp.kind === "sea") type = mp.chokepoint ? "Chokepoint" : "Sea zone";
-    else if (mp.centre === "home") type = `Home of ${map.powers[mp.home_of!]?.name}${owner && owner !== mp.home_of ? ` · held by ${owner}` : ""}`;
-    else if (mp.centre === "swing") type = owner ? `Swing state · aligned to ${map.powers[owner]?.name}` : "Swing state · unaligned";
+    else if (mp.centre === "home") type = `Home of ${map.powers[mp.home_of!]?.name}${owner && owner !== mp.home_of ? `, held by ${map.powers[owner]?.name ?? owner}` : ""}`;
+    else if (mp.centre === "swing") type = owner ? `Swing state aligned to ${map.powers[owner]?.name}` : "Swing, unaligned";
     else type = "Open land (no centre)";
     const t = html("div", { class: "tt-type" }, d);
-    if (owner || mp.home_of) {
-      const dt = html("span", { class: "dot" }, t);
-      dt.style.background = powerColour(owner ?? mp.home_of);
-    }
+    if (owner || mp.home_of) t.append(codeCounter(owner ?? mp.home_of!, 16));
     t.append(document.createTextNode(type));
     if (mp.opens && ph.year < mp.opens) html("div", { class: "tt-note" }, d, `Opens in ${mp.opens}`);
+    const occupier = mp.centre === "swing" && owner
+      ? ph.units.find((x) => x.at.split("/")[0] === pid && x.power !== owner && !x.dislodged)?.power
+      : undefined;
+    if (occupier) html("div", { class: "tt-note warn" }, d,
+      `Contested by ${map.powers[occupier]?.name ?? occupier}: pays ${map.powers[owner!]?.name ?? owner} no supply this Winter`);
     const closed = ph.closed?.[pid];
     if (closed) html("div", { class: "tt-note warn" }, d, `Closed${closed.length ? ` to ${closed.join(", ")}` : ""}`);
     if (!mp.impassable) {
@@ -231,16 +204,15 @@ async function main() {
         const row = html("div", { class: "tt-slot" }, slots);
         html("span", { class: "k" }, row, name);
         if (u) {
-          const dt = html("span", { class: "dot" }, row);
-          dt.style.background = powerColour(u.power);
-          row.append(document.createTextNode(` ${map.powers[u.power]?.adjective ?? u.power} ${UNIT_NAMES[u.type]}`));
-        } else html("span", { class: "muted" }, row, "empty");
+          row.append(counterSvg(u.type, u.power, 18));
+          html("span", {}, row, `${map.powers[u.power]?.adjective ?? u.power} ${UNIT_NAMES[u.type]}`);
+        } else html("span", { class: "muted" }, row, "Empty");
       }
       const army = map.adj.army[pid]?.length ?? 0;
       const any = map.adj.any[pid] ?? [];
       const seas = any.filter((n) => map.provinces[n]?.kind === "sea").length;
       const lands = any.length - seas;
-      html("div", { class: "tt-foot" }, d, `${any.length} neighbours · ${lands} land${army !== lands ? ` (${army} by army)` : ""} · ${seas} sea`);
+      html("div", { class: "tt-foot" }, d, `${any.length} neighbours: ${lands} land${army !== lands ? ` (${army} by army)` : ""}, ${seas} sea`);
     }
     return d;
   }
@@ -248,12 +220,11 @@ async function main() {
   function unitTip(u: Unit): HTMLElement {
     const d = html("div", {});
     const h = html("div", { class: "tt-title" }, d);
-    const dt = html("span", { class: "dot" }, h);
-    dt.style.background = powerColour(u.power);
-    html("span", {}, h, ` ${map.powers[u.power]?.adjective ?? u.power} ${UNIT_NAMES[u.type]}`);
-    html("div", { class: "tt-type" }, d, `in ${map.provinces[u.at]?.name}${u.dislodged ? " · dislodged" : ""}`);
+    h.append(counterSvg(u.type, u.power, 20));
+    html("span", {}, h, `${map.powers[u.power]?.adjective ?? u.power} ${UNIT_NAMES[u.type]}`);
+    html("div", { class: "tt-type" }, d, `in ${map.provinces[u.at]?.name}${u.dislodged ? ", dislodged" : ""}`);
     const o = rec.phases[current].orders.find((x) => x.unit?.at === u.at && x.unit?.type === u.type && x.power === u.power);
-    if (o) html("code", { class: "tt-order" }, d, `${o.text}${o.result !== "ok" ? `  (${o.result})` : ""}`);
+    if (o) html("div", { class: "tt-order notation" }, d, `${o.text}${o.result !== "ok" ? `  (${o.result})` : ""}`);
     const foot = !isLive() ? "Click to show where it can reach" : u.power === play!.power ? "Click to give it an order" : "";
     if (foot) html("div", { class: "tt-foot" }, d, foot);
     return d;
@@ -278,37 +249,86 @@ async function main() {
     }
   });
 
-  // ---------------------------------------------------------------- timeline
-  const scrub = $("#scrubber") as HTMLInputElement;
-  const ticks = $("#ticks");
-  function buildTicks() {
-    ticks.replaceChildren();
-    scrub.max = String(rec.phases.length - 1);
-    const n = rec.phases.length;
-    // long games: label only years (spring ticks) so the labels don't collide
-    const dense = n > 28;
+  // ---------------------------------------------------------------- turn record track
+  // Boxes for each year, split into Spring and Fall halves with Winter at the year's end. The track is the
+  // replay timeline: clicking a half jumps to its first phase; ←/→ step every phase (retreats, winter).
+  const trt = $("#trt-years");
+  type Cell = { el: HTMLButtonElement; idx: number[]; key: string };
+  let cells: Cell[] = [];
+  let endYear = 2040;
+  const cellKey = (ph: Phase) => `${ph.year}-${ph.kind === "winter" ? "w" : ph.season === "fall" ? "f" : "s"}`;
+  function buildTrack() {
+    trt.replaceChildren();
+    cells = [];
+    const first = rec.phases[0]?.year ?? map.start.year;
+    const lastPh = rec.phases[rec.phases.length - 1];
+    const resultYear = (rec.result as { year?: number } | null)?.year;
+    const end = Math.max(play?.lastYear() ?? (resultYear && rec.result?.kind === "time" ? resultYear : endYear), lastPh?.year ?? first);
+    const byKey = new Map<string, number[]>();
     rec.phases.forEach((ph, i) => {
-      const live = i === liveIndex;
-      const label = live ? "Now" : ph.kind === "winter" ? `W${String(ph.year).slice(2)}` : ph.kind === "retreat" ? "R" : `${ph.season[0].toUpperCase()}${String(ph.year).slice(2)}`;
-      const b = html("button", {
-        class: `tick ${ph.kind}${live ? " live" : ""}${dense && !live && !(ph.kind === "movement" && ph.season === "spring") ? " minor" : ""}`, type: "button",
-        "aria-label": `${seasonLabel(ph.season, ph.kind)} ${ph.year}${live ? " (your decision)" : ""}`, title: `${seasonLabel(ph.season, ph.kind)} ${ph.year}${live ? " · your decision" : ""}`,
-      }, ticks);
-      b.style.left = `${n === 1 ? 50 : (i / (n - 1)) * 100}%`;
-      html("span", { class: "tick-label" }, b, label);
-      b.addEventListener("click", () => go(i));
+      const k = cellKey(ph);
+      if (!byKey.has(k)) byKey.set(k, []);
+      byKey.get(k)!.push(i);
     });
+    const finalYear = rec.result ? (resultYear ?? lastPh?.year) : null;
+    for (let y = first; y <= Math.max(end, first); y++) {
+      const li = html("li", { class: `year${y === end ? " end" : ""}${finalYear === y ? " final" : ""}` }, trt);
+      const lab = html("span", { class: "yl" }, li);
+      html("span", { class: "num" }, lab, String(y));
+      if (y === end) html("span", { class: "end-mark" }, lab, "End");
+      const halves = html("div", { class: "halves" }, li);
+      for (const [h, name, short] of [["s", "Spring", "Spr"], ["f", "Fall", "Fall"], ["w", "Winter", "W"]] as const) {
+        const key = `${y}-${h}`;
+        const idx = byKey.get(key) ?? [];
+        const b = html("button", {
+          class: `half h-${h}${idx.length ? "" : " empty"}`, type: "button",
+          "aria-label": `${name} ${y}`, title: `${name} ${y}`,
+        }, halves) as HTMLButtonElement;
+        html("span", { class: "hl" }, b, short);
+        b.disabled = !idx.length;
+        b.addEventListener("click", () => { setPlaying(false); if (idx.length) go(idx[0]); });
+        cells.push({ el: b, idx, key });
+      }
+    }
   }
-  buildTicks();
+
+  function paintTrack() {
+    const curKey = rec.phases[current] ? cellKey(rec.phases[current]) : "";
+    const liveKey = liveIndex !== null ? cellKey(rec.phases[liveIndex]) : null;
+    for (const c of cells) {
+      const isCur = c.key === curKey;
+      c.el.classList.toggle("past", c.idx.length > 0 && c.idx[c.idx.length - 1] < current);
+      c.el.classList.toggle("current", isCur);
+      c.el.classList.toggle("live", c.key === liveKey);
+      if (isCur) c.el.setAttribute("aria-current", "step");
+      else c.el.removeAttribute("aria-current");
+      c.el.querySelector(".turn-ctr")?.remove();
+      c.el.querySelector(".now-flag")?.remove();
+      if (c.key === liveKey && !isCur) html("span", { class: "now-flag" }, c.el, "Now");
+      if (isCur) {
+        const ph = rec.phases[current];
+        const live = current === liveIndex;
+        const label = live ? "Now" : ph.kind === "winter" ? "W" : ph.kind === "retreat" ? "Ret" : ph.season === "fall" ? "Fall" : "Spr";
+        html("span", { class: `turn-ctr${live ? " you" : ""}`, "aria-hidden": "true" }, c.el, label);
+        // keep the counter in view on narrow screens (the track scrolls sideways)
+        const box = trt.getBoundingClientRect();
+        const r = c.el.getBoundingClientRect();
+        if (r.left < box.left || r.right > box.right) trt.scrollLeft += r.left - box.left - box.width / 2 + r.width / 2;
+      }
+    }
+  }
+  buildTrack();
+  {
+    const y0 = rec.phases[0]?.year ?? map.start.year;
+    $("#cartouche-years").textContent = `The world, ${y0} to ${Math.max(2040, rec.phases[rec.phases.length - 1]?.year ?? y0)}`;
+  }
 
   function go(i: number) {
     current = Math.max(0, Math.min(rec.phases.length - 1, i));
     const ph: Phase = rec.phases[current];
-    scrub.value = String(current);
-    scrub.setAttribute("aria-valuetext", `${seasonLabel(ph.season, ph.kind)} ${ph.year}`);
     $("#phase-label").textContent = `${seasonLabel(ph.season, ph.kind)} ${ph.year}`;
-    $("#sheet-summary").textContent = `${seasonLabel(ph.season, ph.kind)} ${ph.year} · Crisis ${ph.crisis}`;
-    ticks.querySelectorAll(".tick").forEach((t, k) => t.classList.toggle("active", k === current));
+    $("#sheet-summary").textContent = `${seasonLabel(ph.season, ph.kind)} ${ph.year}, Crisis ${ph.crisis}`;
+    paintTrack();
     ($("#prev") as HTMLButtonElement).disabled = current === 0;
     ($("#next") as HTMLButtonElement).disabled = current === rec.phases.length - 1;
     if (selected && !ph.units.some((u) => u.at === selected!.at && u.type === selected!.type)) {
@@ -323,7 +343,6 @@ async function main() {
       showReach();
       play!.renderPanel($("#panel-body"));
       play!.paint();
-      $("#phase-label").textContent = `${seasonLabel(ph.season, ph.kind)} ${ph.year} · your move`;
       return;
     }
     play?.leaveLive();
@@ -357,10 +376,9 @@ async function main() {
   playBtn.addEventListener("click", () => setPlaying(playBtn.getAttribute("aria-pressed") !== "true"));
   $("#prev").addEventListener("click", () => { setPlaying(false); go(current - 1); });
   $("#next").addEventListener("click", () => { setPlaying(false); go(current + 1); });
-  scrub.addEventListener("input", () => { setPlaying(false); go(Number(scrub.value)); });
   document.addEventListener("keydown", (ev) => {
     const tag = (ev.target as HTMLElement)?.tagName;
-    if (tag === "INPUT" && (ev.target as HTMLInputElement).type !== "range") return;
+    if (tag === "INPUT" && (ev.target as HTMLInputElement).type !== "checkbox") return;
     if (tag === "SELECT" || tag === "TEXTAREA") return;
     if (play && play.onKey(ev, isLive())) return;
     if (ev.key === "ArrowLeft") { ev.preventDefault(); setPlaying(false); go(current - 1); }
@@ -377,23 +395,20 @@ async function main() {
   $("#zoom-in").addEventListener("click", () => view.zoomBy(1.6));
   $("#zoom-out").addEventListener("click", () => view.zoomBy(1 / 1.6));
   $("#zoom-reset").addEventListener("click", () => view.fit());
-  $("#theme-toggle").addEventListener("click", () => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
-    view.paintPhase(rec.phases[current]);
-  });
   const legend = $("#legend");
-  $("#legend-toggle").addEventListener("click", () => {
-    const open = legend.classList.toggle("open");
+  const setLegend = (open: boolean) => {
+    legend.classList.toggle("open", open);
     $("#legend-toggle").setAttribute("aria-expanded", String(open));
-  });
+  };
+  // the key starts open where the sheet has room for it
+  // (play mode zooms to the player's homes, where an open key would cover their own counters)
+  setLegend(!playMode && window.innerWidth >= 1100 && window.innerHeight >= 760);
+  $("#legend-toggle").addEventListener("click", () => setLegend(!legend.classList.contains("open")));
   buildLegend($("#legend-body"));
   const sheet = $("#panel");
   $("#sheet-handle").addEventListener("click", () => {
     const open = sheet.classList.toggle("open");
     $("#sheet-handle").setAttribute("aria-expanded", String(open));
-  });
-  new MutationObserver(() => view.paintPhase(rec.phases[current])).observe(document.documentElement, {
-    attributes: true, attributeFilter: ["data-theme"],
   });
 
   const start = rec.phases.findIndex((p) => p.name === location.hash.slice(1));
@@ -410,7 +425,7 @@ async function main() {
           rec.phases.push(live);
           liveIndex = rec.phases.length - 1;
         }
-        buildTicks();
+        buildTrack();
         go(goTo ?? rec.phases.length - 1);
       },
       go: (i) => go(i),
@@ -428,87 +443,92 @@ async function main() {
   requestAnimationFrame(() => setTimeout(() => document.body.classList.add("ready"), 200));
 }
 
+function xIcon(): SVGSVGElement {
+  const s = svg("svg", { viewBox: "0 0 16 16", width: 14, height: 14, "aria-hidden": "true" });
+  svg("path", { d: "M4 4l8 8M12 4l-8 8" }, s);
+  return s;
+}
+
+/** Terrain and unit key, printed in the map's corner. */
 function buildLegend(root: HTMLElement) {
   const sec = (title: string) => {
     const s = html("div", { class: "legend-sec" }, root);
     html("h4", {}, s, title);
     return html("ul", {}, s);
   };
-  const icon = (draw: (g: SVGGElement) => void, w = 26, h = 18) => {
+  const icon = (draw: (g: SVGGElement) => void, w = 26, h = 16) => {
     const s = svg("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
-    const g = svg("g", {}, s);
-    draw(g);
+    draw(svg("g", {}, s));
     return s;
   };
-  const item = (ul: HTMLElement, ic: SVGSVGElement, label: string) => {
+  const item = (ul: HTMLElement, ic: Element, label: string) => {
     const li = html("li", {}, ul);
     li.append(ic);
     html("span", {}, li, label);
   };
-  const col = POWER_COLOURS.USA;
-  const units = sec("Units");
-  const tok = (t: string) => (g: SVGGElement) => {
-    const r = 6.2;
-    const cx = 13, cy = 9;
-    if (t === "A") svg("circle", { cx, cy, r, fill: col, class: "lg-token" }, g);
-    else {
-      const pts = t === "F" ? [[0, -r * 1.18], [r * 1.12, r * 0.78], [-r * 1.12, r * 0.78]]
-        : t === "C" ? [[0, -r * 1.22], [r * 1.22, 0], [0, r * 1.22], [-r * 1.22, 0]]
-        : [0, 60, 120, 180, 240, 300].map((a) => [r * 1.1 * Math.cos(((a + 30) * Math.PI) / 180), r * 1.1 * Math.sin(((a + 30) * Math.PI) / 180)]);
-      svg("polygon", { points: pts.map(([x, y]) => `${cx + x},${cy + y}`).join(" "), fill: col, class: "lg-token" }, g);
-    }
-    const tx = svg("text", { x: cx, y: cy + 2.3, class: "lg-glyph" }, g);
-    tx.textContent = t;
+  const units = sec("Counters");
+  item(units, counterSvg("A", "USA", 20), "Army (A)");
+  item(units, counterSvg("F", "USA", 20), "Fleet (F)");
+  item(units, counterSvg("C", "USA", 20), "Capital (C)");
+  item(units, counterSvg("I", "USA", 20), "Influence (I)");
+  const prov = sec("Land");
+  const sw = (fill: string, cls = "") => (g: SVGGElement) => {
+    svg("rect", { x: 1.5, y: 1.5, width: 23, height: 13, class: `lg-sw ${cls}`, fill }, g);
   };
-  item(units, icon(tok("A")), "Army · military");
-  item(units, icon(tok("F")), "Fleet · military");
-  item(units, icon(tok("C")), "Capital · civil");
-  item(units, icon(tok("I")), "Influence · civil");
-  const prov = sec("Provinces");
-  const swatch = (cls: string, fill?: string) => (g: SVGGElement) => {
-    const r = svg("rect", { x: 2, y: 3, width: 22, height: 12, rx: 3, class: `lg-sw ${cls}` }, g);
-    if (fill) r.style.fill = fill;
-  };
-  item(prov, icon(swatch("home", POWER_COLOURS.EU)), "Home centre (owner colour)");
-  item(prov, icon(swatch("aligned", "#9DCAEA")), "Swing state, aligned");
-  item(prov, icon(swatch("swing")), "Swing state, unaligned");
-  item(prov, icon(swatch("filler")), "Open land");
-  item(prov, icon(swatch("impassable")), "Impassable");
-  item(prov, icon(swatch("chokepoint")), "Chokepoint");
-  item(prov, icon(swatch("marginal")), "Marginal sea (Capital hops)");
-  item(prov, icon(swatch("ocean")), "Ocean (trade routes only)");
-  const marks = sec("Markers");
-  item(marks, icon((g) => svg("circle", { cx: 13, cy: 9, r: 3.2, fill: col, class: "lg-centre home" }, g)), "Home supply centre");
-  item(marks, icon((g) => svg("circle", { cx: 13, cy: 9, r: 3.4, stroke: col, class: "lg-centre aligned" }, g)), "Swing centre (ring = aligned)");
-  item(marks, icon((g) => {
-    svg("path", { d: "M2 9H24", class: "lg-route" }, g);
-  }), "Trade route");
-  item(marks, icon((g) => svg("path", { d: "M2 9H24", class: "lg-route closed" }, g)), "Route not yet open");
-  item(marks, icon((g) => svg("path", { d: "M4 4L9 9L4 14M10 4L15 9L10 14", class: "lg-chev" }, g)), "Continues across the edge");
+  item(prov, icon(sw(homeFill("EU"))), "Home");
+  item(prov, icon((g) => {
+    sw(swingFill("IND"))(g);
+    svg("rect", { x: 7.6, y: 4.6, width: 11, height: 7, class: "lg-ctl", fill: POWER_COLOURS.IND }, g);
+    const t = svg("text", { x: 13.1, y: 10.2, class: "lg-ctl-t" }, g);
+    t.textContent = "IND";
+  }), "Swing, aligned");
+  item(prov, icon((g) => {
+    sw(swingFill("IND"))(g);
+    svg("rect", { x: 7.6, y: 4.6, width: 11, height: 7, class: "lg-ctl", fill: POWER_COLOURS.IND }, g);
+    svg("rect", { x: 13.1, y: 4.6, width: 5.5, height: 7, fill: POWER_COLOURS.CHN }, g);
+    svg("rect", { x: 7.6, y: 4.6, width: 11, height: 7, class: "lg-ctl lg-contested", fill: "none" }, g);
+  }), "Contested: no supply");
+  item(prov, icon((g) => {
+    sw(BUFF)(g);
+    svg("circle", { cx: 13, cy: 8, r: 3, class: "lg-ring" }, g);
+  }), "Swing, unaligned");
+  item(prov, icon(sw("", "filler")), "Open land");
+  item(prov, icon(sw("url(#hatch-impassable)", "imp")), "Impassable");
+  const seaSec = sec("Sea");
+  item(seaSec, icon(sw("", "marginal")), "Sea");
+  item(seaSec, icon(sw("", "ocean")), "Ocean");
+  item(seaSec, icon((g) => {
+    sw("", "marginal")(g);
+    const c = svg("g", { class: "choke-icon", transform: "translate(13 8)" }, g);
+    svg("rect", { x: -3.4, y: -3.4, width: 6.8, height: 6.8, transform: "rotate(45)" }, c);
+    svg("path", { d: "M-1.5 -1.9V1.9M1.5 -1.9V1.9", class: "gate" }, c);
+  }), "Chokepoint");
+  const marks = seaSec;
+  item(marks, icon((g) => { svg("path", { d: "M2 8H24", class: "lg-route" }, g); }), "Trade route");
+  item(marks, icon((g) => { svg("path", { d: "M2 8H24", class: "lg-route off" }, g); }), "Route shut");
+  item(marks, icon((g) => svg("path", { d: "M5 4L9 8L5 12M11 4L15 8L11 12", class: "lg-chev" }, g)), "Wraps around");
   const ord = sec("Orders");
-  const line = (cls: string, extra?: (g: SVGGElement) => void) => (g: SVGGElement) => {
-    svg("path", { d: "M3 9H21", class: `lg-o ${cls}` }, g);
+  const arrow = (col: string, extra?: (g: SVGGElement) => void, dash?: string) => (g: SVGGElement) => {
+    svg("path", { d: "M3 8H18", class: "lg-o-case", "stroke-dasharray": dash }, g);
+    svg("path", { d: "M3 8H18", class: "lg-o", stroke: col, "stroke-dasharray": dash }, g);
+    if (!extra) svg("path", { d: "M17 4L24 8L17 12Z", class: "lg-head", fill: col }, g);
     extra?.(g);
   };
-  const head = (g: SVGGElement) => svg("path", { d: "M18 5L23 9L18 13Z", class: "lg-head" }, g);
-  item(ord, icon(line("move", head)), "Move");
-  item(ord, icon(line("support", (g) => svg("path", { d: "M18 5L23 9L18 13", class: "lg-head-open" }, g))), "Support");
-  item(ord, icon(line("convoy")), "Convoy");
-  item(ord, icon((g) => svg("path", { d: "M3 9L6 6L9 12L12 6L15 12L18 6L21 9", class: "lg-o zig" }, g)), "Disrupt");
+  item(ord, icon(arrow(RED)), "Your order");
+  item(ord, icon(arrow(arrowInk("USA"))), "Other move");
+  item(ord, icon(arrow(arrowInk("CHN"), (g) => svg("path", { d: "M17 4.5L23 8L17 11.5", class: "lg-head-open", stroke: arrowInk("CHN") }, g), "3 2")), "Support");
+  item(ord, icon((g) => svg("path", { d: "M3 8L6 5L9 11L12 5L15 11L18 5L21 8", class: "lg-zig", stroke: arrowInk("GLF") }, g)), "Disrupt");
   item(ord, icon((g) => {
-    svg("path", { d: "M3 9H15", class: "lg-o sanction" }, g);
-    svg("circle", { cx: 19.5, cy: 9, r: 4, class: "lg-blocked" }, g);
-    svg("path", { d: "M16.7 11.8L22.3 6.2", class: "lg-blocked" }, g);
-  }), "Sanction");
-  item(ord, icon(line("move failed", (g) => {
-    head(g);
-    svg("path", { d: "M10 5.5L15 12.5M15 5.5L10 12.5", class: "lg-x" }, g);
-  })), "Failed / bounced");
+    arrow(arrowInk("EU"))(g);
+    g.setAttribute("opacity", "0.45");
+    const x = svg("g", { transform: "translate(11 8)" }, g.parentNode as Element);
+    svg("rect", { x: -3.6, y: -3.6, width: 7.2, height: 7.2, class: "lg-fail" }, x);
+    svg("path", { d: "M-2 -2L2 2M2 -2L-2 2", class: "lg-fail-x" }, x);
+  }), "Failed");
   item(ord, icon((g) => {
-    svg("circle", { cx: 13, cy: 9, r: 5, class: "lg-leaf" }, g);
-    svg("path", { d: "M10.6 11.4C10.3 8.4 12.3 6.8 15 6.9C15.1 9.6 13.5 11.6 10.6 11.4ZM10.6 11.4L13.4 8.5", class: "lg-leaf-glyph" }, g);
+    svg("circle", { cx: 13, cy: 8, r: 5, class: "lg-leaf" }, g);
+    svg("path", { d: "M10.6 10.4C10.3 7.4 12.3 5.8 15 5.9C15.1 8.6 13.5 10.6 10.6 10.4ZM10.6 10.4L13.4 7.5", class: "lg-leaf-glyph" }, g);
   }), "Commons");
-  void POWER_ORDER;
 }
 
 main();

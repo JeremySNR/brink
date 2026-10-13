@@ -1,15 +1,17 @@
-// Power palette: Okabe-Ito derived (colour-blind aware), darkened so white glyphs stay legible.
-// Keep in sync with src/brink/geo/preview.py.
+// Wargame Box palette: printed counter stock and map-sheet inks.
+// Ownership is never shown by colour alone: every counter and control marker carries the power code.
+// (src/brink/geo/preview.py keeps its own older palette for static previews.)
 export const POWER_ORDER = ["USA", "CHN", "EU", "RUS", "IND", "JPN", "GLF"] as const;
 
+/** Counter stock (the full-strength printed colour of each power's counters). */
 export const POWER_COLOURS: Record<string, string> = {
-  USA: "#1F6FB2",
-  CHN: "#C8501E",
-  EU: "#3E95D1",
-  RUS: "#566079",
-  IND: "#C98A08",
-  JPN: "#B45E91",
-  GLF: "#0F8A68",
+  USA: "#8FAFC6",
+  CHN: "#D9776A",
+  EU: "#E6CB5A",
+  RUS: "#B0A794",
+  IND: "#E7A35A",
+  JPN: "#F4F1E8",
+  GLF: "#84A56C",
 };
 
 export const UNIT_NAMES: Record<string, string> = {
@@ -19,8 +21,14 @@ export const UNIT_NAMES: Record<string, string> = {
   I: "Influence",
 };
 
+// map-sheet inks (mirrored as CSS tokens in style.css)
+export const INK = "#1D1D1B";
+export const PAPER = "#F2EEE2";
+export const BUFF = "#E4DCC2";
+export const RED = "#B3261E";
+
 export function powerColour(p: string | null | undefined): string {
-  return (p && POWER_COLOURS[p]) || "#8A8F98";
+  return (p && POWER_COLOURS[p]) || "#C9C4B6";
 }
 
 /** Mix a hex colour towards another (default white). */
@@ -30,18 +38,26 @@ export function mix(hex: string, amount: number, base = "#FFFFFF"): string {
   return "#" + a.map((x, i) => Math.round(x + (b[i] - x) * amount).toString(16).padStart(2, "0")).join("");
 }
 
-export type ThemeName = "light" | "dark";
-
-export function currentTheme(): ThemeName {
-  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+/** The counter's die-cut edge: the same stock, darker (Japan's white stock has a black edge). */
+export function edgeColour(p: string | null | undefined): string {
+  if (p === "JPN") return "#3A3833";
+  return mix(powerColour(p), 0.5, INK);
 }
 
-/** Province fills per theme (CSS variables can't be used inside some SVG paint servers reliably). */
-export function homeFill(owner: string, theme: ThemeName): string {
-  // dark theme: lift the colour a little so dark powers (Russia) still read against dark land
-  return theme === "dark" ? mix(POWER_COLOURS[owner], 0.2, "#FFFFFF") : mix(POWER_COLOURS[owner], 0.12);
+/** Order-arrow ink for a power: its counter colour, darkened a step so it reads on the sheet. */
+export function arrowInk(p: string | null | undefined): string {
+  if (p === "JPN") return "#F4F1E8";
+  return mix(powerColour(p), 0.2, INK);
 }
 
-export function swingFill(owner: string, theme: ThemeName): string {
-  return theme === "dark" ? mix(POWER_COLOURS[owner], 0.5, "#222A36") : mix(POWER_COLOURS[owner], 0.58);
+/** Flat printed tint for a power's home provinces. */
+export function homeFill(owner: string): string {
+  if (owner === "JPN") return "#FBFAF5";
+  return mix(POWER_COLOURS[owner] ?? "#C9C4B6", 0.3, PAPER);
+}
+
+/** Lighter tint for a swing state aligned to a power. */
+export function swingFill(owner: string): string {
+  if (owner === "JPN") return "#F6F3EA";
+  return mix(POWER_COLOURS[owner] ?? "#C9C4B6", 0.58, BUFF);
 }

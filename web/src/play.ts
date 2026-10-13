@@ -5,7 +5,9 @@
 // game record's phases followed by one "live" phase: the current position with the drafted orders on it.
 import type { BoardView } from "./board";
 import type { Overlay } from "./overlay";
-import { POWER_ORDER, UNIT_NAMES, powerColour } from "./theme";
+import { codeCounter, counterSvg } from "./counter";
+import { RULE, aidSection } from "./panel";
+import { POWER_ORDER, UNIT_NAMES } from "./theme";
 import type { GameRecord, MapData, Order, Phase, Unit, UnitType } from "./types";
 import { html, normaliseOrder, seasonLabel, svg } from "./util";
 
@@ -71,14 +73,16 @@ export interface PlayHost {
   stateCards(root: HTMLElement, ph: Phase): void;
 }
 
+// One hand-written line of character per power. It makes no countable claims: units, homes and umbrellas
+// on the start screen are read from map.json `start`, so they can't go stale.
 const CHARACTER: Record<string, string> = {
-  USA: "Two fleets on two oceans and an umbrella over Japan. The Americas are yours to lose.",
-  CHN: "No military at the start: two Capitals and Influence to buy Asia, then the world.",
-  EU: "Two Armies and a Capital at the centre of the board, with Ukraine, Turkey and Africa next door.",
-  RUS: "Armies across the largest landmass and Influence in the Far East: strong at home, short of reach.",
-  IND: "Army, Fleet and Capital on the Indian Ocean, with Pakistan, Iran and the south in reach.",
-  JPN: "Not nuclear and sheltered by the US umbrella: two Influence and a Capital make it a broker.",
-  GLF: "Not nuclear, rich and exposed: a Fleet on Hormuz and two Capitals to buy friends.",
+  USA: "The Americas are its backyard, and both oceans are within reach.",
+  CHN: "Starts with money and influence rather than armies; Asia is the first market.",
+  EU: "Sits at the centre of the board, with Ukraine, Turkey and Africa next door.",
+  RUS: "Spread across the largest landmass: strong at home, short of reach.",
+  IND: "Faces the Indian Ocean, with Pakistan, Iran and the south in reach.",
+  JPN: "An island broker whose strength is money and influence.",
+  GLF: "Rich, beside the Strait of Hormuz, with friends to buy.",
 };
 
 const RES_HELP: Record<string, string> = {
@@ -143,7 +147,7 @@ export class PlayController {
     this.statusChip = html("span", { class: "you-chip", id: "play-status", hidden: true });
     top.prepend(this.statusChip);
     const stage = document.getElementById("stage")!;
-    this.fab = html("button", { class: "btn primary fab", type: "button", hidden: true }, stage, "Commit");
+    this.fab = html("button", { class: "btn commit-btn fab", type: "button", hidden: true }, stage, "Commit orders");
     this.fab.addEventListener("click", () => this.commit());
     this.toast = html("div", { class: "play-toast", role: "status", "aria-live": "polite", hidden: true }, stage);
     host.overlay.showHolds = true;
@@ -174,6 +178,11 @@ export class PlayController {
         power, seed: seed === "" ? null : Number(seed), alliances, last_year: lastYear === "" ? null : Number(lastYear),
       });
       closeModal();
+      try {
+        localStorage.setItem(`brink.play.${st.id}.last`, lastYear || "2040");
+      } catch {
+        /* ignore */
+      }
       const url = new URL(location.href);
       url.searchParams.set("play", st.id);
       url.hash = "";
@@ -188,6 +197,19 @@ export class PlayController {
     }
   }
 
+  /** The game's final year, for the turn record track (chosen at the start; the server doesn't echo it). */
+  lastYear(): number {
+    const r = this.state?.record.result;
+    if (r?.year && r.kind === "time") return r.year;
+    try {
+      const v = Number(localStorage.getItem(`brink.play.${this.id}.last`));
+      if (v > 2000) return v;
+    } catch {
+      /* ignore */
+    }
+    return 2040;
+  }
+
   /** Zoom to the player's home provinces. */
   focusHome() {
     const homes = this.host.map.powers[this.power ?? ""]?.homes ?? [];
@@ -200,6 +222,7 @@ export class PlayController {
     this.state = st;
     this.id = st.id;
     this.power = st.power;
+    this.host.overlay.you = st.power;
     const newDecision = st.pending?.id !== this.pending?.id;
     this.pending = st.pending;
     if (newDecision) this.resetDrafts();
@@ -428,12 +451,10 @@ export class PlayController {
     bar.hidden = true;
     this.fab.hidden = !p;
     if (!p) return;
-    const col = powerColour(p.power);
     const mark = (pid: string, cls = "") => {
       const bp = view.board.provinces[provOf(pid)];
       if (!bp) return;
-      const el = svg("path", { d: bp.d, class: `reach ${cls}` }, L);
-      el.style.setProperty("--c", col);
+      svg("path", { d: bp.d, class: `reach red ${cls}` }, L);
     };
     let active = false;
     if (p.kind === "orders" && this.sel) {
@@ -491,16 +512,15 @@ export class PlayController {
     }
   }
 
-  private barHead(bar: HTMLElement, name: string, hint: string) {
+  private barHead(bar: HTMLElement, name: string, hint: string, type?: UnitType) {
     bar.hidden = false;
-    const sw = html("span", { class: "dot" }, bar);
-    sw.style.background = powerColour(this.power);
+    if (type && this.power) bar.append(counterSvg(type, this.power, 24));
     html("strong", {}, bar, name);
-    html("span", { class: "muted hint" }, bar, hint);
+    html("span", { class: "hint" }, bar, hint);
   }
 
   private btn(parent: HTMLElement, label: string, on: () => void, opts: { key?: string; active?: boolean; title?: string } = {}) {
-    const b = html("button", { class: `chip-btn${opts.active ? " active" : ""}`, type: "button", title: opts.title ?? "" }, parent);
+    const b = html("button", { class: `bar-btn${opts.active ? " active" : ""}`, type: "button", title: opts.title ?? "" }, parent);
     b.append(document.createTextNode(label));
     if (opts.key) html("kbd", {}, b, opts.key);
     b.addEventListener("click", (ev) => {
@@ -521,7 +541,7 @@ export class PlayController {
       "convoy-dest": "convoy: click the Army's destination",
       disrupt: "disrupt: click the target province",
     };
-    this.barHead(bar, ix.choice.name, hints[s.mode]);
+    this.barHead(bar, ix.choice.name, hints[s.mode], ix.choice.unit.type);
     const acts = html("span", { class: "bar-actions" }, bar);
     if (s.mode !== "move") {
       this.btn(acts, "Back", () => this.setMode("move"), { key: "Esc" });
@@ -532,7 +552,7 @@ export class PlayController {
       if (ix.commons) this.btn(acts, "Commons", () => this.setOrder(ix.commons!), { title: "Work on the global commons (lowers the Crisis)" });
       if (ix.disrupts.size) this.btn(acts, "Disrupt", () => this.setMode("disrupt"), { key: "D" });
       if (ix.sanctions.size) {
-        const sel = html("select", { class: "chip-select", "aria-label": "Sanction a power" }, acts);
+        const sel = html("select", { class: "bar-select", "aria-label": "Sanction a power" }, acts);
         html("option", { value: "" }, sel, "Sanction…");
         for (const p of ix.sanctions.keys()) html("option", { value: p }, sel, `Sanction ${this.host.map.powers[p]?.name ?? p}`);
         sel.addEventListener("click", (ev) => ev.stopPropagation());
@@ -544,8 +564,8 @@ export class PlayController {
       if (ix.closes.length) {
         const cur = this.orders.get(s.key);
         const curAgainst = cur?.kind === "close" ? cur.text.split(/\s+/).slice(3) : null;
-        const sel = html("select", { class: "chip-select", "aria-label": "Close the chokepoint" }, acts);
-        html("option", { value: "" }, sel, curAgainst ? (curAgainst.length ? `Closed to ${curAgainst.join(" ")} · add…` : "Closed to all") : "Close…");
+        const sel = html("select", { class: "bar-select", "aria-label": "Close the chokepoint" }, acts);
+        html("option", { value: "" }, sel, curAgainst ? (curAgainst.length ? `Closed to ${curAgainst.join(" ")}: add…` : "Closed to all") : "Close…");
         html("option", { value: "*" }, sel, "Close to everyone");
         for (const p of POWER_ORDER) {
           if (p === this.power) continue;
@@ -560,9 +580,10 @@ export class PlayController {
           this.setOrder({ text, kind: "close", unit: u, to: null, target: null, about: against });
         });
       }
-      if (this.orders.has(s.key)) this.btn(acts, "Clear", () => this.clearOrder(s.key), { key: "⌫", title: "Remove this unit's order (it holds)" });
+      if (this.orders.has(s.key)) this.btn(acts, "Clear", () => this.clearOrder(s.key), { key: "Del", title: "Remove this unit's order (it holds)" });
     }
-    const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Cancel selection" }, bar, "×");
+    const x = html("button", { class: "x-btn", type: "button", "aria-label": "Cancel selection" }, bar);
+    x.append(xIcon());
     x.addEventListener("click", (ev) => {
       ev.stopPropagation();
       this.cancel();
@@ -570,7 +591,7 @@ export class PlayController {
   }
 
   private retreatBar(bar: HTMLElement, c: RetreatChoice) {
-    this.barHead(bar, c.name, c.to.length ? "dislodged: click where it retreats" : "dislodged with nowhere to go");
+    this.barHead(bar, c.name, c.to.length ? "dislodged: click where it retreats" : "dislodged with nowhere to go", c.unit.type);
     const acts = html("span", { class: "bar-actions" }, bar);
     this.btn(acts, "Disband", () => {
       this.retreats.set(keyOf(c.unit), `${c.unit.type} ${c.unit.at} D`);
@@ -584,11 +605,12 @@ export class PlayController {
     this.barHead(bar, this.host.map.provinces[pid]?.name ?? pid, "build:");
     const acts = html("span", { class: "bar-actions" }, bar);
     for (const b of opts) {
-      const label = `${UNIT_NAMES[b.type]}${b.at.includes("/") ? ` (${b.at.split("/")[1]})` : ""}${b.forward_base ? " · forward base" : ""}`;
+      const label = `${UNIT_NAMES[b.type]}${b.at.includes("/") ? ` (${b.at.split("/")[1]})` : ""}${b.forward_base ? " (forward base)" : ""}`;
       const active = this.builds.some((x) => x.text === b.text);
       this.btn(acts, label, () => this.toggleBuild(b), { key: b.type, active });
     }
-    const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Cancel" }, bar, "×");
+    const x = html("button", { class: "x-btn", type: "button", "aria-label": "Cancel" }, bar);
+    x.append(xIcon());
     x.addEventListener("click", (ev) => {
       ev.stopPropagation();
       this.cancel();
@@ -862,26 +884,28 @@ export class PlayController {
     const live = this.host.liveIndex();
     const st = this.state;
     if (!st) return;
-    const b = html("section", { class: "card play-banner" });
-    root.prepend(b);
+    const b = html("section", { class: "play-banner" });
+    const head = root.querySelector(".phase-head");
+    if (head) head.after(b);
+    else root.prepend(b);
     const ph = this.host.phase(i);
     if (this.reviewFrom !== null && i >= this.reviewFrom) {
       const n = (live ?? this.host.total()) - this.reviewFrom;
       const k = i - this.reviewFrom + 1;
-      html("div", { class: "eyebrow" }, b, `What happened · ${k} of ${n}`);
-      html("p", {}, b, ph.kind === "movement" ? "The orders below were resolved together. Arrows show each move; a cross marks one that failed."
+      html("p", { class: "banner-h" }, b, `Results ${k} of ${n} since your last move`);
+      html("p", {}, b, ph.kind === "movement" ? "These orders were resolved together. Arrows show each move; a crossed box marks one that failed."
         : ph.kind === "retreat" ? "Dislodged units retreated or were disbanded." : "Winter: alignment, the Crisis track, the Assembly and builds.");
     } else {
-      html("div", { class: "eyebrow" }, b, "Reviewing an earlier phase");
+      html("p", { class: "banner-h" }, b, "Reviewing an earlier phase");
     }
     const row = html("div", { class: "btn-row" }, b);
     if (live !== null) {
       if (i + 1 < live) {
-        const nx = html("button", { class: "btn", type: "button" }, row, "Next ›");
+        const nx = html("button", { class: "btn", type: "button" }, row, "Next phase");
         nx.addEventListener("click", () => this.host.go(i + 1));
       }
-      const go = html("button", { class: "btn primary", type: "button" }, row, i + 1 < live ? "Skip to your move" : "Continue to your move");
-      html("kbd", {}, go, "⏎");
+      const go = html("button", { class: "btn commit-btn small", type: "button" }, row, i + 1 < live ? "Skip to your move" : "Continue to your move");
+      html("kbd", {}, go, "Enter");
       go.addEventListener("click", () => this.host.go(live));
     } else if (st.status === "over") {
       const r = html("button", { class: "btn primary", type: "button" }, row, "Final result");
@@ -897,42 +921,44 @@ export class PlayController {
     const map = this.host.map;
     const ph = p.phase;
     const head = html("section", { class: "phase-head" }, root);
-    const eb = html("div", { class: "eyebrow you-line" }, head);
-    const d = html("span", { class: "dot" }, eb);
-    d.style.background = powerColour(p.power);
-    eb.append(document.createTextNode(` Your move · ${map.powers[p.power]?.name}`));
     const h = html("h2", { class: "phase-title" }, head);
-    html("span", { class: "phase-season" }, h, seasonLabel(ph.season, ph.kind));
-    html("span", { class: "phase-year" }, h, ` ${ph.year}`);
+    h.append(document.createTextNode(`${seasonLabel(ph.season, ph.kind)} `));
+    html("span", { class: "num" }, h, String(ph.year));
     const kindLabel: Record<string, string> = {
-      orders: "Movement · order your units", retreats: "Retreats · move or disband dislodged units",
-      propose: "Assembly · you chair: choose a proposal", vote: "Assembly · vote on the proposal",
-      adjust: (p.change ?? 0) > 0 ? "Adjustments · build" : "Adjustments · disband",
-      umbrellas: "Umbrellas · declare protection for next year",
+      orders: "Order your units", retreats: "Retreat or disband your dislodged units",
+      propose: "You chair the Assembly: choose a proposal", vote: "Vote on the Assembly proposal",
+      adjust: (p.change ?? 0) > 0 ? "Build new units" : "Disband units",
+      umbrellas: "Declare your nuclear umbrellas for next year",
     };
-    html("div", { class: "phase-kind" }, head, kindLabel[p.kind]);
+    const sub = html("p", { class: "phase-sub" }, head);
+    sub.append(codeCounter(p.power, 18));
+    const st = html("span", {}, sub);
+    html("em", { class: "move-tag" }, st, "Your move");
+    st.append(document.createTextNode(` ${map.powers[p.power]?.name}. ${kindLabel[p.kind]}.`));
 
-    const card = html("section", { class: "card decision" }, root);
     switch (p.kind) {
-      case "orders": this.ordersCard(card, p); break;
-      case "retreats": this.retreatsCard(card, p); break;
-      case "adjust": this.adjustCard(card, p); break;
-      case "propose": this.proposeCard(card, p); break;
-      case "vote": this.voteCard(card, p); break;
-      case "umbrellas": this.umbrellaCard(card, p); break;
+      case "orders": this.ordersCard(root, p); break;
+      case "retreats": this.retreatsCard(root, p); break;
+      case "adjust": this.adjustCard(root, p); break;
+      case "propose": this.proposeCard(root, p); break;
+      case "vote": this.voteCard(root, p); break;
+      case "umbrellas": this.umbrellaCard(root, p); break;
     }
-    const row = html("div", { class: "commit-row" }, card);
-    const label = this.commitLabel();
-    const c = html("button", { class: "btn primary commit", type: "button" }, row, label);
-    html("kbd", {}, c, "⏎");
-    c.disabled = this.busy;
-    c.addEventListener("click", () => this.commit());
-    this.fab.textContent = label;
 
     this.statusCard(root, p);
-    // the usual state cards (Crisis, centres, security)
-    const panelState = html("div", { class: "state-cards" }, root);
-    this.host.stateCards(panelState, ph);
+    // the usual state sections (Crisis, centres, security)
+    this.host.stateCards(root, ph);
+
+    const foot = html("div", { class: "aid-foot" }, root);
+    const label = this.commitLabel();
+    const c = html("button", { class: "btn commit-btn commit", type: "button" }, foot, label);
+    html("kbd", {}, c, "Enter");
+    c.disabled = this.busy;
+    c.addEventListener("click", () => this.commit());
+    html("p", { class: "foot-note" }, foot, p.kind === "orders"
+      ? "Orders resolve together once every power has written theirs. Unordered units hold."
+      : "Takes effect when every power has decided.");
+    this.fab.textContent = label;
   }
 
   private commitLabel(): string {
@@ -947,48 +973,62 @@ export class PlayController {
     }
   }
 
-  private ordersCard(card: HTMLElement, p: Pending) {
+  /** One row of the order list: counter, unit name, notation, Edit / Remove. */
+  private draftRow(ul: HTMLElement, type: UnitType, name: string, text: string | null, empty: string, opts: {
+    selected?: boolean; onEdit?: () => void; onRemove?: () => void; editLabel?: string;
+  }) {
+    const li = html("li", { class: `draft${opts.selected ? " selected" : ""}${text ? "" : " unset"}` }, ul);
+    li.append(counterSvg(type, this.power!, 28));
+    const body = html("div", { class: "draft-body" }, li);
+    html("div", { class: "draft-name" }, body, name);
+    if (text) html("div", { class: "notation" }, body, text);
+    else html("div", { class: "draft-empty" }, body, empty);
+    const why = text ? this.voidReason(text) : null;
+    if (why) html("div", { class: "void" }, body, `Void: ${why}`);
+    const acts = html("div", { class: "draft-acts" }, li);
+    if (opts.onEdit) {
+      const e = html("button", { class: "link-btn", type: "button", "aria-label": `${opts.editLabel ?? "Edit"} ${name}` }, acts, opts.editLabel ?? "Edit");
+      e.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        e.blur();
+        opts.onEdit!();
+      });
+    }
+    if (opts.onRemove && text) {
+      const x = html("button", { class: "link-btn", type: "button", "aria-label": `Remove the order for ${name}` }, acts, "Remove");
+      x.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        opts.onRemove!();
+      });
+    }
+    return li;
+  }
+
+  private ordersCard(root: HTMLElement, p: Pending) {
     const units = p.units as UnitChoice[];
     const n = units.filter((u) => this.orders.has(keyOf(u.unit))).length;
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Your orders");
-    html("span", { class: "muted" }, ch, `${n} of ${units.length} ordered`);
-    html("p", { class: "help" }, card, "Click a unit, then where it should go. With a unit selected: S support, C convoy, H hold, D disrupt; Esc to cancel. Unordered units hold.");
+    const card = aidSection(root, RULE.orders, "Your orders", `${n} of ${units.length} written`, "decision");
+    html("p", { class: "help" }, card, "Click a counter, then where it should go. With a unit selected: S support, C convoy, H hold, D disrupt, Esc to cancel.");
     const ul = html("ul", { class: "draft-list" }, card);
     for (const c of units) {
       const k = keyOf(c.unit);
       const o = this.orders.get(k);
-      const li = html("li", { class: `draft${this.sel?.key === k ? " selected" : ""}`, tabindex: 0 }, ul);
-      li.append(utoken(c.unit.type, p.power));
-      const body = html("div", { class: "draft-body" }, li);
-      html("div", { class: "draft-name" }, body, c.name.replace(/^\S+ /, ""));
-      if (o) html("code", {}, body, o.text);
-      else html("span", { class: "muted small" }, body, "holds (no order)");
-      const why = o ? this.voidReason(o.text) : null;
-      if (why) html("div", { class: "void" }, body, `Void: ${why}`);
-      if (o) {
-        const x = html("button", { class: "icon-btn small", type: "button", "aria-label": `Remove order for ${c.name}` }, li, "×");
-        x.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          this.clearOrder(k);
-        });
-      }
-      li.addEventListener("click", () => this.select(this.sel?.key === k ? null : k));
-      li.addEventListener("keydown", (ev) => {
-        if (ev.key === " ") {
-          ev.preventDefault();
-          this.select(k);
-        }
+      const li = this.draftRow(ul, c.unit.type, c.name.replace(/^\S+ /, ""), o?.text ?? null, "Holds (no order yet)", {
+        selected: this.sel?.key === k,
+        onEdit: () => this.select(this.sel?.key === k ? null : k),
+        editLabel: o ? "Edit" : "Order",
+        onRemove: () => this.clearOrder(k),
       });
+      li.addEventListener("click", () => this.select(this.sel?.key === k ? null : k));
     }
     if (p.withdraw?.length) {
       const w = html("div", { class: "umbrella-actions" }, card);
-      html("div", { class: "sub-h" }, w, "Your umbrellas");
+      html("p", { class: "sub-h" }, w, `Your umbrellas (§${RULE.security})`);
       for (const b of p.withdraw) {
         const lab = html("label", { class: "check" }, w);
         const cb = html("input", { type: "checkbox" }, lab) as HTMLInputElement;
         cb.checked = this.withdraw.has(b);
-        lab.append(document.createTextNode(` Withdraw the umbrella over ${this.host.map.powers[b]?.name ?? b} (takes effect this turn)`));
+        html("span", {}, lab, `Withdraw the umbrella over ${this.host.map.powers[b]?.name ?? b} (takes effect this turn)`);
         cb.addEventListener("change", () => {
           if (cb.checked) this.withdraw.add(b);
           else this.withdraw.delete(b);
@@ -998,31 +1038,19 @@ export class PlayController {
     }
   }
 
-  private retreatsCard(card: HTMLElement, p: Pending) {
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Dislodged units");
-    html("p", { class: "help" }, card, "Click a dislodged unit, then a highlighted province to retreat there, or Disband (X). Units without an order are disbanded.");
+  private retreatsCard(root: HTMLElement, p: Pending) {
+    const card = aidSection(root, RULE.resolution, "Dislodged units", undefined, "decision");
+    html("p", { class: "help" }, card, "Click a dislodged counter, then a highlighted province to retreat there, or Disband (X). Units without an order are disbanded.");
     const ul = html("ul", { class: "draft-list" }, card);
     for (const c of p.units as RetreatChoice[]) {
       const k = keyOf(c.unit);
-      const t = this.retreats.get(k);
-      const li = html("li", { class: `draft${this.retreatSel === k ? " selected" : ""}`, tabindex: 0 }, ul);
-      li.append(utoken(c.unit.type, p.power));
-      const body = html("div", { class: "draft-body" }, li);
-      html("div", { class: "draft-name" }, body, c.name.replace(/^\S+ /, ""));
-      if (t) html("code", {}, body, t);
-      else html("span", { class: "muted small" }, body, c.to.length ? `can retreat to ${c.to.map((x) => this.host.map.provinces[provOf(x)]?.name ?? x).join(", ")}` : "no retreat: will be disbanded");
-      const why = t ? this.voidReason(t) : null;
-      if (why) html("div", { class: "void" }, body, `Void: ${why}`);
-      if (t) {
-        const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Clear" }, li, "×");
-        x.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          this.retreats.delete(k);
-          this.retreatSel = k;
-          this.changed();
-        });
-      }
+      const t = this.retreats.get(k) ?? null;
+      const empty = c.to.length ? `Can retreat to ${c.to.map((x) => this.host.map.provinces[provOf(x)]?.name ?? x).join(", ")}` : "No retreat: will be disbanded";
+      const li = this.draftRow(ul, c.unit.type, c.name.replace(/^\S+ /, ""), t, empty, {
+        selected: this.retreatSel === k,
+        onEdit: () => { this.retreatSel = k; this.host.redraw(); },
+        onRemove: () => { this.retreats.delete(k); this.retreatSel = k; this.changed(); },
+      });
       li.addEventListener("click", () => {
         this.retreatSel = k;
         this.host.redraw();
@@ -1030,48 +1058,37 @@ export class PlayController {
     }
   }
 
-  private adjustCard(card: HTMLElement, p: Pending) {
+  private adjustCard(root: HTMLElement, p: Pending) {
     const change = p.change ?? 0;
-    const ch = html("div", { class: "card-head" }, card);
     if (change > 0) {
-      html("h3", {}, ch, `Build up to ${change}`);
-      html("span", { class: "muted" }, ch, `${this.builds.length} chosen`);
+      const card = aidSection(root, RULE.winter, `Build up to ${change}`, `${this.builds.length} chosen`, "decision");
       html("p", { class: "help" }, card, "Click a highlighted province, then pick the unit type (A, F, C, I keys). Armies and Fleets build in your original homes; civil units in any owned home or aligned swing state; one forward-base Army a year where you have a civil unit.");
       const ul = html("ul", { class: "draft-list" }, card);
       for (const b of this.builds) {
-        const li = html("li", { class: "draft" }, ul);
-        li.append(utoken(b.type, p.power));
-        const body = html("div", { class: "draft-body" }, li);
-        html("div", { class: "draft-name" }, body, `${UNIT_NAMES[b.type]} in ${this.host.map.provinces[provOf(b.at)]?.name ?? b.at}${b.forward_base ? " (forward base)" : ""}`);
-        html("code", {}, body, b.text);
-        const why = this.voidReason(b.text);
-        if (why) html("div", { class: "void" }, body, `Void: ${why}`);
-        const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Remove build" }, li, "×");
-        x.addEventListener("click", () => this.toggleBuild(b));
+        this.draftRow(ul, b.type, `${UNIT_NAMES[b.type]} in ${this.host.map.provinces[provOf(b.at)]?.name ?? b.at}${b.forward_base ? " (forward base)" : ""}`, b.text, "", {
+          onRemove: () => this.toggleBuild(b),
+        });
       }
       if (!this.builds.length) html("p", { class: "muted small" }, card, "No builds chosen yet. Unused builds are lost.");
     } else {
-      html("h3", {}, ch, `Disband ${-change}`);
-      html("span", { class: "muted" }, ch, `${this.disbands.size} chosen`);
-      html("p", { class: "help" }, card, "You have more units than centres. Click units to mark them for disbanding; any shortfall is chosen for you (furthest from home first).");
+      const card = aidSection(root, RULE.winter, `Disband ${-change}`, `${this.disbands.size} chosen`, "decision");
+      html("p", { class: "help" }, card, "You have more units than centres. Click counters to mark them for disbanding; any shortfall is chosen for you (furthest from home first).");
       const ul = html("ul", { class: "draft-list" }, card);
       for (const d of p.disband ?? []) {
         const k = keyOf(d.unit);
         const on = this.disbands.has(k);
-        const li = html("li", { class: `draft${on ? " selected" : ""}`, tabindex: 0 }, ul);
-        li.append(utoken(d.unit.type, p.power));
-        const body = html("div", { class: "draft-body" }, li);
-        html("div", { class: "draft-name" }, body, d.name.replace(/^\S+ /, ""));
-        html("span", { class: on ? "small strong" : "muted small" }, body, on ? "disband" : "keep");
+        const li = this.draftRow(ul, d.unit.type, d.name.replace(/^\S+ /, ""), on ? d.text : null, "Keep", {
+          selected: on,
+          onEdit: () => this.toggleDisband(k),
+          editLabel: on ? "Keep" : "Disband",
+        });
         li.addEventListener("click", () => this.toggleDisband(k));
       }
     }
   }
 
-  private proposeCard(card: HTMLElement, p: Pending) {
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Assembly proposal");
-    html("span", { class: "muted" }, ch, "you chair");
+  private proposeCard(root: HTMLElement, p: Pending) {
+    const card = aidSection(root, RULE.assembly, "Assembly proposal", "You chair", "decision");
     html("p", { class: "help" }, card, "As chair (fewest centres) you may put one resolution to the vote. It passes on a weighted majority unless someone vetoes, and lasts next Spring, Fall and Winter builds.");
     const all = p.resolutions ?? [];
     const kinds = [...new Set(all.map((r) => r.split(" ")[0]))];
@@ -1103,14 +1120,11 @@ export class PlayController {
     if (curKind !== "NOTHING") html("p", { class: "res-help" }, card, describeRes(cur, this.host.map));
   }
 
-  private voteCard(card: HTMLElement, p: Pending) {
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Assembly vote");
-    html("span", { class: "muted" }, ch, `your weight ${p.weight}`);
-    const chair = html("div", { class: "chair" }, card);
-    const dd = html("span", { class: "dot" }, chair);
-    dd.style.background = powerColour(p.chair);
-    chair.append(document.createTextNode(` ${this.host.map.powers[p.chair ?? ""]?.name ?? p.chair} proposes`));
+  private voteCard(root: HTMLElement, p: Pending) {
+    const card = aidSection(root, RULE.assembly, "Assembly vote", `Your weight ${p.weight}`, "decision");
+    const chair = html("p", { class: "chair" }, card);
+    if (p.chair) chair.append(codeCounter(p.chair, 18));
+    html("span", {}, chair, `${this.host.map.powers[p.chair ?? ""]?.name ?? p.chair} proposes`);
     html("p", { class: "proposal big" }, card, p.proposal ?? "");
     html("p", { class: "res-help" }, card, describeRes(p.proposal ?? "", this.host.map));
     const row = html("div", { class: "vote-row" }, card);
@@ -1129,18 +1143,16 @@ export class PlayController {
     html("p", { class: "muted small" }, card, p.can_veto ? "One veto per game: a veto kills the proposal outright." : "Your veto is spent.");
   }
 
-  private umbrellaCard(card: HTMLElement, p: Pending) {
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Nuclear umbrellas");
+  private umbrellaCard(root: HTMLElement, p: Pending) {
+    const card = aidSection(root, RULE.security, "Nuclear umbrellas", undefined, "decision");
     html("p", { class: "help" }, card, "Military units of other powers can't enter the homes of a power under your umbrella. Declare who you protect next year.");
     if (!p.candidates?.length) html("p", { class: "muted small" }, card, "No power can be protected.");
     for (const c of p.candidates ?? []) {
       const lab = html("label", { class: "check" }, card);
       const cb = html("input", { type: "checkbox" }, lab) as HTMLInputElement;
       cb.checked = this.umbrellas.has(c);
-      const dd = html("span", { class: "dot" }, lab);
-      dd.style.background = powerColour(c);
-      lab.append(document.createTextNode(` ${this.host.map.powers[c]?.name ?? c}${p.current?.includes(c) ? " (current)" : ""}`));
+      lab.append(codeCounter(c, 18));
+      html("span", {}, lab, `${this.host.map.powers[c]?.name ?? c}${p.current?.includes(c) ? " (current)" : ""}`);
       cb.addEventListener("change", () => {
         if (cb.checked) this.umbrellas.add(c);
         else this.umbrellas.delete(c);
@@ -1152,26 +1164,23 @@ export class PlayController {
   private statusCard(root: HTMLElement, p: Pending) {
     const s = p.status;
     const map = this.host.map;
-    const card = html("section", { class: "card you-card" }, root);
-    const ch = html("div", { class: "card-head" }, card);
-    html("h3", {}, ch, "Your position");
-    html("span", { class: "muted" }, ch, map.powers[p.power]?.nuclear ? "nuclear power" : "not nuclear");
-    const stats = html("div", { class: "stats" }, card);
-    for (const [k, v] of [["Centres", s.centres], ["Units", s.units], ["Swing", s.swing], ["Vote", s.vote_weight]] as const) {
-      const d = html("div", { class: "stat" }, stats);
-      html("b", {}, d, String(v));
-      html("span", {}, d, k);
+    const card = aidSection(root, RULE.winning, "Your position", map.powers[p.power]?.nuclear ? "Nuclear power" : "Not nuclear", "you-card");
+    const tbl = html("dl", { class: "tally" }, card);
+    for (const [k, v] of [["Centres", s.centres], ["Units", s.units], ["Swing states", s.swing], ["Vote weight", s.vote_weight]] as const) {
+      const d = html("div", {}, tbl);
+      html("dt", {}, d, k);
+      html("dd", { class: "num" }, d, String(v));
     }
     const kv = (k: string, v: string) => {
-      const r = html("div", { class: "kv" }, card);
+      const r = html("div", { class: "aid-row" }, card);
       html("span", { class: "k" }, r, k);
       html("span", { class: "v" }, r, v);
     };
     const names = (xs: string[]) => xs.map((x) => map.powers[x]?.name ?? x).join(", ");
-    if (!s.nuclear) kv("Umbrella", s.protected_by.length ? `protected by ${names(s.protected_by)}` : "unprotected: foreign Military can take your homes");
-    else kv("Umbrellas", s.protecting.length ? `you protect ${names(s.protecting)}` : "you protect no one");
-    kv("Veto", s.vetoes_left ? "1 left" : "used");
-    for (const e of s.effects) html("div", { class: "effect" }, card, e);
+    if (!s.nuclear) kv("Umbrella", s.protected_by.length ? `Protected by ${names(s.protected_by)}` : "Unprotected: foreign Military can take your homes");
+    else kv("Umbrellas", s.protecting.length ? `You protect ${names(s.protecting)}` : "You protect no one");
+    kv("Veto", s.vetoes_left ? "1 left" : "Used");
+    for (const e of s.effects) html("p", { class: "effect" }, card, e);
   }
 
   // ================================================================== chip, modals
@@ -1184,84 +1193,134 @@ export class PlayController {
     }
     c.hidden = false;
     c.replaceChildren();
-    const d = html("span", { class: "dot" }, c);
-    d.style.background = powerColour(st.power);
     const map = this.host.map;
     const last = st.pending?.phase ?? st.record.phases[st.record.phases.length - 1];
     const centres = last ? Object.entries(last.ownership).filter(([pid, o]) => o === st.power && map.provinces[pid]?.centre !== "none").length : 0;
-    html("strong", {}, c, ` ${st.power}`);
-    html("span", { class: "muted" }, c, ` · ${centres} centres`);
+    const who = html("span", { class: "you-power" }, c);
+    who.append(codeCounter(st.power, 22));
+    html("strong", {}, who, map.powers[st.power]?.name ?? st.power);
+    html("span", { class: "you-n" }, c, `${centres} centres`);
     const prot = st.pending?.status.protected_by ?? [];
     if (prot.length) {
-      const u = html("span", { class: "umb", title: `Protected by ${prot.join(", ")}` }, c);
-      u.textContent = ` ☂ ${prot.join(" ")}`;
+      const u = html("span", { class: "you-n umb", title: `Protected by ${prot.join(", ")}` }, c);
+      u.append(umbrellaSvg(), document.createTextNode(prot.join(" ")));
     }
     c.title = `You play ${map.powers[st.power]?.name}`;
-    const nb = html("button", { class: "linkish", type: "button", title: "Start a new game" }, c, "New");
+    const nb = html("button", { class: "link-btn", type: "button" }, c, "New game");
     nb.addEventListener("click", () => this.showStart());
   }
 
   showStart() {
     const map = this.host.map;
-    const m = modal("Choose your power", true);
+    const m = modal("Brink: choose your power", true);
     m.classList.add("start");
-    html("p", { class: "lede" }, m, "Seven powers, one board. You play one; six bots play the rest. Align swing states, keep the Crisis track below 10, and reach Primacy (9 aligned swing states) or lead when the clock runs out.");
-    const grid = html("div", { class: "power-grid" }, m);
+    m.querySelector(".modal-head")!.remove();
+    const lid = html("div", { class: "lid" }, m);
+    // grid areas: cover / opts / go on the left (desktop); on phones the power list comes before Start
+    const left = html("div", { class: "lid-cover" }, lid);
+    const logo = html("h1", { class: "lid-logo", "aria-label": "Brink" }, left);
+    html("span", { class: "logo-box" }, logo, "B");
+    logo.append(document.createTextNode("RINK"));
+    html("p", { class: "lid-line" }, left, "A game of great-power competition in the 2030s for seven players. Secret simultaneous orders, no dice. Power runs on two layers, military and civil; you win by aligning swing states, not by conquest, and a shared Crisis track can end the game with everyone losing.");
+    html("p", { class: "lid-line small" }, left, "You play one power; six bots play the rest. Reach Primacy (9 aligned swing states) or lead when the clock runs out.");
+    const close = html("button", { class: "x-btn lid-x", type: "button", "aria-label": "Close" }, lid);
+    close.append(xIcon());
+    close.addEventListener("click", closeModal);
+
+    const right = html("div", { class: "lid-powers" }, lid);
+    const rh = html("h2", { class: "aid-h" }, right);
+    html("span", { class: "aid-t" }, rh, "Choose your power");
+    const list = html("ul", { class: "power-list", role: "radiogroup", "aria-label": "Power" }, right);
+
+    const optsBox = html("div", { class: "lid-opts" }, lid);
+    const oh = html("h3", { class: "aid-h" }, optsBox);
+    html("span", { class: "aid-t" }, oh, "Game options");
+    const seedL = html("label", { class: "opt" }, optsBox);
+    html("span", {}, seedL, "Seed");
+    const seed = html("input", { class: "field", type: "number", placeholder: "Random", inputmode: "numeric" }, seedL) as HTMLInputElement;
+    const lenL = html("label", { class: "opt" }, optsBox);
+    html("span", {}, lenL, "Length");
+    const len = html("select", { class: "field" }, lenL) as HTMLSelectElement;
+    for (const [v, t] of [["", "Full game, to 2040"], ["2035", "Medium, to 2035"], ["2032", "Short, to 2032"]]) html("option", { value: v }, len, t);
+    const allyL = html("label", { class: "opt check" }, optsBox);
+    const ally = html("input", { type: "checkbox" }, allyL) as HTMLInputElement;
+    html("span", {}, allyL, "Bots form alliances with each other");
+    const resume = html("div", { class: "resume", hidden: true }, optsBox);
+    const row = html("div", { class: "lid-go" }, lid);
+    const startBtn = html("button", { class: "btn commit-btn big", type: "button" }, row, "Start game");
+
     let chosen = this.power ?? "USA";
-    const cards: HTMLElement[] = [];
+    const rows: HTMLElement[] = [];
+    const pick = (p: string) => {
+      chosen = p;
+      rows.forEach((r) => {
+        const on = r.dataset.power === p;
+        r.classList.toggle("active", on);
+        r.setAttribute("aria-checked", String(on));
+        r.tabIndex = on ? 0 : -1;
+      });
+      startBtn.textContent = `Start game as ${map.powers[p]?.name ?? p}`;
+    };
+    const pname = (x: string) => map.powers[x]?.name ?? x;
+    const list2 = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
     for (const p of POWER_ORDER) {
       const P = map.powers[p];
       if (!P) continue;
-      const card = html("button", { class: `power-card${p === chosen ? " active" : ""}`, type: "button", "aria-pressed": String(p === chosen) }, grid);
-      card.style.setProperty("--c", powerColour(p));
-      const h = html("div", { class: "pc-head" }, card);
-      html("span", { class: "pc-name" }, h, P.name);
-      html("span", { class: "pc-tag" }, h, P.nuclear ? "nuclear" : "non-nuclear");
-      html("div", { class: "pc-homes" }, card, P.homes.map((x) => map.provinces[x]?.name ?? x).join(" · "));
-      const us = html("div", { class: "pc-units" }, card);
-      for (const u of map.start.units.filter((x) => x.power === p)) {
-        const s = html("span", { class: "pc-unit" }, us);
-        s.append(utoken(u.type, p));
-        s.append(document.createTextNode(` ${map.provinces[u.at]?.name ?? u.at}`));
+      const li = html("li", {}, list);
+      const card = html("button", { class: "power-row", type: "button", role: "radio", "data-power": p }, li);
+      const us = html("span", { class: "pr-units" }, card);
+      const start = map.start.units.filter((x) => x.power === p);
+      for (const u of start) {
+        const c = counterSvg(u.type, p, 30);
+        const t = svg("title", {}, c);
+        t.textContent = `${UNIT_NAMES[u.type]} in ${map.provinces[u.at]?.name ?? u.at}`;
+        us.append(c);
       }
-      html("p", { class: "pc-char" }, card, CHARACTER[p] ?? "");
-      card.addEventListener("click", () => {
-        chosen = p;
-        cards.forEach((c) => {
-          c.classList.remove("active");
-          c.setAttribute("aria-pressed", "false");
-        });
-        card.classList.add("active");
-        card.setAttribute("aria-pressed", "true");
-      });
+      const body = html("span", { class: "pr-body" }, card);
+      const h = html("span", { class: "pr-head" }, body);
+      html("span", { class: "pr-name" }, h, P.name);
+      html("span", { class: "pr-code" }, h, p);
+      html("span", { class: "pr-tag" }, h, P.nuclear ? "Nuclear" : "Not nuclear");
+      html("span", { class: "pr-char" }, body, CHARACTER[p] ?? "");
+      // facts from the map's start position
+      const facts: string[] = [`Homes: ${list2(P.homes.map((x) => map.provinces[x]?.name ?? x))}.`];
+      facts.push(`Starts with ${list2(start.map((u) => `${UNIT_NAMES[u.type]} in ${map.provinces[u.at]?.name ?? u.at}`))}.`);
+      const over = map.start.umbrellas.filter(([a]) => a === p).map(([, b]) => pname(b));
+      const under = map.start.umbrellas.filter(([, b]) => b === p).map(([a]) => pname(a));
+      if (over.length) facts.push(`Umbrella over ${list2(over)}.`);
+      if (under.length) facts.push(`Under the ${list2(under)} umbrella.`);
+      html("span", { class: "pr-homes" }, body, facts.join(" "));
+      card.addEventListener("click", () => pick(p));
       card.addEventListener("dblclick", () => go());
-      cards.push(card);
+      card.addEventListener("keydown", (ev) => {
+        const i = POWER_ORDER.indexOf(p as typeof POWER_ORDER[number]);
+        if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const n = POWER_ORDER[(i + (ev.key === "ArrowDown" ? 1 : POWER_ORDER.length - 1)) % POWER_ORDER.length];
+          pick(n);
+          rows.find((r) => r.dataset.power === n)?.focus();
+        }
+      });
+      rows.push(card);
     }
-    const opts = html("div", { class: "start-opts" }, m);
-    const seedL = html("label", { class: "opt" }, opts, "Seed ");
-    const seed = html("input", { class: "field", type: "number", placeholder: "random", inputmode: "numeric" }, seedL) as HTMLInputElement;
-    const lenL = html("label", { class: "opt" }, opts, "Length ");
-    const len = html("select", { class: "field" }, lenL) as HTMLSelectElement;
-    for (const [v, t] of [["", "Full game (to 2040)"], ["2035", "Medium (to 2035)"], ["2032", "Short (to 2032)"]]) html("option", { value: v }, len, t);
-    const allyL = html("label", { class: "opt check" }, opts);
-    const ally = html("input", { type: "checkbox" }, allyL) as HTMLInputElement;
-    allyL.append(document.createTextNode(" Bots form alliances with each other"));
-    const row = html("div", { class: "btn-row end" }, m);
     const go = () => this.create(chosen, seed.value, ally.checked, len.value);
-    const startBtn = html("button", { class: "btn primary big", type: "button" }, row, "Start game");
     startBtn.addEventListener("click", go);
+    pick(chosen);
     // ongoing games on this server
     api<{ id: string; power: string; status: string; year: number; season: string }[]>("GET", "/api/games").then((games) => {
       const open = games.filter((g) => g.status === "waiting" || g.status === "thinking" || g.status === "over");
       if (!open.length) return;
-      const res = html("div", { class: "resume" });
-      m.insertBefore(res, row);
-      html("div", { class: "sub-h" }, res, "Games on this server");
+      resume.hidden = false;
+      const rh2 = html("h3", { class: "aid-h" }, resume);
+      html("span", { class: "aid-t" }, rh2, "Resume a game on this server");
+      const ul = html("ul", { class: "resume-list" }, resume);
       for (const g of open.slice(0, 5)) {
-        const b = html("button", { class: "chip", type: "button" }, res);
-        const dd = html("span", { class: "dot" }, b);
-        dd.style.background = powerColour(g.power);
-        b.append(document.createTextNode(` ${g.power} · ${g.status === "over" ? "finished" : `${g.season} ${g.year}`}`));
+        const li = html("li", {}, ul);
+        const b = html("button", { class: "resume-row", type: "button" }, li);
+        b.append(codeCounter(g.power, 20));
+        html("span", {}, b, map.powers[g.power]?.name ?? g.power);
+        html("span", { class: "muted" }, b, g.status === "over" ? "Finished" : `${g.season.charAt(0).toUpperCase()}${g.season.slice(1)} ${g.year}`);
         b.addEventListener("click", () => {
           closeModal();
           const url = new URL(location.href);
@@ -1274,7 +1333,7 @@ export class PlayController {
         });
       }
     }).catch(() => {
-      html("p", { class: "void" }, m, "Can't reach the game server. Start it with `brink serve` (and open the URL it prints).");
+      html("p", { class: "void" }, optsBox, "Can't reach the game server. Start it with `brink serve` and open the address it prints.");
     });
     startBtn.focus();
   }
@@ -1302,8 +1361,7 @@ export class PlayController {
     for (const p of ranked) {
       const tr = html("tr", { class: p === you ? "you" : "" }, tb);
       const c = html("td", {}, tr);
-      const dd = html("span", { class: "dot" }, c);
-      dd.style.background = powerColour(p);
+      c.append(codeCounter(p, 20));
       html("td", {}, tr, `${map.powers[p].name}${p === you ? " (you)" : ""}`);
       html("td", { class: "num" }, tr, String(r.centres?.[p] ?? ""));
       html("td", { class: "num" }, tr, (scores[p] ?? 0).toFixed(1));
@@ -1314,7 +1372,7 @@ export class PlayController {
       closeModal();
       this.host.go(0);
     });
-    const nw = html("button", { class: "btn primary", type: "button" }, row, "New game");
+    const nw = html("button", { class: "btn commit-btn", type: "button" }, row, "New game");
     nw.addEventListener("click", () => {
       closeModal();
       this.showStart();
@@ -1394,19 +1452,15 @@ function livePhase(ph: Phase): Phase {
   };
 }
 
-function utoken(type: UnitType, power: string): SVGSVGElement {
-  const s = svg("svg", { class: "utoken", viewBox: "0 0 20 20", width: 18, height: 18, "aria-hidden": "true" });
-  const c = powerColour(power);
-  const r = 7;
-  if (type === "A") svg("circle", { cx: 10, cy: 10, r, fill: c }, s);
-  else {
-    const pts = type === "F" ? [[0, -r * 1.18], [r * 1.12, r * 0.78], [-r * 1.12, r * 0.78]]
-      : type === "C" ? [[0, -r * 1.25], [r * 1.25, 0], [0, r * 1.25], [-r * 1.25, 0]]
-      : [0, 60, 120, 180, 240, 300].map((a) => [r * 1.12 * Math.cos(((a + 30) * Math.PI) / 180), r * 1.12 * Math.sin(((a + 30) * Math.PI) / 180)]);
-    svg("polygon", { points: pts.map(([x, y]) => `${10 + x},${10 + y + (type === "F" ? 1 : 0)}`).join(" "), fill: c }, s);
-  }
-  const t = svg("text", { x: 10, y: type === "F" ? 13.4 : 12.6, class: "utoken-glyph" }, s);
-  t.textContent = type;
+function xIcon(): SVGSVGElement {
+  const s = svg("svg", { viewBox: "0 0 16 16", width: 14, height: 14, "aria-hidden": "true" });
+  svg("path", { d: "M4 4l8 8M12 4l-8 8" }, s);
+  return s;
+}
+
+function umbrellaSvg(): SVGSVGElement {
+  const s = svg("svg", { viewBox: "0 0 16 16", width: 14, height: 14, class: "icon umbrella", "aria-hidden": "true" });
+  svg("path", { d: "M8 2.2C4.6 2.2 2.2 4.6 1.8 7.6h12.4C13.8 4.6 11.4 2.2 8 2.2Zm0 5.4v5a1.4 1.4 0 0 1-2.8 0", fill: "none", stroke: "currentColor", "stroke-width": 1.3 }, s);
   return s;
 }
 
@@ -1429,7 +1483,8 @@ function modal(title: string, dismissable = false): HTMLElement {
   const h = html("div", { class: "modal-head" }, m);
   html("h2", {}, h, title);
   if (dismissable) {
-    const x = html("button", { class: "icon-btn small", type: "button", "aria-label": "Close" }, h, "×");
+    const x = html("button", { class: "x-btn", type: "button", "aria-label": "Close" }, h);
+    x.append(xIcon());
     x.addEventListener("click", closeModal);
     back.addEventListener("click", (ev) => {
       if (ev.target === back) closeModal();

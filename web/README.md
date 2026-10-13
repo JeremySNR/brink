@@ -15,8 +15,13 @@ npm run dev        # or: npm run build && npm run preview
 ## Replay
 
 URL parameters: `?game=<url>` loads another game record (default `sample-game.json`),
-`?theme=light|dark` forces a theme, `?focus=<province id>` zooms to a province, `#S2032M` opens a phase.
-Keyboard: ←/→ phases, Home/End, +/− zoom, 0 fit, Esc clears a selection.
+`?focus=<province id>` zooms to a province, `#S2032M` opens a phase. The turn record track under the top
+bar is the timeline: click a Spring, Fall or Winter box to jump there.
+Keyboard: ←/→ phases (including retreats and winter), Home/End, +/− zoom, 0 fit, Esc clears a selection.
+
+Visual design: the Wargame Box direction in `.impeccable/surfaces/web.md` (printed map sheet, die-cut
+counters from `src/counter.ts`, player-aid column). Fonts are self-hosted from `@fontsource/barlow-condensed`
+and `@fontsource/archivo`; all colours are tokens at the top of `src/style.css` (light sheet only).
 
 ## Play
 

@@ -1,23 +1,27 @@
 import { BoardView, TOKEN_R } from "./board";
-import { POWER_COLOURS, UNIT_NAMES, powerColour } from "./theme";
+import { counterGroup } from "./counter";
+import { POWER_COLOURS, RED, UNIT_NAMES, arrowInk } from "./theme";
 import type { Order, Phase, Pt, Unit, UnitType } from "./types";
 import { svg } from "./util";
 
 const MIL = new Set(["A", "F"]);
 const layerOf = (t: string): "military" | "civil" => (MIL.has(t) ? "military" : "civil");
+const OK = ["ok", "success", "succeeded"];
 
 export interface OverlayHandlers {
   onUnitClick(u: Unit, ev: MouseEvent): void;
   onUnitHover(u: Unit | null, ev?: MouseEvent): void;
 }
 
-/** Units and order arrows for one phase. Redraws on zoom (positions depend on block scale). */
+/** Counters and order arrows for one phase. Redraws on zoom (positions depend on block scale). */
 export class Overlay {
   private phase: Phase | null = null;
   selected: Unit | null = null;
   hoverOrder: number | null = null;
-  /** draw a ring for explicit HOLD orders (play mode drafts) */
+  /** draw a frame for explicit HOLD orders (play mode drafts) */
   showHolds = false;
+  /** the power the player controls: its orders print in red */
+  you: string | null = null;
 
   constructor(
     private view: BoardView,
@@ -36,20 +40,29 @@ export class Overlay {
     const defs = this.view.svg.querySelector("defs")!;
     const mk = (id: string, colour: string, open = false) => {
       const m = svg("marker", {
-        id, viewBox: "0 0 10 10", refX: 7, refY: 5, markerWidth: 4.2, markerHeight: 4.2,
+        id, viewBox: "0 0 10 10", refX: 6.5, refY: 5, markerWidth: 3.6, markerHeight: 3.6,
         orient: "auto-start-reverse", markerUnits: "strokeWidth",
       }, defs);
       svg("path", {
-        d: open ? "M1 1.5L8 5L1 8.5" : "M0 0.8L9.5 5L0 9.2L2.4 5Z",
-        fill: open ? "none" : colour, stroke: colour, "stroke-width": open ? 1.6 : 0.6,
-        "stroke-linejoin": "round", "stroke-linecap": "round",
+        d: open ? "M1 1.2L8 5L1 8.8" : "M0 0.6L9.6 5L0 9.4Z",
+        fill: open ? "none" : colour, stroke: open ? colour : "#1D1D1B", "stroke-width": open ? 1.7 : 0.7,
+        "stroke-linejoin": "miter", "stroke-linecap": "square",
       }, m);
     };
-    for (const [p, c] of Object.entries(POWER_COLOURS)) {
-      mk(`arrow-${p}`, c);
-      mk(`arrow-open-${p}`, c, true);
+    for (const p of Object.keys(POWER_COLOURS)) {
+      mk(`arrow-${p}`, arrowInk(p));
+      mk(`arrow-open-${p}`, p === "JPN" ? "#1D1D1B" : arrowInk(p), true);
     }
-    mk("arrow-neutral", "#6B7280");
+    mk("arrow-you", RED);
+    mk("arrow-open-you", RED, true);
+  }
+
+  private ink(power: string) {
+    return power === this.you ? RED : arrowInk(power);
+  }
+
+  private mkId(power: string, open = false) {
+    return `arrow-${open ? "open-" : ""}${power === this.you ? "you" : power}`;
   }
 
   // ------------------------------------------------------------------ positions
@@ -57,7 +70,7 @@ export class Overlay {
     const p = this.view.slot(u.at, layerOf(u.type));
     if (!dislodged) return p;
     const f = this.view.f;
-    return [p[0] + 7 * f, p[1] - 7 * f];
+    return [p[0] + 9 * f, p[1] - 9 * f];
   }
 
   private r() {
@@ -72,6 +85,7 @@ export class Overlay {
     L.orders.replaceChildren();
     L.badges.replaceChildren();
     if (!ph) return;
+    this.view.svg.classList.toggle("has-you", !!this.you);
     ph.orders.forEach((o, i) => this.drawOrder(o, i, ph));
     for (const u of ph.units) this.drawUnit(u, ph);
     // dislodged units (the record lists them separately)
@@ -79,12 +93,12 @@ export class Overlay {
       if (ph.units.some((u) => u.dislodged && u.at === d.at && u.type === d.type && u.power === d.power)) continue;
       if (ph.kind === "retreat") this.drawUnit({ power: d.power, type: d.type, at: d.at, dislodged: true }, ph);
     }
-    // builds (winter): ghost tokens
+    // builds (winter): ghost counters, die-cut outline only
     for (const o of ph.orders) {
       if (o.kind === "build" && o.unit) {
         const pos = this.unitPos(o.unit);
-        const g = this.token(o.unit.type, pos, powerColour(o.power), L.units, true);
-        g.classList.add("ghost");
+        const g = this.token(o.unit.type, o.power, pos, L.units, true);
+        g.classList.add("ghost-unit");
         const t = svg("title", {}, g);
         t.textContent = `${o.power} builds ${UNIT_NAMES[o.unit.type]} in ${o.unit.at}`;
       }
@@ -93,9 +107,9 @@ export class Overlay {
 
   private drawUnit(u: Unit, ph: Phase) {
     const pos = this.unitPos(u, !!u.dislodged);
-    const col = powerColour(u.power);
-    const g = this.token(u.type, pos, col, this.view.layer.units, !!u.dislodged);
+    const g = this.token(u.type, u.power, pos, this.view.layer.units, false, !!u.dislodged);
     g.classList.add("unit");
+    if (u.power === this.you) g.classList.add("yours");
     if (u.dislodged) g.classList.add("dislodged");
     if (this.selected && this.selected.at === u.at && this.selected.type === u.type) g.classList.add("selected");
     g.setAttribute("tabindex", "0");
@@ -115,62 +129,46 @@ export class Overlay {
     });
     g.addEventListener("mouseenter", (ev) => this.h.onUnitHover(u, ev));
     g.addEventListener("mouseleave", () => this.h.onUnitHover(null));
-    // badges: COMMONS leaf
+    // badges: COMMONS leaf, disband cross
     const o = ph.orders.find((x) => x.unit && x.unit.at === u.at && x.unit.type === u.type && x.power === u.power);
     if (o?.kind === "commons") this.leafBadge(pos);
-    if (o?.kind === "disband") this.crossMark(pos, this.r() * 0.9, "#1F2933");
+    if (o?.kind === "disband") this.crossMark(pos, this.r() * 0.9);
   }
 
-  /** Token shapes: Army circle, Fleet triangle, Capital diamond, Influence hexagon. */
-  token(type: UnitType, [x, y]: Pt, colour: string, parent: Element, ghost = false): SVGGElement {
-    const r = this.r();
-    const g = svg("g", { class: "token", transform: `translate(${x} ${y})` }, parent);
-    const shapeAttrs = { class: "token-shape", fill: ghost ? "none" : colour, stroke: ghost ? colour : undefined };
-    let shape: SVGElement;
-    if (type === "A") shape = svg("circle", { r, ...shapeAttrs }, g);
-    else {
-      let pts: Pt[];
-      if (type === "F") pts = [[0, -r * 1.18], [r * 1.12, r * 0.78], [-r * 1.12, r * 0.78]];
-      else if (type === "C") pts = [[0, -r * 1.22], [r * 1.22, 0], [0, r * 1.22], [-r * 1.22, 0]];
-      else pts = [0, 60, 120, 180, 240, 300].map((a) => {
-        const t = ((a + 30) * Math.PI) / 180;
-        return [r * 1.1 * Math.cos(t), r * 1.1 * Math.sin(t)] as Pt;
-      });
-      shape = svg("polygon", { points: pts.map((p) => p.map((v) => v.toFixed(2)).join(",")).join(" "), ...shapeAttrs }, g);
-    }
-    shape.setAttribute("stroke-linejoin", "round");
-    const glyph = svg("text", {
-      class: "token-glyph", y: type === "F" ? r * 0.36 : r * 0.36, "font-size": (r * 1.02).toFixed(2),
-    }, g);
-    glyph.textContent = type;
-    if (ghost) glyph.setAttribute("fill", colour);
+  /** A die-cut counter: power stock, black unit symbol, power code; scaled with the block. */
+  token(type: UnitType, power: string, [x, y]: Pt, parent: Element, ghost = false, dislodged = false): SVGGElement {
+    const s = (this.r() * 2.06) / 14;
+    const g = svg("g", {
+      class: "token", transform: `translate(${x} ${y}) scale(${s.toFixed(4)})${dislodged ? " rotate(-14)" : ""}`,
+    }, parent);
+    counterGroup(type, power, g, { ghost });
     return g;
   }
 
   private leafBadge([x, y]: Pt) {
     const r = this.r();
-    const g = svg("g", { class: "badge leaf", transform: `translate(${x + r * 0.95} ${y - r * 0.95}) scale(${r / 6.5})` },
+    const g = svg("g", { class: "badge leaf", transform: `translate(${x + r * 1.05} ${y - r * 1.05}) scale(${r / 6.5})` },
       this.view.layer.badges);
-    svg("circle", { r: 3.6 }, g);
-    svg("path", { d: "M-1.8 1.9C-2.1 -0.9 -0.2 -2.4 2.2 -2.3C2.3 0.2 0.8 2.1 -1.8 1.9ZM-1.8 1.9L0.9 -0.9" }, g);
+    svg("circle", { r: 3.4 }, g);
+    svg("path", { d: "M-1.7 1.8C-2 -0.9 -0.2 -2.3 2.1 -2.2C2.2 0.2 0.8 2 -1.7 1.8ZM-1.7 1.8L0.9 -0.9" }, g);
     const t = svg("title", {}, g);
     t.textContent = "COMMONS";
   }
 
-  private crossMark([x, y]: Pt, s: number, colour: string, parent: Element = this.view.layer.badges) {
+  private crossMark([x, y]: Pt, s: number, parent: Element = this.view.layer.badges) {
     const g = svg("g", { class: "fail-x", transform: `translate(${x} ${y})` }, parent);
-    svg("circle", { r: s * 0.9 }, g);
-    svg("path", { d: `M${-s * 0.42} ${-s * 0.42}L${s * 0.42} ${s * 0.42}M${s * 0.42} ${-s * 0.42}L${-s * 0.42} ${s * 0.42}`, stroke: colour }, g);
+    svg("rect", { x: -s * 0.62, y: -s * 0.62, width: s * 1.24, height: s * 1.24 }, g);
+    svg("path", { d: `M${-s * 0.36} ${-s * 0.36}L${s * 0.36} ${s * 0.36}M${s * 0.36} ${-s * 0.36}L${-s * 0.36} ${s * 0.36}` }, g);
   }
 
   // ------------------------------------------------------------------ orders
   private drawOrder(o: Order, i: number, ph: Phase) {
     const L = this.view.layer.orders;
     const px = 1 / this.view.k;
-    const col = powerColour(o.power);
-    const failed = !["ok", "success", "succeeded"].includes(o.result);
+    const col = this.ink(o.power);
+    const failed = !OK.includes(o.result);
     const g = svg("g", {
-      class: `order kind-${o.kind}${failed ? " failed" : ""}${this.hoverOrder === i ? " hot" : ""}`,
+      class: `order kind-${o.kind}${failed ? " failed" : ""}${this.hoverOrder === i ? " hot" : ""}${o.power === this.you ? " yours" : ""}${o.power === "JPN" && o.power !== this.you ? " pale" : ""}`,
       "data-index": i,
     }, L);
     const r = this.r();
@@ -186,7 +184,7 @@ export class Overlay {
         const fromP = o.kind === "retreat" ? this.unitPos(u, true) : from!;
         const to = this.view.slot(o.to, layerOf(u.type));
         this.arrow(g, fromP, end(to), {
-          colour: col, width: w, startGap: r * 1.15, endGap: r * 1.25, marker: `arrow-${o.power}`,
+          colour: col, width: w, startGap: r * 1.15, endGap: r * 1.25, marker: this.mkId(o.power),
           dash: o.kind === "retreat" ? [5 * px, 3 * px] : undefined, bend: 0.12,
         });
         if (o.via === "convoy") g.classList.add("via-convoy");
@@ -199,7 +197,7 @@ export class Overlay {
           const tgtLayer = layerOf(o.target.type);
           const to = this.view.slot(o.to, tgtLayer);
           this.arrow(g, from, to, {
-            colour: col, width: w * 0.62, startGap: r * 1.1, endGap: r * 1.7, marker: `arrow-open-${o.power}`,
+            colour: col, width: w * 0.62, startGap: r * 1.1, endGap: r * 1.7, marker: this.mkId(o.power, true),
             dash: [4.5 * px, 3 * px], bend: -0.18,
           });
           if (failed) this.failMark(g, from, to, r);
@@ -208,8 +206,9 @@ export class Overlay {
           this.arrow(g, from, to, {
             colour: col, width: w * 0.62, startGap: r * 1.1, endGap: r * 1.75, dash: [4.5 * px, 3 * px], bend: -0.1,
           });
-          svg("circle", {
-            cx: to[0], cy: to[1], r: r * 1.6, class: "support-ring", stroke: col,
+          const q = r * 1.5;
+          svg("rect", {
+            x: to[0] - q, y: to[1] - q, width: q * 2, height: q * 2, class: "support-ring", stroke: col,
             "stroke-width": w * 0.62, "stroke-dasharray": `${4.5 * px} ${3 * px}`,
           }, g);
           if (failed) this.failMark(g, from, to, r);
@@ -222,6 +221,10 @@ export class Overlay {
         const to = this.view.slot(o.to, "military");
         const d = curveThrough([a, from, to], r * 1.2, r * 1.4);
         svg("path", {
+          d, class: "convoy-casing", "stroke-width": w * 0.75 + 2 * px,
+          "stroke-dasharray": `${0.1 * px} ${4.2 * px}`, "stroke-linecap": "round",
+        }, g);
+        svg("path", {
           d, class: "convoy", stroke: col, "stroke-width": w * 0.75,
           "stroke-dasharray": `${0.1 * px} ${4.2 * px}`, "stroke-linecap": "round",
         }, g);
@@ -233,6 +236,7 @@ export class Overlay {
         if (!from || !o.to) return;
         const to = this.view.centreOf(o.to);
         const d = zigzag(from, to, r * 1.2, r * 0.6, 3.2 * px * 1.4, 2.6 * px * 1.2);
+        svg("path", { d, class: "zigzag-casing", "stroke-width": w * 0.8 + 2 * px }, g);
         svg("path", { d, class: "zigzag", stroke: col, "stroke-width": w * 0.8 }, g);
         svg("circle", { cx: to[0], cy: to[1], r: 3.2 * this.view.f, class: "disrupt-target", stroke: col, "stroke-width": w * 0.7 }, g);
         if (failed) this.failMark(g, from, to, r);
@@ -249,7 +253,7 @@ export class Overlay {
           if (dd < bd) { bd = dd; best = c; }
         }
         if (!best) return;
-        this.arrow(g, from, best, { colour: "#5F6B7A", width: w * 0.8, startGap: r * 1.2, endGap: 5.5 * this.view.f, bend: 0.08, cls: "sanction-line" });
+        this.arrow(g, from, best, { colour: o.power === this.you ? RED : "#4A4740", width: w * 0.5, dash: [3 * px, 2.5 * px], startGap: r * 1.2, endGap: 5.5 * this.view.f, bend: 0.08, cls: "sanction-line" });
         const s = 4.6 * this.view.f;
         const bg = svg("g", { class: "blocked", transform: `translate(${best[0]} ${best[1]})` }, g);
         svg("circle", { r: s }, bg);
@@ -263,15 +267,16 @@ export class Overlay {
         if (!p) return;
         const el = svg("path", { d: p.d, class: "close-hl", stroke: col, "stroke-width": 2.4 * px }, g);
         el.style.fill = col;
-        if (failed) this.crossMark(from!, r * 1.1, "#B42318", g);
+        if (failed) this.crossMark(from!, r * 1.1, g);
         break;
       }
       case "commons":
       case "hold":
       default:
-        if (o.kind === "hold" && failed && from) this.crossMark([from[0] + r, from[1] - r], r * 0.7, "#B42318", g);
+        if (o.kind === "hold" && failed && from) this.crossMark([from[0] + r, from[1] - r], r * 0.7, g);
         else if (o.kind === "hold" && from && this.showHolds) {
-          svg("circle", { cx: from[0], cy: from[1], r: r * 1.6, class: "hold-ring", stroke: col, "stroke-width": w * 0.7 }, g);
+          const q = r * 1.45;
+          svg("rect", { x: from[0] - q, y: from[1] - q, width: q * 2, height: q * 2, class: "hold-ring", stroke: col, "stroke-width": w * 0.7 }, g);
         }
         break;
     }
@@ -282,7 +287,7 @@ export class Overlay {
 
   private failMark(g: SVGGElement, a: Pt, b: Pt, r: number) {
     const mid: Pt = [a[0] + (b[0] - a[0]) * 0.62, a[1] + (b[1] - a[1]) * 0.62];
-    this.crossMark(mid, r * 0.85, "#B42318", g);
+    this.crossMark(mid, r * 0.85, g);
   }
 
   private arrow(
@@ -307,7 +312,11 @@ export class Overlay {
     }
     const d = arcPath(a, b, o.startGap, o.endGap, o.bend ?? 0.12);
     if (!d) return;
-    svg("path", { d, class: "arrow-casing", "stroke-width": o.width * 2.1 }, g);
+    const px = 1 / this.view.k;
+    svg("path", {
+      d, class: "arrow-casing", "stroke-width": o.width + 2 * px,
+      "stroke-dasharray": o.dash ? o.dash.join(" ") : undefined,
+    }, g);
     const p = svg("path", {
       d, class: `arrow ${o.cls ?? ""}`, stroke: o.colour, "stroke-width": o.width,
       "marker-end": o.marker ? `url(#${o.marker})` : undefined,

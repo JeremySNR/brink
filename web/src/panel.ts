@@ -1,4 +1,6 @@
-import { POWER_ORDER, UNIT_NAMES, powerColour } from "./theme";
+// The player-aid column: printed sections headed with the rulebook's section numbers.
+import { codeCounter } from "./counter";
+import { POWER_ORDER, UNIT_NAMES } from "./theme";
 import type { MapData, Order, Phase } from "./types";
 import { html, seasonLabel, svg } from "./util";
 
@@ -6,9 +8,58 @@ const RESULT_LABEL: Record<string, string> = {
   ok: "succeeds", bounce: "bounced", cut: "cut", void: "void", dislodged: "dislodged", failed: "failed",
 };
 
+/** Rulebook section numbers (the player aid cross-references them). */
+export const RULE = {
+  orders: 5, resolution: 6, swing: 7, chokepoints: 8, security: 9, crisis: 10, assembly: 11, winter: 12, winning: 13,
+} as const;
+
+export const CRISIS_STEPS: Record<number, string> = { 6: "Recession", 8: "State failure", 10: "Collapse" };
+
 export interface PanelHandlers {
   onOrderHover(index: number | null): void;
   onProvinceFocus(pid: string): void;
+}
+
+/** A player-aid section: a black rule, the section number in red, a condensed-caps heading. */
+export function aidSection(parent: HTMLElement, ref: number | null, title: string, note?: string, cls = ""): HTMLElement {
+  const s = html("section", { class: `aid ${cls}`.trim() }, parent);
+  const h = html("h3", { class: "aid-h" }, s);
+  if (ref !== null) html("span", { class: "ref" }, h, String(ref));
+  html("span", { class: "aid-t" }, h, title);
+  if (note) html("span", { class: "aid-note" }, h, note);
+  return s;
+}
+
+/** The Crisis track: boxes 0-10, a marker counter on the current value, thresholds printed. */
+export function crisisTrack(parent: HTMLElement, level: number) {
+  const v = Math.max(0, Math.min(10, level));
+  const step = v >= 10 ? 10 : v >= 8 ? 8 : v >= 6 ? 6 : 0;
+  const track = html("ol", {
+    class: "crisis-track", role: "meter", "aria-valuemin": 0, "aria-valuemax": 10, "aria-valuenow": v,
+    "aria-label": `Crisis ${v} of 10${step ? `: ${CRISIS_STEPS[step]}` : ""}`,
+  }, parent);
+  for (let i = 0; i <= 10; i++) {
+    const cls = ["cbox"];
+    if (i === 6 || i === 7) cls.push("t6");
+    if (i === 8 || i === 9) cls.push("t8");
+    if (i === 10) cls.push("t10");
+    if (CRISIS_STEPS[i]) cls.push("step");
+    if (i < v) cls.push("past");
+    const li = html("li", { class: cls.join(" ") }, track);
+    html("span", { class: "cnum" }, li, String(i));
+    if (i === v) {
+      li.classList.add("on");
+      const m = html("span", { class: `cmarker${v >= 6 ? " danger" : ""}`, title: `Crisis ${v}` }, li);
+      html("span", {}, m, String(v));
+    }
+  }
+  const key = html("ul", { class: "crisis-key" }, parent);
+  for (const [n, label, effect] of [[6, "Recession", "builds −1"], [8, "State failure", ""], [10, "Collapse", "all lose"]] as const) {
+    const li = html("li", { class: `t${n}${v >= n ? " reached" : ""}` }, key);
+    html("b", {}, li, String(n));
+    html("span", {}, li, label);
+    if (effect) html("span", { class: "eff" }, li, effect);
+  }
 }
 
 export class Panel {
@@ -27,133 +78,113 @@ export class Panel {
     const pname = (p: string) => P[p]?.name ?? p;
 
     // ---- phase header
-    const head = html("section", { class: "phase-head" }, opts.header === false ? null : r);
-    html("div", { class: "eyebrow" }, head, `Phase ${index + 1} of ${total}`);
-    const h = html("h2", { class: "phase-title" }, head);
-    html("span", { class: "phase-season" }, h, seasonLabel(ph.season, ph.kind));
-    html("span", { class: "phase-year" }, h, ` ${ph.year}`);
-    html("div", { class: "phase-kind" }, head, ph.kind === "movement" ? "Movement" : ph.kind === "retreat" ? "Retreats" : "Adjustments & Assembly");
-
-    // ---- crisis gauge
-    const cr = html("section", { class: "card crisis" }, r);
-    const crHead = html("div", { class: "card-head" }, cr);
-    html("h3", {}, crHead, "Crisis");
-    const level = Math.max(0, Math.min(10, ph.crisis));
-    html("span", { class: `crisis-value ${level >= 8 ? "danger" : level >= 6 ? "warn" : ""}` }, crHead, `${level} / 10`);
-    const gauge = html("div", {
-      class: "gauge", role: "meter", "aria-valuemin": 0, "aria-valuemax": 10, "aria-valuenow": level,
-      "aria-label": `Crisis ${level} of 10`,
-    }, cr);
-    for (let i = 1; i <= 10; i++) {
-      const seg = html("span", { class: `seg${i <= level ? " on" : ""}${i >= 10 ? " t10" : i >= 8 ? " t8" : i >= 6 ? " t6" : ""}` }, gauge);
-      if (i === 6 || i === 8 || i === 10) seg.dataset.threshold = String(i);
+    if (opts.header !== false) {
+      const head = html("section", { class: "phase-head" }, r);
+      const h = html("h2", { class: "phase-title" }, head);
+      h.append(document.createTextNode(`${seasonLabel(ph.season, ph.kind)} `));
+      html("span", { class: "num" }, h, String(ph.year));
+      html("p", { class: "phase-sub" }, head,
+        `${ph.kind === "movement" ? "Movement" : ph.kind === "retreat" ? "Retreats" : "Adjustments and Assembly"}, phase ${index + 1} of ${total}`);
     }
-    const legend = html("div", { class: "gauge-legend" }, cr);
-    html("span", {}, legend, "6 · builds −1");
-    html("span", {}, legend, "8 · brink");
-    html("span", {}, legend, "10 · collapse");
 
-    // ---- centres per power
-    const cc = html("section", { class: "card" }, r);
-    const ccHead = html("div", { class: "card-head" }, cc);
-    html("h3", {}, ccHead, "Supply centres");
-    html("span", { class: "muted" }, ccHead, "homes + aligned swing");
+    // ---- what happened comes first in replay: consequences before detail
+    if (ph.events?.length && opts.orders !== false) this.events(r, ph);
+    // the Assembly is winter's headline decision: right under what happened
+    this.assembly(r, ph);
+
+    // ---- crisis
+    const cr = aidSection(r, RULE.crisis, "Crisis track", undefined, "crisis");
+    crisisTrack(cr, ph.crisis);
+    const commons = Object.entries(ph.commons ?? {}).filter(([, n]) => n > 0);
+    if (commons.length) {
+      const c = html("div", { class: "aid-row" }, cr);
+      html("span", { class: "k" }, c, "Commons");
+      const v = html("div", { class: "v" }, c);
+      for (const [p, n] of commons) {
+        const s = html("span", { class: "code-n", title: `${pname(p)}: ${n} COMMONS order${n === 1 ? "" : "s"} this year` }, v);
+        s.append(codeCounter(p, 18));
+        html("span", { class: "num" }, s, `×${n}`);
+      }
+    }
+
+    // ---- supply centres
     const counts: Record<string, number> = {};
     const swingCounts: Record<string, number> = {};
+    let swingTotal = 0;
+    let swingAligned = 0;
+    for (const mp of Object.values(this.map.provinces)) if (mp.centre === "swing") swingTotal++;
     for (const [pid, owner] of Object.entries(ph.ownership)) {
       if (!owner) continue;
       const mp = this.map.provinces[pid];
       if (!mp || mp.centre === "none") continue;
       counts[owner] = (counts[owner] ?? 0) + 1;
-      if (mp.centre === "swing") swingCounts[owner] = (swingCounts[owner] ?? 0) + 1;
+      if (mp.centre === "swing") {
+        swingCounts[owner] = (swingCounts[owner] ?? 0) + 1;
+        swingAligned++;
+      }
     }
     const units: Record<string, number> = {};
     for (const u of ph.units) units[u.power] = (units[u.power] ?? 0) + 1;
-    const max = Math.max(11, ...Object.values(counts));
+    const cc = aidSection(r, RULE.winter, "Supply centres");
     const list = html("ul", { class: "centres" }, cc);
-    const order = [...POWER_ORDER].sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0));
+    const order = [...POWER_ORDER].filter((p) => P[p]).sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0));
     for (const p of order) {
-      if (!P[p]) continue;
       const li = html("li", { class: p === opts.you ? "you" : "" }, list);
-      const sw = html("span", { class: "swatch" }, li);
-      sw.style.background = powerColour(p);
-      const pn = html("span", { class: "pname" }, li, P[p].name);
-      if (p === opts.you) pn.title = "You";
-      const bar = html("span", { class: "bar", "aria-hidden": "true" }, li);
-      const fill = html("span", { class: "bar-fill" }, bar);
-      fill.style.width = `${((counts[p] ?? 0) / max) * 100}%`;
-      fill.style.background = powerColour(p);
-      const n = html("span", { class: "num" }, li, String(counts[p] ?? 0));
-      n.title = `${counts[p] ?? 0} centres (${swingCounts[p] ?? 0} swing) · ${units[p] ?? 0} units`;
-      const sanc = ph.sanctions?.[p];
-      if (sanc) {
-        const s = html("span", { class: "chip tiny sanction", title: `${sanc} sanction(s): builds −${sanc}` }, li);
-        s.textContent = `⊘${sanc}`;
-      }
+      li.title = `${pname(p)}${p === opts.you ? " (you)" : ""}: ${counts[p] ?? 0} centres (${swingCounts[p] ?? 0} swing), ${units[p] ?? 0} units`;
+      li.append(codeCounter(p, 22));
+      html("span", { class: "pname" }, li, P[p].name);
+      html("b", { class: "num" }, li, String(counts[p] ?? 0));
     }
+    const un = html("li", { class: "unaligned" }, list);
+    un.title = "Swing states no power holds";
+    const ring = svg("svg", { viewBox: "0 0 16 16", width: 22, height: 22, "aria-hidden": "true", class: "ring-sw" }, un);
+    svg("circle", { cx: 8, cy: 8, r: 4.4 }, ring);
+    html("span", { class: "pname" }, un, "Unaligned swing");
+    html("b", { class: "num" }, un, String(swingTotal - swingAligned));
 
-    // ---- umbrellas / closures
-    const st = html("section", { class: "card" }, r);
-    html("h3", {}, st, "Security");
-    const row1 = html("div", { class: "kv" }, st);
-    html("span", { class: "k" }, row1, "Umbrellas");
-    const v1 = html("span", { class: "v chips" }, row1);
-    if (!ph.umbrellas.length) html("span", { class: "muted" }, v1, "none");
+    // ---- security: umbrellas, closures, sanctions
+    const st = aidSection(r, RULE.security, "Security");
+    const row = (k: string, ref?: number) => {
+      const d = html("div", { class: "aid-row" }, st);
+      const kk = html("span", { class: "k" }, d, k);
+      if (ref) html("span", { class: "xref" }, kk, ` §${ref}`);
+      return html("div", { class: "v" }, d);
+    };
+    const v1 = row("Umbrellas");
+    if (!ph.umbrellas.length) html("span", { class: "muted" }, v1, "None");
     for (const [a, b] of ph.umbrellas) {
-      const c = html("span", { class: "chip", title: `${pname(a)} extends its nuclear umbrella over ${pname(b)}` }, v1);
-      c.append(dot(a), document.createTextNode(` ${a} `), umbrellaIcon(), document.createTextNode(` ${b} `), dot(b));
+      const c = html("span", { class: "umb", title: `${pname(a)} extends its nuclear umbrella over ${pname(b)}` }, v1);
+      c.append(codeCounter(a, 18), umbrellaIcon(), codeCounter(b, 18));
     }
-    const row2 = html("div", { class: "kv" }, st);
-    html("span", { class: "k" }, row2, "Closed");
-    const v2 = html("span", { class: "v chips" }, row2);
+    const v2 = row("Closed", RULE.chokepoints);
     const closed = Object.entries(ph.closed || {});
-    if (!closed.length) html("span", { class: "muted" }, v2, "all chokepoints open");
+    if (!closed.length) html("span", { class: "muted" }, v2, "All chokepoints open");
     for (const [z, against] of closed) {
       const closer = ph.units.find((u) => u.at === z && u.type === "F")?.power;
       const c = html("button", {
-        class: "chip closed", type: "button",
-        title: `${this.map.provinces[z]?.name ?? z}${closer ? ` closed by ${pname(closer)}` : ""}${against.length ? ` to ${against.join(", ")}` : ""}`,
+        class: "closed-row", type: "button",
+        title: `${this.map.provinces[z]?.name ?? z}${closer ? ` closed by ${pname(closer)}` : ""}${against.length ? ` to ${against.join(", ")}` : " to everyone"}. Click to find it on the map.`,
       }, v2);
-      if (closer) c.append(dot(closer));
-      c.append(document.createTextNode(` ${this.map.provinces[z]?.name.split(" ")[0] ?? z}`));
-      if (against.length) html("span", { class: "muted" }, c, ` → ${against.join(" ")}`);
+      if (closer) c.append(codeCounter(closer, 18));
+      html("span", { class: "cname" }, c, this.map.provinces[z]?.name ?? z);
+      html("span", { class: "muted" }, c, against.length ? `to ${against.join(" ")}` : "to all");
       c.addEventListener("click", () => this.h.onProvinceFocus(z));
     }
-
-    // ---- assembly
-    if (ph.assembly) {
-      const a = ph.assembly;
-      const as = html("section", { class: "card assembly" }, r);
-      const ah = html("div", { class: "card-head" }, as);
-      html("h3", {}, ah, "Assembly");
-      html("span", { class: `pill ${a.passed ? "pass" : "fail"}` }, ah, a.passed ? "Passed" : "Failed");
-      const chair = html("div", { class: "chair" }, as);
-      chair.append(document.createTextNode("Chair "), dot(a.chair), document.createTextNode(` ${pname(a.chair)}`));
-      html("p", { class: "proposal" }, as, a.proposal);
-      const votes = html("div", { class: "votes" }, as);
-      for (const p of POWER_ORDER) {
-        const v = a.votes[p];
-        if (!v) continue;
-        const vv = html("span", { class: `vote ${v.toLowerCase()}`, title: `${pname(p)}: ${v}` }, votes);
-        vv.append(dot(p), document.createTextNode(` ${p} `));
-        html("b", {}, vv, v.toUpperCase());
+    const sanc = Object.entries(ph.sanctions ?? {}).filter(([, n]) => n > 0);
+    if (sanc.length) {
+      const v3 = row("Sanctions", RULE.chokepoints);
+      for (const [p, n] of sanc) {
+        const s = html("span", { class: "code-n", title: `${pname(p)} is under ${n} sanction${n === 1 ? "" : "s"}: builds −${n}` }, v3);
+        s.append(codeCounter(p, 18));
+        html("span", { class: "num" }, s, `−${n}`);
       }
     }
 
-    // ---- events
-    if (ph.events?.length) {
-      const ev = html("section", { class: "card events" }, r);
-      html("h3", {}, ev, "What happened");
-      const ul = html("ul", {}, ev);
-      for (const e of ph.events) html("li", {}, ul, e);
-    }
+    if (ph.events?.length && opts.orders === false) this.events(r, ph);
 
     // ---- orders
     if (opts.orders === false) return;
-    const os = html("section", { class: "card orders" }, r);
-    const oh = html("div", { class: "card-head" }, os);
-    html("h3", {}, oh, "Orders");
-    html("span", { class: "muted" }, oh, `${ph.orders.length}`);
+    const os = aidSection(r, RULE.orders, "Orders", ph.orders.length ? `${ph.orders.length} written` : undefined, "orders");
     if (!ph.orders.length) html("p", { class: "muted" }, os, "No orders recorded for this phase.");
     const byPower = new Map<string, { o: Order; i: number }[]>();
     ph.orders.forEach((o, i) => {
@@ -165,12 +196,13 @@ export class Panel {
       if (!items) continue;
       const grp = html("div", { class: "order-group" }, os);
       const gh = html("div", { class: "order-power" }, grp);
-      gh.append(dot(p), document.createTextNode(` ${pname(p)}`));
+      gh.append(codeCounter(p, 18));
+      html("span", {}, gh, pname(p));
       const ul = html("ul", {}, grp);
       for (const { o, i } of items) {
         const ok = ["ok", "success", "succeeded"].includes(o.result);
-        const li = html("li", { class: `order-item${ok ? "" : " failed"}`, tabindex: 0 }, ul);
-        html("code", {}, li, o.text);
+        const li = html("li", { class: `order-item${ok ? "" : " failed"}${p === opts.you ? " yours" : ""}`, tabindex: 0 }, ul);
+        html("span", { class: "notation" }, li, o.text);
         if (!ok) {
           const b = html("span", { class: `result r-${o.result}` }, li, RESULT_LABEL[o.result] ?? o.result);
           if (o.note) b.title = o.note;
@@ -185,18 +217,41 @@ export class Panel {
       }
     }
   }
+
+  private assembly(r: HTMLElement, ph: Phase) {
+    if (!ph.assembly) return;
+    const P = this.map.powers;
+    const pname = (p: string) => P[p]?.name ?? p;
+    const a = ph.assembly;
+    const as = aidSection(r, RULE.assembly, "Assembly", undefined, "assembly");
+    html("span", { class: `stamp ${a.passed ? "pass" : "fail"}` }, as.querySelector("h3")!, a.passed ? "Passed" : "Failed");
+    const chair = html("div", { class: "aid-row" }, as);
+    html("span", { class: "k" }, chair, "Chair");
+    const cv = html("div", { class: "v" }, chair);
+    const cs = html("span", { class: "code-n" }, cv);
+    cs.append(codeCounter(a.chair, 18));
+    html("span", {}, cs, pname(a.chair));
+    html("p", { class: "proposal" }, as, a.proposal);
+    const votes = html("ul", { class: "votes" }, as);
+    for (const p of POWER_ORDER) {
+      const v = a.votes[p];
+      if (!v) continue;
+      const li = html("li", { class: `vote ${v.toLowerCase()}`, title: `${pname(p)}: ${v}` }, votes);
+      li.append(codeCounter(p, 18));
+      html("b", {}, li, v.charAt(0) + v.slice(1).toLowerCase());
+    }
+  }
+
+  private events(r: HTMLElement, ph: Phase) {
+    const ev = aidSection(r, ph.kind === "winter" ? RULE.winter : RULE.resolution, "What happened", undefined, "events");
+    const ul = html("ul", { class: "event-list" }, ev);
+    for (const e of ph.events ?? []) html("li", {}, ul, e);
+  }
 }
 
-function dot(p: string): HTMLElement {
-  const d = document.createElement("span");
-  d.className = "dot";
-  d.style.background = powerColour(p);
-  return d;
-}
-
-function umbrellaIcon(): SVGSVGElement {
-  const s = svg("svg", { viewBox: "0 0 16 16", width: 12, height: 12, class: "icon", "aria-hidden": "true" });
-  svg("path", { d: "M8 2C4.4 2 2 4.6 1.6 7.6h12.8C14 4.6 11.6 2 8 2Zm0 5.6V13a1.4 1.4 0 0 1-2.8 0", fill: "none", stroke: "currentColor", "stroke-width": 1.4, "stroke-linecap": "round" }, s);
+export function umbrellaIcon(): SVGSVGElement {
+  const s = svg("svg", { viewBox: "0 0 16 16", width: 14, height: 14, class: "icon umbrella", "aria-hidden": "true" });
+  svg("path", { d: "M8 2.2C4.6 2.2 2.2 4.6 1.8 7.6h12.4C13.8 4.6 11.4 2.2 8 2.2Zm0 5.4v5a1.4 1.4 0 0 1-2.8 0", fill: "none", stroke: "currentColor", "stroke-width": 1.3, "stroke-linecap": "square" }, s);
   return s;
 }
 

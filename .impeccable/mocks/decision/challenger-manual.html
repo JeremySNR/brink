@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Brink Manual Board</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Hanken+Grotesk:wght@500;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--yellow:#E8A317;--oxide:#C4521E;--grass:#2E8B57;--ultra:#2B4FBF;--violet:#6B3FA0;--ink:#1B1A17;--milk:rgba(250,248,240,.86);--shadow:6px 6px 0 rgba(27,26,23,.28);--rule:#1B1A17}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:#2A2722}
+body{font:17px/26px "EB Garamond",serif;color:var(--ink)}
+.board{position:absolute;left:0;top:0;width:1320px;height:900px;background:var(--yellow)}
+.mast{position:absolute;left:40px;top:28px;right:40px;display:flex;align-items:baseline;gap:24px;border-bottom:3px solid var(--ink);padding-bottom:10px}
+.mast h1{font:800 44px/1 "Hanken Grotesk",sans-serif;letter-spacing:-.02em}
+.mast .sec{font:700 13px/1 "Hanken Grotesk";letter-spacing:.14em;text-transform:uppercase}
+.mast .r{margin-left:auto;font:600 13px/1 "IBM Plex Mono",monospace}
+.leaf{position:absolute;background:var(--milk);box-shadow:var(--shadow);border:1px solid rgba(27,26,23,.18)}
+.leaf::before,.leaf::after{content:"";position:absolute;left:14px;width:16px;height:16px;border-radius:50%;background:var(--yellow);box-shadow:inset 1px 1px 0 rgba(0,0,0,.35)}
+.leaf::before{top:22%}.leaf::after{bottom:22%}
+.leaf .in{padding:22px 26px 22px 48px;height:100%}
+.h{font:700 12px/1 "Hanken Grotesk";letter-spacing:.16em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:7px;margin-bottom:12px;display:flex;justify-content:space-between}
+.map{left:40px;top:108px;width:840px;height:760px}
+.map svg{display:block;width:100%;height:640px;margin-top:4px}
+.legend{display:flex;gap:18px;font:500 12px/1 "Hanken Grotesk";margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;border:1px solid var(--ink)}
+.orders{left:908px;top:108px;width:372px;height:430px}
+.orders h2{font:800 30px/1.05 "Hanken Grotesk";letter-spacing:-.01em;margin-bottom:6px}
+.orders p{margin-bottom:14px}
+.ol{list-style:none;border-top:1px solid var(--ink)}
+.ol li{font:600 17px/1 "IBM Plex Mono",monospace;padding:12px 0;border-bottom:1px solid var(--ink);display:flex;justify-content:space-between}
+.ol li span{font:400 12px/1 "IBM Plex Mono";align-self:center}
+.commit{display:block;width:100%;margin-top:20px;background:var(--ink);color:var(--yellow);border:0;font:800 16px/1 "Hanken Grotesk";letter-spacing:.12em;text-transform:uppercase;padding:16px;box-shadow:4px 4px 0 var(--oxide);cursor:pointer}
+.crisis{left:908px;top:566px;width:372px;height:302px}
+.track{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:8px 0 6px}
+.track b{height:30px;border:1px solid var(--ink);font:600 11px/28px "IBM Plex Mono";text-align:center;font-weight:400}
+.track b.on{background:var(--ink);color:var(--milk)}
+.track b.t{border-width:2px;border-color:var(--oxide)}
+.tl{display:grid;grid-template-columns:repeat(10,1fr);font:500 10px/1 "Hanken Grotesk";letter-spacing:.06em;text-transform:uppercase}
+.cent{width:100%;border-collapse:collapse;margin-top:14px;font:400 13px/1 "IBM Plex Mono"}
+.cent td{padding:5px 0;border-bottom:1px solid rgba(27,26,23,.3)}.cent td:last-child{text-align:right}
+.cent tr.you td{font-weight:600}
+.rail{position:absolute;right:0;top:0;width:120px;height:900px;background:#2A2722}
+.tab{position:absolute;right:0;height:132px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:800 15px/1 "Hanken Grotesk";letter-spacing:.18em;text-transform:uppercase;color:#FAF8F0;border-left:1px solid rgba(0,0,0,.3)}
+.tab small{font:600 11px/1 "IBM Plex Mono";letter-spacing:0;margin-top:12px;opacity:.85}
+.t1{top:96px;width:120px;background:var(--yellow);color:var(--ink);height:150px}
+.t2{top:262px;width:84px;background:var(--oxide)}
+.t3{top:410px;width:84px;background:var(--grass)}
+.t4{top:558px;width:84px;background:var(--ultra)}
+.t5{top:706px;width:84px;background:var(--violet)}
+</style></head><body>
+<div class="board">
+ <div class="mast"><h1>Brink</h1><span class="sec">Section 1 &middot; Spring 2031 &middot; your move</span><span class="r">UNITED STATES &middot; 3 orders pending</span></div>
+
+ <div class="leaf map"><div class="in">
+  <div class="h"><span>Plate 1 &middot; The board, Spring 2031</span><span>Overlay A</span></div>
+  <svg viewBox="0 0 760 640" font-family="IBM Plex Mono" font-size="12">
+   <g stroke="#1B1A17" stroke-width="1.5" fill="none">
+    <path d="M40 90 L250 70 L300 150 L260 230 L180 260 L90 230 Z" fill="#2B4FBF" fill-opacity=".22"/>
+    <path d="M60 260 L180 260 L200 330 L130 360 L70 320 Z" fill="#2B4FBF" fill-opacity=".38"/>
+    <path d="M130 360 L200 330 L230 420 L170 440 Z" fill="#E8A317" fill-opacity=".45"/>
+    <path d="M180 260 L260 230 L300 300 L200 330 Z" fill="#2B4FBF" fill-opacity=".38"/>
+    <path d="M250 70 L360 60 L380 160 L300 150 Z" fill="#E8A317" fill-opacity=".45"/>
+    <path d="M400 80 L520 70 L540 160 L470 190 L410 160 Z" fill="#2E8B57" fill-opacity=".3"/>
+    <path d="M540 60 L700 60 L720 170 L560 180 Z" fill="#6B3FA0" fill-opacity=".28"/>
+    <path d="M560 180 L700 180 L690 330 L590 340 L550 260 Z" fill="#C4521E" fill-opacity=".3"/>
+    <path d="M480 220 L550 260 L540 340 L470 330 Z" fill="#1B1A17" fill-opacity=".12"/>
+    <path d="M470 330 L540 340 L560 430 L490 450 Z" fill="#E8A317" fill-opacity=".45"/>
+    <path d="M590 360 L680 350 L700 430 L620 450 Z" fill="#E8A317" fill-opacity=".45"/>
+    <path d="M700 330 L740 360 L730 420 L705 400 Z" fill="#6B3FA0" fill-opacity=".5"/>
+    <path d="M420 380 L470 360 L480 470 L430 470 Z" fill="#1B1A17" fill-opacity=".2"/>
+   </g>
+   <g stroke="#1B1A17" stroke-dasharray="3 4" fill="none"><path d="M300 300 Q340 420 300 560"/><path d="M40 470 L330 470"/></g>
+   <g fill="#1B1A17"><text x="135" y="160">CAN</text><text x="95" y="305">CAL</text><text x="225" y="290">TEX</text><text x="160" y="410">MEX</text><text x="300" y="115">WAS</text><text x="440" y="130">EUR</text><text x="610" y="120">RUS</text><text x="600" y="270">CHN</text><text x="490" y="290">CAS</text><text x="490" y="400">IND</text><text x="620" y="405">SEA</text><text x="708" y="385">JPN</text><text x="425" y="430">GLF</text><text x="330" y="380" font-size="11">NAO</text><text x="60" y="500" font-size="11">PACIFIC</text></g>
+   <g stroke="#1B1A17" stroke-width="3" fill="none"><path d="M245 270 L170 175" marker-end="url(#a)"/><path d="M105 315 L150 395" marker-end="url(#a)" stroke-dasharray="7 5"/><path d="M315 125 L330 360" marker-end="url(#a)"/></g>
+   <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#1B1A17"/></marker></defs>
+   <g font-family="Hanken Grotesk" font-weight="800" font-size="13"><rect x="232" y="262" width="20" height="20" fill="#FAF8F0" stroke="#1B1A17" stroke-width="2"/><text x="237" y="277">A</text><rect x="92" y="306" width="20" height="20" fill="#FAF8F0" stroke="#1B1A17" stroke-width="2"/><text x="97" y="321">C</text><circle cx="315" cy="122" r="11" fill="#FAF8F0" stroke="#1B1A17" stroke-width="2"/><text x="310" y="127">F</text></g>
+  </svg>
+  <div class="legend"><span><i style="background:#9DADE0"></i>United States</span><span><i style="background:#F2C56E"></i>Swing state</span><span><i style="background:#A9CDB9"></i>EU</span><span><i style="background:#E2B39C"></i>China</span><span><i style="background:#C6B2DA"></i>Russia / Japan</span><span><i style="background:#C9C8C5"></i>India / Gulf</span></div>
+ </div></div>
+
+ <div class="leaf orders"><div class="in">
+  <div class="h"><span>Leaf 1.2 &middot; Orders</span><span>US</span></div>
+  <h2>Spring 2031 &middot; your move</h2>
+  <p>Write one order for each unit. Orders resolve together when all seven powers commit.</p>
+  <ul class="ol"><li>A TEX &ndash; CAN<span>army</span></li><li>C CAL &ndash; MEX<span>cyber</span></li><li>F WAS &ndash; NAO<span>fleet</span></li></ul>
+  <button class="commit">Commit orders</button>
+ </div></div>
+
+ <div class="leaf crisis"><div class="in">
+  <div class="h"><span>Leaf 1.3 &middot; Crisis track</span><span>3 / 10</span></div>
+  <div class="track"><b class="on">1</b><b class="on">2</b><b class="on">3</b><b>4</b><b>5</b><b class="t">6</b><b>7</b><b class="t">8</b><b>9</b><b class="t">10</b></div>
+  <div class="tl"><span></span><span></span><span></span><span></span><span></span><span>Recession</span><span></span><span>State failure</span><span></span><span>Collapse</span></div>
+  <table class="cent"><tr class="you"><td>United States</td><td>3</td></tr><tr><td>China &middot; EU &middot; Russia</td><td>3 each</td></tr><tr><td>India &middot; Japan &middot; Gulf</td><td>3 each</td></tr></table>
+ </div></div>
+</div>
+<nav class="rail">
+ <div class="tab t1">Spring<small>1</small></div>
+ <div class="tab t2">Fall<small>2</small></div>
+ <div class="tab t3">Winter<small>3</small></div>
+ <div class="tab t4">Assembly<small>4</small></div>
+ <div class="tab t5">Index<small>5</small></div>
+</nav>
+</body></html>

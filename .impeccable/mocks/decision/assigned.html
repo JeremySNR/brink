@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Brink — Intaglio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#ECEEE6;--paper2:#E3E6DC;--ink:#1E2A26;--mute:#5E6B65;--rule:#BFC6B9;--sea:#B9C6CC;--usa:#2E5E4A;--chn:#7A2430;--eu:#23426E;--rus:#4A4E5A;--ind:#8A5A2B;--jpn:#5B3F7A;--glf:#1F6B6B}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--paper);color:var(--ink);font:400 14px/1.45 "Public Sans",sans-serif;font-variant-numeric:tabular-nums}
+.top{height:56px;display:grid;grid-template-columns:1040px 400px;border-bottom:1px solid var(--ink)}
+.top .l{display:flex;align-items:center;gap:28px;padding:0 24px}
+.brand{font:400 28px/1 "Libre Caslon Display",serif;letter-spacing:.01em}
+.nav{display:flex;gap:20px;font-size:13px;color:var(--mute)}.nav b{color:var(--ink);font-weight:600;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:-18px}
+.top .r{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-left:1px solid var(--ink)}
+.serial{font:500 15px/1 "Public Sans";letter-spacing:.14em;color:var(--chn)}
+.clock{font-size:13px;color:var(--mute)}.clock b{color:var(--ink);font-weight:600}
+.main{display:grid;grid-template-columns:1040px 400px;height:844px}
+.map{position:relative;background:var(--paper) repeating-linear-gradient(0deg,transparent 0 3px,var(--sea) 3px 3.6px);border-right:1px solid var(--ink)}
+.map svg{display:block}
+.legend{position:absolute;left:24px;bottom:20px;display:flex;gap:14px;background:var(--paper);padding:10px 14px;border-top:1px solid var(--ink);font-size:12px}
+.legend span{display:flex;align-items:center;gap:6px}.legend i{width:16px;height:12px;display:inline-block;border:1px solid var(--ink)}
+.side{display:flex;flex-direction:column;padding:24px 24px 20px}
+h1{font:400 34px/1.05 "Libre Caslon Display",serif}
+.sub{color:var(--mute);font-size:13px;margin-top:6px}
+.who{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--ink)}
+h2{font:600 13px/1 "Public Sans";margin:20px 0 10px;display:flex;justify-content:space-between}h2 em{font-style:normal;font-weight:400;color:var(--mute)}
+.orders{list-style:none}
+.orders li{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.orders li:first-child{border-top:1px solid var(--rule)}
+.stamp{width:22px;height:22px;display:grid;place-items:center;background:var(--usa);color:var(--paper);font:700 11px/1 "Public Sans";outline:1px solid var(--usa);outline-offset:2px}
+.orders code{font:500 15px/1 "Public Sans";letter-spacing:.06em}.orders small{color:var(--mute);font-size:12px}
+.add{font-size:13px;color:var(--usa);font-weight:600;padding-top:8px}
+.track{position:relative;height:30px;display:grid;grid-template-columns:repeat(11,1fr);border:1px solid var(--ink);background:repeating-linear-gradient(135deg,transparent 0 4px,rgba(122,36,48,.18) 4px 5px) right/45.45% 100% no-repeat}
+.track div{border-right:1px solid var(--rule);display:grid;place-items:center;font-size:11px;color:var(--mute)}.track div:last-child{border:0}
+.track .on{background:var(--ink);color:var(--paper);font-weight:700}.track .past{background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 3px);color:var(--ink)}
+.th{display:grid;grid-template-columns:repeat(11,1fr);font-size:11px;color:var(--chn);margin-top:6px}
+.th span{border-left:1px solid var(--chn);padding-left:4px;line-height:1.2}
+.sc{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+.sc div{padding:8px 0 6px;text-align:center;font-size:11px;color:var(--mute);border-right:1px solid var(--rule)}.sc div:last-child{border:0}
+.sc i{display:block;height:14px;margin:0 8px 6px}
+.sc b{display:block;font:400 22px/1 "Libre Caslon Display",serif;color:var(--ink)}
+.umb{font-size:13px}.umb p{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--rule)}
+.foot{margin-top:auto;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.foot p{font-size:12px;color:var(--mute)}
+.btn{height:48px;padding:0 26px;background:var(--usa);color:var(--paper);border:0;font:600 15px/1 "Public Sans";box-shadow:inset 0 0 0 3px var(--usa),inset 0 0 0 4px var(--paper)}
+.ghost{height:48px;padding:0 18px;background:none;border:1px solid var(--ink);font:500 14px/1 "Public Sans";color:var(--ink)}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<pattern id="h-usa" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#2E5E4A" stroke-width="1.6"/></pattern>
+<pattern id="h-chn" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(0)"><line x1="0" y1="0" x2="5" y2="0" stroke="#7A2430" stroke-width="1.6"/></pattern>
+<pattern id="h-eu" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(90)"><line x1="0" y1="0" x2="5" y2="0" stroke="#23426E" stroke-width="1.6"/></pattern>
+<pattern id="h-rus" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(135)"><line x1="0" y1="0" x2="0" y2="5" stroke="#4A4E5A" stroke-width="1.6"/></pattern>
+<pattern id="h-ind" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(22)"><line x1="0" y1="0" x2="0" y2="5" stroke="#8A5A2B" stroke-width="1.6"/></pattern>
+<pattern id="h-jpn" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(68)"><line x1="0" y1="0" x2="0" y2="4" stroke="#5B3F7A" stroke-width="1.4"/></pattern>
+<pattern id="h-glf" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(112)"><line x1="0" y1="0" x2="0" y2="5" stroke="#1F6B6B" stroke-width="1.6"/></pattern>
+<symbol id="rosette" viewBox="-50 -50 100 100"><g fill="none" stroke="currentColor" stroke-width=".7"><ellipse rx="46" ry="16"/><ellipse rx="46" ry="16" transform="rotate(15)"/><ellipse rx="46" ry="16" transform="rotate(30)"/><ellipse rx="46" ry="16" transform="rotate(45)"/><ellipse rx="46" ry="16" transform="rotate(60)"/><ellipse rx="46" ry="16" transform="rotate(75)"/><ellipse rx="46" ry="16" transform="rotate(90)"/><ellipse rx="46" ry="16" transform="rotate(105)"/><ellipse rx="46" ry="16" transform="rotate(120)"/><ellipse rx="46" ry="16" transform="rotate(135)"/><ellipse rx="46" ry="16" transform="rotate(150)"/><ellipse rx="46" ry="16" transform="rotate(165)"/><circle r="48"/><circle r="20"/></g></symbol>
+</defs></svg>
+<header class="top"><div class="l"><span class="brand">Brink</span><nav class="nav"><b>Board</b><span>Diplomacy</span><span>Ledger</span><span>Rules</span></nav></div>
+<div class="r"><span class="serial">S2031M</span><span class="clock">Deadline <b>14:22:08</b></span></div></header>
+<main class="main">
+<section class="map">
+<svg width="1039" height="844" viewBox="60 20 900 584" preserveAspectRatio="xMidYMid slice" font-family="Public Sans" font-size="8.5" fill="#1E2A26">
+<g stroke="#1E2A26" stroke-width=".9" stroke-linejoin="round">
+<!-- arctic shelf --><path d="M120 46 L380 38 L560 30 L880 34 L930 50 L700 56 L470 62 L300 66 L140 68Z" fill="#ECEEE6" stroke-dasharray="3 2"/>
+<!-- canada (neutral) --><path d="M120 76 L290 72 L350 90 L330 118 L306 128 L170 128 L140 110Z" fill="#E3E6DC"/>
+<path d="M150 128 L306 128 L312 150 L290 178 L262 196 L230 190 L190 200 L160 182 L148 152Z" fill="url(#h-usa)"/>
+<path d="M175 198 L230 190 L252 204 L248 226 L232 250 L212 246 L190 222Z" fill="#ECEEE6"/>
+<path d="M300 262 L350 254 L404 282 L396 330 L360 372 L318 360 L300 312 L292 280Z" fill="#ECEEE6"/>
+<path d="M318 362 L360 372 L344 420 L332 470 L314 470 L310 410Z" fill="#ECEEE6"/>
+<path d="M474 96 L520 84 L582 94 L588 132 L572 160 L540 168 L500 166 L474 150 L468 120Z" fill="url(#h-eu)"/>
+<path d="M584 64 L700 58 L880 62 L960 80 L940 112 L860 120 L760 112 L700 116 L640 120 L588 128 L582 94Z" fill="url(#h-rus)"/>
+<path d="M588 128 L640 120 L628 146 L596 146Z" fill="#ECEEE6"/>
+<path d="M572 152 L628 146 L632 166 L580 170Z" fill="#ECEEE6"/>
+<path d="M474 168 L540 168 L572 172 L566 214 L520 222 L478 212Z" fill="#ECEEE6"/>
+<path d="M572 172 L604 172 L606 212 L568 214Z" fill="#ECEEE6"/>
+<path d="M478 212 L520 222 L546 230 L544 268 L506 274 L484 252Z" fill="#ECEEE6"/>
+<path d="M604 214 L634 230 L650 248 L630 272 L600 266 L590 236Z" fill="#ECEEE6"/>
+<path d="M544 238 L590 236 L600 266 L590 306 L548 310 L540 276Z" fill="#ECEEE6"/>
+<path d="M548 310 L590 306 L606 336 L590 376 L556 384 L536 350Z" fill="#ECEEE6"/>
+<path d="M606 178 L640 178 L672 210 L664 238 L632 246 L606 214Z" fill="url(#h-glf)"/>
+<path d="M632 146 L680 150 L692 182 L672 196 L640 178Z" fill="#ECEEE6"/>
+<path d="M640 120 L700 116 L744 120 L740 150 L688 152 L632 146Z" fill="#ECEEE6"/>
+<path d="M680 152 L712 160 L716 196 L692 200 L692 182Z" fill="#ECEEE6"/>
+<path d="M716 166 L760 180 L752 218 L728 256 L708 230 L692 200 L716 196Z" fill="url(#h-ind)"/>
+<path d="M744 120 L860 120 L850 152 L846 186 L812 212 L770 204 L760 180 L716 166 L712 160 L740 150Z" fill="url(#h-chn)"/>
+<path d="M852 142 L864 140 L866 166 L856 168Z" fill="#ECEEE6"/>
+<path d="M880 128 L896 136 L890 160 L872 176 L866 168 L880 150Z" fill="url(#h-jpn)"/>
+<path d="M800 206 L816 208 L822 240 L806 246Z" fill="#ECEEE6"/>
+<path d="M852 210 L866 214 L864 244 L850 240Z" fill="#ECEEE6"/>
+<path d="M786 270 L830 268 L860 280 L904 286 L900 300 L846 298 L796 290Z" fill="#ECEEE6"/>
+<path d="M830 318 L900 312 L936 344 L924 392 L880 400 L836 384 L820 346Z" fill="#ECEEE6"/>
+</g>
+<g stroke="#1E2A26" stroke-width="1.1" fill="none"><path d="M240 168 C250 140 250 126 238 112"/><path d="M170 176 C176 196 190 206 204 214"/><path d="M296 150 C330 150 360 146 390 140"/></g>
+<g fill="#1E2A26"><path d="M234 112 l4 -6 l4 6z"/><path d="M200 210 l6 6 l-7 1z"/><path d="M390 136 l7 4 l-7 4z"/></g>
+<g font-weight="700" font-size="7" text-anchor="middle"><g fill="#2E5E4A"><rect x="234" y="162" width="12" height="12"/><rect x="164" y="170" width="12" height="12"/><rect x="290" y="144" width="12" height="12"/></g><g fill="#ECEEE6"><text x="240" y="171">A</text><text x="170" y="179">F</text><text x="296" y="153">F</text></g>
+<g fill="#7A2430"><rect x="790" y="160" width="12" height="12"/><rect x="826" y="190" width="12" height="12"/></g><g fill="#23426E"><rect x="516" y="122" width="12" height="12"/></g><g fill="#4A4E5A"><rect x="700" y="84" width="12" height="12"/></g><g fill="#1F6B6B"><rect x="628" y="206" width="12" height="12"/></g><g fill="#8A5A2B"><rect x="722" y="200" width="12" height="12"/></g><g fill="#5B3F7A"><rect x="884" y="146" width="10" height="10"/></g></g>
+<g font-size="8"><text x="196" y="230">Mexico</text><text x="326" y="306">Brazil</text><text x="316" y="430">S. Cone</text><text x="596" y="140">Ukraine</text><text x="586" y="164">Turkey</text><text x="496" y="196">Maghreb</text><text x="574" y="196">Egypt</text><text x="492" y="250">Nigeria</text><text x="604" y="254">Ethiopia</text><text x="548" y="288">DR Congo</text><text x="548" y="350">S. Africa</text><text x="644" y="170">Iran</text><text x="656" y="136">Kazakhstan</text><text x="684" y="176">Pak.</text><text x="842" y="136">Korea</text><text x="798" y="258">Vietnam</text><text x="868" y="232">Phil.</text><text x="820" y="294">Indonesia</text><text x="854" y="360">Australia</text><text x="600" y="48">Arctic Shelf</text><text x="400" y="132" fill="#5E6B65">North Atlantic</text></g>
+<g font-family="Libre Caslon Display" font-size="13"><text x="178" y="150">United States</text><text x="484" y="112">European Union</text><text x="760" y="88">Russia</text><text x="770" y="142">China</text><text x="722" y="190">India</text><text x="900" y="144">Japan</text><text x="612" y="192">Gulf</text></g>
+</svg>
+<div class="legend"><span><i style="background:repeating-linear-gradient(45deg,var(--usa) 0 1.5px,transparent 1.5px 4px)"></i>Hatched: home centres, angle names the power</span><span><i style="background:var(--paper)"></i>Paper: unaligned swing state</span><span><i style="background:var(--usa)"></i>Unit stamp</span></div>
+</section>
+<aside class="side">
+<div class="who"><svg width="56" height="56" style="color:var(--usa)"><use href="#rosette"/></svg><div><h1>Spring 2031</h1><p class="sub">United States to move. Three units, three orders.</p></div></div>
+<h2>Your orders <em>3 of 3 written</em></h2>
+<ul class="orders"><li><span class="stamp">A</span><code>A TEX – CAN</code><small>Move</small></li><li><span class="stamp">F</span><code>C CAL – MEX</code><small>Convoy</small></li><li><span class="stamp">F</span><code>F WAS – NAO</code><small>Move</small></li></ul>
+<p class="add">Add support order</p>
+<h2>Crisis <em>3 of 10</em></h2>
+<div class="track"><div class="past">0</div><div class="past">1</div><div class="past">2</div><div class="on">3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div></div>
+<div class="th"><span style="grid-column:7/9">Recession</span><span style="grid-column:9/11">State failure</span><span style="grid-column:11">Collapse</span></div>
+<h2>Supply centres <em>21 held</em></h2>
+<div class="sc"><div><i style="background:repeating-linear-gradient(45deg,var(--usa) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>USA</div><div><i style="background:repeating-linear-gradient(0deg,var(--chn) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>CHN</div><div><i style="background:repeating-linear-gradient(90deg,var(--eu) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>EU</div><div><i style="background:repeating-linear-gradient(135deg,var(--rus) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>RUS</div><div><i style="background:repeating-linear-gradient(22deg,var(--ind) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>IND</div><div><i style="background:repeating-linear-gradient(68deg,var(--jpn) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>JPN</div><div><i style="background:repeating-linear-gradient(112deg,var(--glf) 0 1.5px,transparent 1.5px 4px)"></i><b>3</b>GLF</div></div>
+<h2>Umbrellas</h2>
+<div class="umb"><p><span>United States over Japan</span><span style="color:var(--mute)">since 2030</span></p><p><span>United States over Gulf</span><span style="color:var(--mute)">since 2030</span></p></div>
+<div class="foot"><button class="ghost">Hold all</button><button class="btn">Commit orders</button></div>
+</aside></main></body></html>

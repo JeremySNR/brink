@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Brink · Guide Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F5F1E4;--land:#8ED462;--ink:#2C2E2A;--yel:#F5E211;--cor:#FF705D;--blu:#2BA0FF;--lil:#EBC1FF;--teal:#7FD1C7;--pink:#FF9CC2;--org:#FFA640}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden;background:var(--cream);color:var(--ink);font-family:"Bricolage Grotesque",sans-serif;font-weight:600}
+.top{height:76px;display:flex;align-items:center;gap:12px;padding:0 28px}
+.mark{font-size:40px;line-height:.95;letter-spacing:-.06em;margin-right:18px}
+.cap{display:inline-flex;align-items:center;gap:12px;height:42px;padding:0 6px 0 18px;border:2px solid var(--ink);border-radius:999px;font-size:15px;letter-spacing:-.01em;background:var(--cream);color:var(--ink);font-family:inherit;font-weight:600}
+.cap i{width:28px;height:28px;border-radius:50%;background:var(--ink);flex:none;display:grid;place-items:center;font-style:normal;color:var(--cream);font-size:13px}
+.cap.on{flex-direction:row-reverse;padding:0 18px 0 6px}
+.y{background:var(--yel)}.c{background:var(--cor)}.b{background:var(--blu)}.l{background:var(--lil)}
+.sp{flex:1}
+.board{position:absolute;left:20px;top:76px;width:1010px;height:804px}
+.side{position:absolute;right:20px;top:76px;width:370px;height:804px;display:flex;flex-direction:column;gap:14px}
+.card{border:2px solid var(--ink);border-radius:30px;padding:22px 22px}
+.kick{font-size:14px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:inline-block}
+h1{font-size:64px;line-height:.95;letter-spacing:-.06em;margin:10px 0 0}
+.ord{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.ord .cap{height:48px;justify-content:space-between;font-size:17px;width:100%}
+.ord b{font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.meter{display:flex;gap:6px;margin-top:12px}
+.meter span{flex:1;height:22px;border-radius:999px;border:2px solid var(--ink)}
+.cent{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:12px;font-size:15px}
+.cent div{display:flex;align-items:center;gap:8px}.cent em{font-style:normal;margin-left:auto;font-variant-numeric:tabular-nums}
+.commit{margin-top:auto;height:64px;font-size:22px;letter-spacing:-.03em;justify-content:space-between;padding:0 8px 0 26px;width:100%}
+.commit i{width:46px;height:46px;font-size:20px}
+.row{display:flex;justify-content:space-between;align-items:baseline}
+.big{font-size:40px;line-height:.95;letter-spacing:-.06em}
+svg text{font-family:"Bricolage Grotesque",sans-serif;font-weight:600}
+</style></head><body>
+<header class="top">
+  <div class="mark">Brink</div>
+  <span class="cap on y"><i></i>Board</span>
+  <span class="cap">Talks<i>4</i></span>
+  <span class="cap">Press<i></i></span>
+  <span class="cap">History<i></i></span>
+  <div class="sp"></div>
+  <span class="cap l">Deadline 14h 22m<i></i></span>
+  <span class="cap b">United States<i>US</i></span>
+</header>
+
+<svg class="board" viewBox="0 0 1060 844" aria-label="World board">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2C2E2A"/></marker></defs>
+  <g stroke="#2C2E2A" stroke-width="3" stroke-linejoin="round">
+    <!-- North America -->
+    <path fill="#8ED462" d="M90 120C120 60 330 50 400 100C440 130 420 190 360 200C280 215 160 215 110 190C70 170 70 140 90 120Z"/>
+    <path fill="#2BA0FF" d="M110 225C140 210 190 215 200 250C210 300 190 340 150 345C115 348 95 300 100 260Z"/>
+    <path fill="#2BA0FF" d="M215 230C270 215 320 225 325 265C330 310 290 345 240 340C205 335 200 270 215 230Z"/>
+    <path fill="#2BA0FF" d="M340 215C380 205 420 220 415 260C410 300 370 315 345 295C330 280 325 235 340 215Z"/>
+    <path fill="#8ED462" d="M170 365C220 350 290 355 300 395C305 430 270 460 245 470C220 450 175 420 170 365Z"/>
+    <!-- South America -->
+    <path fill="#8ED462" d="M285 495C320 478 380 482 392 512C400 535 370 552 335 552C300 552 270 520 285 495Z"/>
+    <path fill="#8ED462" d="M300 572C350 562 420 575 412 625C404 680 345 740 318 760C296 712 270 640 280 605C284 588 290 578 300 572Z"/>
+    <!-- Europe / Russia -->
+    <path fill="#EBC1FF" d="M560 160C600 130 660 140 670 180C680 220 640 250 600 245C565 240 540 190 560 160Z"/>
+    <path fill="#8ED462" d="M512 148C528 136 546 146 543 166C540 186 522 192 512 182C504 172 503 156 512 148Z"/>
+    <path fill="#7FD1C7" d="M690 90C760 50 960 50 1010 100C1040 140 1000 190 920 190C830 195 720 190 690 160C670 130 675 105 690 90Z"/>
+    <!-- Africa / Gulf -->
+    <path fill="#8ED462" d="M540 280C590 260 680 265 700 300C710 330 680 350 620 350C570 350 530 320 540 280Z"/>
+    <path fill="#8ED462" d="M590 372C640 362 700 382 690 450C680 520 640 580 620 592C595 540 570 450 590 372Z"/>
+    <path fill="#FFA640" d="M715 270C750 255 790 270 785 305C780 335 745 345 725 330C705 315 700 285 715 270Z"/>
+    <!-- Asia -->
+    <path fill="#8ED462" d="M760 205C820 200 880 210 870 245C860 270 800 270 770 255C750 245 745 215 760 205Z"/>
+    <path fill="#FF705D" d="M884 210C944 200 1000 220 995 270C990 320 930 335 894 315C864 300 859 230 884 210Z"/>
+    <path fill="#F5E211" d="M800 288C840 278 875 298 865 340C855 385 830 410 815 410C800 385 780 320 800 288Z"/>
+    <path fill="#FF9CC2" d="M1015 205C1035 195 1052 215 1042 245C1032 270 1012 275 1007 255C1002 235 1003 212 1015 205Z"/>
+    <path fill="#8ED462" d="M900 352C940 342 970 362 960 390C950 410 915 410 900 395C890 380 888 360 900 352Z"/>
+    <path fill="#8ED462" d="M895 500C955 470 1030 490 1030 550C1030 600 960 622 920 602C880 582 865 522 895 500Z"/>
+  </g>
+  <!-- orders -->
+  <g stroke="#2C2E2A" stroke-width="4" fill="none" stroke-linecap="round" marker-end="url(#ah)">
+    <path d="M265 262C250 220 252 190 262 160"/>
+    <path d="M150 300C150 350 180 385 215 400" stroke-dasharray="2 10"/>
+    <path d="M395 245C440 225 470 220 505 222"/>
+  </g>
+  <!-- units -->
+  <g font-size="15" text-anchor="middle">
+    <circle cx="265" cy="285" r="17" fill="#2C2E2A"/><text x="265" y="290" fill="#F5F1E4">A</text>
+    <circle cx="150" cy="282" r="17" fill="#2C2E2A"/><text x="150" y="287" fill="#F5F1E4">C</text>
+    <circle cx="378" cy="258" r="17" fill="#2C2E2A"/><text x="378" y="263" fill="#F5F1E4">F</text>
+  </g>
+  <!-- coastline label capsules -->
+  <g font-size="13" stroke-width="2" letter-spacing="-.2">
+    <rect x="180" y="58" width="84" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="222" y="76" text-anchor="middle">CANADA</text>
+    <rect x="58" y="352" width="78" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="97" y="370" text-anchor="middle">MEXICO</text>
+    <rect x="232" y="346" width="66" height="26" rx="13" fill="#FFFFFF" stroke="#2C2E2A"/><text x="265" y="364" text-anchor="middle">TEXAS</text>
+    <rect x="510" y="208" width="120" height="28" rx="14" fill="#2BA0FF" stroke="#2C2E2A"/><text x="570" y="227" text-anchor="middle">N. ATLANTIC</text>
+    <rect x="610" y="118" width="64" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="642" y="136" text-anchor="middle">EU</text>
+    <rect x="808" y="42" width="84" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="850" y="60" text-anchor="middle">RUSSIA</text>
+    <rect x="905" y="326" width="74" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="942" y="344" text-anchor="middle">CHINA</text>
+    <rect x="770" y="410" width="66" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="803" y="428" text-anchor="middle">INDIA</text>
+    <rect x="978" y="272" width="72" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="1014" y="290" text-anchor="middle">JAPAN</text>
+    <rect x="742" y="342" width="62" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="773" y="360" text-anchor="middle">GULF</text>
+    <rect x="410" y="560" width="78" height="26" rx="13" fill="#F5F1E4" stroke="#2C2E2A"/><text x="449" y="578" text-anchor="middle">BRAZIL</text>
+  </g>
+  <!-- map controls -->
+  <g font-size="14" stroke="#2C2E2A" stroke-width="2">
+    <rect x="20" y="776" width="128" height="42" rx="21" fill="#F5F1E4"/><text x="40" y="802" stroke="none">Zoom in</text><circle cx="127" cy="797" r="14" fill="#2C2E2A"/>
+    <rect x="158" y="776" width="148" height="42" rx="21" fill="#EBC1FF"/><text x="178" y="802" stroke="none">Show supply</text><circle cx="285" cy="797" r="14" fill="#2C2E2A"/>
+  </g>
+</svg>
+
+<aside class="side">
+  <div class="card" style="background:var(--blu)">
+    <div class="kick"><span class="dot" style="background:var(--cream)"></span>United States · Spring 2031</div>
+    <h1>Your move.</h1>
+  </div>
+  <div class="card">
+    <div class="row"><span class="kick">Orders</span><span class="kick">3 of 3 units</span></div>
+    <div class="ord">
+      <span class="cap"><b>A TEX – CAN</b><i>×</i></span>
+      <span class="cap"><b>C CAL – MEX</b><i>×</i></span>
+      <span class="cap"><b>F WAS – NAO</b><i>×</i></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row"><span class="kick">Crisis</span><span class="big">3<span style="font-size:20px;letter-spacing:-.02em"> of 10</span></span></div>
+    <div class="meter"><span class="c"></span><span class="c"></span><span class="c"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+  <div class="card">
+    <span class="kick">Centres</span>
+    <div class="cent">
+      <div><span class="dot b"></span>United States<em>3</em></div><div><span class="dot c"></span>China<em>3</em></div>
+      <div><span class="dot l"></span>European Union<em>3</em></div><div><span class="dot" style="background:var(--teal)"></span>Russia<em>3</em></div>
+      <div><span class="dot y"></span>India<em>3</em></div><div><span class="dot" style="background:var(--pink)"></span>Japan<em>3</em></div>
+      <div><span class="dot" style="background:var(--org)"></span>Gulf<em>3</em></div>
+    </div>
+  </div>
+  <button class="cap y commit">Commit orders<i>→</i></button>
+</aside>
+</body></html>
