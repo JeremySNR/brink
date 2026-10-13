@@ -9,10 +9,14 @@ import "@fontsource/barlow-condensed/700.css";
 import "@fontsource/barlow-condensed/500-italic.css";
 import "@fontsource/barlow-condensed/600-italic.css";
 import "./style.css";
+import "./pages.css";
 import { BoardView } from "./board";
 import { codeCounter, counterSvg } from "./counter";
 import { Overlay } from "./overlay";
 import { Panel } from "./panel";
+import { HostedBackend } from "./hosted/game";
+import type { GameView } from "./hosted/api";
+import { startHosted } from "./hosted/pages";
 import { PlayController } from "./play";
 import { BUFF, POWER_COLOURS, RED, UNIT_NAMES, arrowInk, homeFill, swingFill } from "./theme";
 import type { Board, GameRecord, MapData, Phase, Unit } from "./types";
@@ -20,15 +24,39 @@ import { html, loadJSON, normaliseRecord, seasonLabel, svg } from "./util";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
+/** What the board is showing: a replay (`?game=`), local play against bots (`?play`, `brink serve`), or a
+ * hosted multiplayer game (`#/g/<id>`, the hosted API). */
+type BoardMode =
+  | { kind: "replay"; url: string }
+  | { kind: "local"; param: string | null }
+  | { kind: "hosted"; id: string; view: GameView };
+
 async function main() {
   const params = new URLSearchParams(location.search);
-  const playMode = params.has("play");
-  const gameUrl = params.get("game") || "sample-game.json";
+  if (params.has("play")) return startBoard({ kind: "local", param: params.get("play") });
+  if (params.has("game")) return startBoard({ kind: "replay", url: params.get("game") || "sample-game.json" });
+  // hosted multiplayer: pages around the board
+  document.body.classList.add("pages-mode");
+  let map: MapData;
+  try {
+    map = await loadJSON<MapData>("map.json");
+  } catch (e) {
+    document.getElementById("pages")!.hidden = false;
+    document.getElementById("pages")!.textContent = `Couldn't load the game data: ${String(e)}`;
+    return;
+  }
+  await startHosted(map, (id, view) => startBoard({ kind: "hosted", id, view }, map));
+}
+
+async function startBoard(mode: BoardMode, preMap?: MapData) {
+  document.body.classList.remove("pages-mode");
+  const playMode = mode.kind !== "replay";
+  const gameUrl = mode.kind === "replay" ? mode.url : "";
   let board: Board, map: MapData, rec: GameRecord;
   try {
     [board, map, rec] = await Promise.all([
       loadJSON<Board>("board.json"),
-      loadJSON<MapData>("map.json"),
+      preMap ? Promise.resolve(preMap) : loadJSON<MapData>("map.json"),
       playMode ? Promise.resolve({ map: "brink-v0", phases: [], result: null } as GameRecord) : loadJSON<GameRecord>(gameUrl),
     ]);
   } catch (e) {
@@ -37,8 +65,18 @@ async function main() {
     return;
   }
   rec = normaliseRecord(rec, map);
-  $("#game-name").textContent = playMode ? "Play against six bots" : gameUrl === "sample-game.json" ? "Sample game" : `Replay: ${gameUrl.split("/").pop()!.replace(/\.json$/, "")}`;
+  $("#game-name").textContent = mode.kind === "hosted" ? mode.view.game.name : playMode ? "Play against six bots"
+    : gameUrl === "sample-game.json" ? "Sample game" : `Replay: ${gameUrl.split("/").pop()!.replace(/\.json$/, "")}`;
   document.body.classList.toggle("play-mode", playMode);
+  document.body.classList.toggle("hosted-mode", mode.kind === "hosted");
+  if (mode.kind === "hosted") {
+    const brand = document.querySelector<HTMLElement>(".topbar .brand .logotype");
+    if (brand) {
+      const a = html("a", { href: "#/", class: "brand-link", "aria-label": "Brink: your games" });
+      brand.replaceWith(a);
+      a.append(brand);
+    }
+  }
 
   const view = new BoardView($("#map"), board, map);
   const tip = $("#tooltip");
@@ -415,6 +453,7 @@ async function main() {
   view.fit(false);
   go(start >= 0 ? start : 0);
   if (playMode) {
+    const backend = mode.kind === "hosted" ? new HostedBackend(mode.id, mode.view, map) : undefined;
     play = new PlayController({
       view, map, overlay,
       setRecord(next, live, goTo) {
@@ -435,10 +474,10 @@ async function main() {
       liveIndex: () => liveIndex,
       phase: (i) => rec.phases[i],
       stateCards: (root, ph) => panel.render(ph, current, rec.phases.length, { root, header: false, orders: false, you: play?.power ?? undefined }),
-    });
-    play.start(params.get("play"));
+    }, backend);
+    play.start(mode.kind === "local" ? mode.param : mode.kind === "hosted" ? mode.id : null);
   }
-  const focus = params.get("focus")?.toUpperCase();
+  const focus = new URLSearchParams(location.search).get("focus")?.toUpperCase();
   if (focus && board.provinces[focus]) setTimeout(() => view.zoomTo(focus), 50);
   requestAnimationFrame(() => setTimeout(() => document.body.classList.add("ready"), 200));
 }
