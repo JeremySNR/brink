@@ -433,8 +433,10 @@ def _notify_advanced(conn: Connection, g: dict, seats: list[dict], state: dict) 
         return
     pend = _pending_summary(state) or {}
     label = _phase_label(pend.get("phase", ""))
+    what = {"retreats": "retreats", "propose": "you chair the Assembly",
+            "winter": "vote, adjustments and umbrellas"}.get(pend.get("kind"), "orders")
     notify(conn, [by_power[p] for p in pend.get("powers", []) if p in by_power], str(g["id"]), "turn",
-           f"Your move in {g['name']}: {label}")
+           f"Your move in {g['name']}: {label}, {what}")
 
 
 def _phase_label(name: str) -> str:
