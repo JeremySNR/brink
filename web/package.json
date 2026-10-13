@@ -1,0 +1,27 @@
+{
+  "name": "brink-board",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Brink board viewer: renders board.json and replays game records",
+  "scripts": {
+    "sync-map": "node scripts/sync-map.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.2.8",
+    "d3-selection": "3.0.0",
+    "d3-transition": "3.0.1",
+    "d3-zoom": "3.0.0"
+  },
+  "devDependencies": {
+    "@types/d3-selection": "3.0.11",
+    "@types/d3-transition": "3.0.9",
+    "@types/d3-zoom": "3.0.8",
+    "typescript": "5.9.3",
+    "vite": "7.3.6"
+  }
+}

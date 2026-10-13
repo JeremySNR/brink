@@ -1,0 +1,2534 @@
+{
+ "map": "brink-v0",
+ "seed": 0,
+ "note": "Hand-written sample record for the viewer (not produced by the engine).",
+ "players": {
+  "USA": "sample",
+  "CHN": "sample",
+  "EU": "sample",
+  "RUS": "sample",
+  "IND": "sample",
+  "JPN": "sample",
+  "GLF": "sample"
+ },
+ "phases": [
+  {
+   "name": "S2031M",
+   "year": 2031,
+   "season": "spring",
+   "kind": "movement",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "WAS"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAL"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "TEX"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "ALA"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "GUA"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "XIN"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "BEI"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BER"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "PAR"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "ROM"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "DEL"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "CHE"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "MUM"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "OKI"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "TOK"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "DUB"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "RIY"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "JED"
+    }
+   ],
+   "orders": [
+    {
+     "power": "USA",
+     "text": "F WAS - CAR",
+     "unit": {
+      "type": "F",
+      "at": "WAS"
+     },
+     "kind": "move",
+     "to": "CAR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F CAL - NEP",
+     "unit": {
+      "type": "F",
+      "at": "CAL"
+     },
+     "kind": "move",
+     "to": "NEP",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "A TEX H",
+     "unit": {
+      "type": "A",
+      "at": "TEX"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "C ALA - CAN",
+     "unit": {
+      "type": "C",
+      "at": "ALA"
+     },
+     "kind": "move",
+     "to": "CAN",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "F GUA - TWS",
+     "unit": {
+      "type": "F",
+      "at": "GUA"
+     },
+     "kind": "move",
+     "to": "TWS",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "A XIN - MNG",
+     "unit": {
+      "type": "A",
+      "at": "XIN"
+     },
+     "kind": "move",
+     "to": "MNG",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "C BEI - KOR",
+     "unit": {
+      "type": "C",
+      "at": "BEI"
+     },
+     "kind": "move",
+     "to": "KOR",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "EU",
+     "text": "A BER - BLR",
+     "unit": {
+      "type": "A",
+      "at": "BER"
+     },
+     "kind": "move",
+     "to": "BLR",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "EU",
+     "text": "C PAR - BRA",
+     "unit": {
+      "type": "C",
+      "at": "PAR"
+     },
+     "kind": "move",
+     "to": "BRA",
+     "target": null,
+     "result": "ok",
+     "via": "hop"
+    },
+    {
+     "power": "EU",
+     "text": "I ROM - TUR",
+     "unit": {
+      "type": "I",
+      "at": "ROM"
+     },
+     "kind": "move",
+     "to": "TUR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A MOS - BLR",
+     "unit": {
+      "type": "A",
+      "at": "MOS"
+     },
+     "kind": "move",
+     "to": "BLR",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "RUS",
+     "text": "A SIB - KAZ",
+     "unit": {
+      "type": "A",
+      "at": "SIB"
+     },
+     "kind": "move",
+     "to": "KAZ",
+     "target": null,
+     "result": "void",
+     "note": "military may not enter an unaligned swing state"
+    },
+    {
+     "power": "RUS",
+     "text": "I VLA DISRUPT BEI",
+     "unit": {
+      "type": "I",
+      "at": "VLA"
+     },
+     "kind": "disrupt",
+     "to": "BEI",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "A DEL H",
+     "unit": {
+      "type": "A",
+      "at": "DEL"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "F CHE - BOB",
+     "unit": {
+      "type": "F",
+      "at": "CHE"
+     },
+     "kind": "move",
+     "to": "BOB",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "C MUM - PAK",
+     "unit": {
+      "type": "C",
+      "at": "MUM"
+     },
+     "kind": "move",
+     "to": "PAK",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "F OKI - ECS",
+     "unit": {
+      "type": "F",
+      "at": "OKI"
+     },
+     "kind": "move",
+     "to": "ECS",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "C TOK - KOR",
+     "unit": {
+      "type": "C",
+      "at": "TOK"
+     },
+     "kind": "move",
+     "to": "KOR",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "JPN",
+     "text": "I OSA COMMONS",
+     "unit": {
+      "type": "I",
+      "at": "OSA"
+     },
+     "kind": "commons",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "F DUB - HOR",
+     "unit": {
+      "type": "F",
+      "at": "DUB"
+     },
+     "kind": "move",
+     "to": "HOR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "C RIY H",
+     "unit": {
+      "type": "C",
+      "at": "RIY"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "C JED - EGY",
+     "unit": {
+      "type": "C",
+      "at": "JED"
+     },
+     "kind": "move",
+     "to": "EGY",
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": null,
+    "ARG": null,
+    "UKR": null,
+    "TUR": null,
+    "MAG": null,
+    "EGY": null,
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": null,
+    "KOR": null,
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 3,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {},
+   "sanctions": {},
+   "commons": {
+    "JPN": 1
+   },
+   "assembly": null,
+   "dislodged": [],
+   "events": [
+    "Opening moves: China and Japan bounce over Korea",
+    "Europe and Russia bounce in Belarus",
+    "Russian Influence disrupts Beijing"
+   ]
+  },
+  {
+   "name": "F2031M",
+   "year": 2031,
+   "season": "fall",
+   "kind": "movement",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAR"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "NEP"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "TEX"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "CAN"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "TWS"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "MNG"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "BEI"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BER"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "BRA"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "TUR"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "DEL"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "BOB"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "PAK"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "ECS"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "TOK"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "HOR"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "RIY"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "EGY"
+    }
+   ],
+   "orders": [
+    {
+     "power": "USA",
+     "text": "A TEX - CAM VIA",
+     "unit": {
+      "type": "A",
+      "at": "TEX"
+     },
+     "kind": "move",
+     "to": "CAM",
+     "target": null,
+     "result": "ok",
+     "via": "convoy"
+    },
+    {
+     "power": "USA",
+     "text": "F CAR C A TEX - CAM",
+     "unit": {
+      "type": "F",
+      "at": "CAR"
+     },
+     "kind": "convoy",
+     "to": "CAM",
+     "target": {
+      "type": "A",
+      "at": "TEX"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F NEP - NWP",
+     "unit": {
+      "type": "F",
+      "at": "NEP"
+     },
+     "kind": "move",
+     "to": "NWP",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "C CAN - WAS",
+     "unit": {
+      "type": "C",
+      "at": "CAN"
+     },
+     "kind": "move",
+     "to": "WAS",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "F TWS CLOSE USA JPN",
+     "unit": {
+      "type": "F",
+      "at": "TWS"
+     },
+     "kind": "close",
+     "to": "TWS",
+     "target": null,
+     "result": "ok",
+     "against": [
+      "USA",
+      "JPN"
+     ]
+    },
+    {
+     "power": "CHN",
+     "text": "A MNG H",
+     "unit": {
+      "type": "A",
+      "at": "MNG"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "C BEI - KOR",
+     "unit": {
+      "type": "C",
+      "at": "BEI"
+     },
+     "kind": "move",
+     "to": "KOR",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "EU",
+     "text": "A BER - BLR",
+     "unit": {
+      "type": "A",
+      "at": "BER"
+     },
+     "kind": "move",
+     "to": "BLR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "C BRA H",
+     "unit": {
+      "type": "C",
+      "at": "BRA"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "I TUR H",
+     "unit": {
+      "type": "I",
+      "at": "TUR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A MOS H",
+     "unit": {
+      "type": "A",
+      "at": "MOS"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A SIB S A MOS H",
+     "unit": {
+      "type": "A",
+      "at": "SIB"
+     },
+     "kind": "support",
+     "to": null,
+     "target": {
+      "type": "A",
+      "at": "MOS"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "I VLA H",
+     "unit": {
+      "type": "I",
+      "at": "VLA"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "A DEL COMMONS",
+     "unit": {
+      "type": "A",
+      "at": "DEL"
+     },
+     "kind": "commons",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "F BOB - MLC",
+     "unit": {
+      "type": "F",
+      "at": "BOB"
+     },
+     "kind": "move",
+     "to": "MLC",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "C PAK H",
+     "unit": {
+      "type": "C",
+      "at": "PAK"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "F ECS H",
+     "unit": {
+      "type": "F",
+      "at": "ECS"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "C TOK - KOR",
+     "unit": {
+      "type": "C",
+      "at": "TOK"
+     },
+     "kind": "move",
+     "to": "KOR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "I OSA S C TOK - KOR",
+     "unit": {
+      "type": "I",
+      "at": "OSA"
+     },
+     "kind": "support",
+     "to": "KOR",
+     "target": {
+      "type": "C",
+      "at": "TOK"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "F HOR CLOSE CHN IND",
+     "unit": {
+      "type": "F",
+      "at": "HOR"
+     },
+     "kind": "close",
+     "to": "HOR",
+     "target": null,
+     "result": "ok",
+     "against": [
+      "CHN",
+      "IND"
+     ]
+    },
+    {
+     "power": "GLF",
+     "text": "C RIY H",
+     "unit": {
+      "type": "C",
+      "at": "RIY"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "C EGY H",
+     "unit": {
+      "type": "C",
+      "at": "EGY"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": null,
+    "ARG": null,
+    "UKR": null,
+    "TUR": null,
+    "MAG": null,
+    "EGY": null,
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": null,
+    "KOR": null,
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 3,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {
+    "TWS": [
+     "USA",
+     "JPN"
+    ],
+    "HOR": [
+     "CHN",
+     "IND"
+    ]
+   },
+   "sanctions": {},
+   "commons": {
+    "JPN": 1,
+    "IND": 1
+   },
+   "assembly": null,
+   "dislodged": [],
+   "events": [
+    "Gulf closes Hormuz to China and India",
+    "China closes the Taiwan Strait to the US and Japan",
+    "US Army convoyed into Central America",
+    "Japan takes Korea's civil slot with support from Osaka"
+   ]
+  },
+  {
+   "name": "W2031",
+   "year": 2031,
+   "season": "winter",
+   "kind": "winter",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAR"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "NWP"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "CAM"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "WAS"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "TWS"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "MNG"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "BEI"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BLR"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "BRA"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "TUR"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "DEL"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "MLC"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "PAK"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "ECS"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "KOR"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "HOR"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "RIY"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "EGY"
+    }
+   ],
+   "orders": [
+    {
+     "power": "EU",
+     "text": "BUILD A BER",
+     "unit": {
+      "type": "A",
+      "at": "BER"
+     },
+     "kind": "build",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "USA UMBRELLA JPN",
+     "unit": null,
+     "kind": "umbrella",
+     "to": null,
+     "target": null,
+     "result": "ok",
+     "target_power": "JPN"
+    },
+    {
+     "power": "CHN",
+     "text": "PROPOSE freedom-of-navigation",
+     "unit": null,
+     "kind": "propose",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "VOTE YES",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "VOTE YES",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "VOTE YES",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "VOTE NO",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "VOTE YES",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "VOTE YES",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "VOTE NO",
+     "unit": null,
+     "kind": "vote",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": "EU",
+    "ARG": null,
+    "UKR": null,
+    "TUR": "EU",
+    "MAG": null,
+    "EGY": "GLF",
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": "IND",
+    "KOR": "JPN",
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 6,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {
+    "TWS": [
+     "USA",
+     "JPN"
+    ],
+    "HOR": [
+     "CHN",
+     "IND"
+    ]
+   },
+   "sanctions": {},
+   "commons": {
+    "JPN": 1,
+    "IND": 1
+   },
+   "assembly": {
+    "chair": "CHN",
+    "proposal": "Freedom of Navigation: no chokepoint may be closed to a power that voted for this resolution (next Spring, Fall and Winter)",
+    "votes": {
+     "USA": "yes",
+     "CHN": "yes",
+     "EU": "yes",
+     "RUS": "no",
+     "IND": "yes",
+     "JPN": "yes",
+     "GLF": "no"
+    },
+    "passed": true
+   },
+   "dislodged": [],
+   "events": [
+    "Brazil aligns to the European Union",
+    "Turkey aligns to the European Union",
+    "Pakistan aligns to India",
+    "Korea aligns to Japan",
+    "Egypt aligns to the Gulf",
+    "Crisis +1 baseline, +2 for two closed chokepoints: now 6 (builds -1 for everyone)",
+    "Assembly (chair China) passes Freedom of Navigation 5-2",
+    "Europe builds an Army in Berlin"
+   ]
+  },
+  {
+   "name": "S2032M",
+   "year": 2032,
+   "season": "spring",
+   "kind": "movement",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAR"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "NWP"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "CAM"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "WAS"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "TWS"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "MNG"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "BEI"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BLR"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "BRA"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "TUR"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "DEL"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "MLC"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "PAK"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "ECS"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "KOR"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "HOR"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "RIY"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "EGY"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BER"
+    }
+   ],
+   "orders": [
+    {
+     "power": "USA",
+     "text": "A CAM - AND",
+     "unit": {
+      "type": "A",
+      "at": "CAM"
+     },
+     "kind": "move",
+     "to": "AND",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F CAR H",
+     "unit": {
+      "type": "F",
+      "at": "CAR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F NWP - SOJ",
+     "unit": {
+      "type": "F",
+      "at": "NWP"
+     },
+     "kind": "move",
+     "to": "SOJ",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "USA",
+     "text": "C WAS H",
+     "unit": {
+      "type": "C",
+      "at": "WAS"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "C BEI - KOR",
+     "unit": {
+      "type": "C",
+      "at": "BEI"
+     },
+     "kind": "move",
+     "to": "KOR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "F TWS - SCS",
+     "unit": {
+      "type": "F",
+      "at": "TWS"
+     },
+     "kind": "move",
+     "to": "SCS",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "A MNG H",
+     "unit": {
+      "type": "A",
+      "at": "MNG"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "C BRA SANCTION CHN",
+     "unit": {
+      "type": "C",
+      "at": "BRA"
+     },
+     "kind": "sanction",
+     "to": null,
+     "target": null,
+     "result": "ok",
+     "target_power": "CHN"
+    },
+    {
+     "power": "EU",
+     "text": "A BLR H",
+     "unit": {
+      "type": "A",
+      "at": "BLR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "A BER S A BLR H",
+     "unit": {
+      "type": "A",
+      "at": "BER"
+     },
+     "kind": "support",
+     "to": null,
+     "target": {
+      "type": "A",
+      "at": "BLR"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "I TUR DISRUPT IRN",
+     "unit": {
+      "type": "I",
+      "at": "TUR"
+     },
+     "kind": "disrupt",
+     "to": "IRN",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "I VLA S C BEI - KOR",
+     "unit": {
+      "type": "I",
+      "at": "VLA"
+     },
+     "kind": "support",
+     "to": "KOR",
+     "target": {
+      "type": "C",
+      "at": "BEI"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A MOS H",
+     "unit": {
+      "type": "A",
+      "at": "MOS"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A SIB - KAZ",
+     "unit": {
+      "type": "A",
+      "at": "SIB"
+     },
+     "kind": "move",
+     "to": "KAZ",
+     "target": null,
+     "result": "void"
+    },
+    {
+     "power": "IND",
+     "text": "F MLC CLOSE CHN",
+     "unit": {
+      "type": "F",
+      "at": "MLC"
+     },
+     "kind": "close",
+     "to": "MLC",
+     "target": null,
+     "result": "failed",
+     "against": [
+      "CHN"
+     ],
+     "note": "Freedom of Navigation resolution: China voted for it"
+    },
+    {
+     "power": "IND",
+     "text": "A DEL - PAK",
+     "unit": {
+      "type": "A",
+      "at": "DEL"
+     },
+     "kind": "move",
+     "to": "PAK",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "C PAK H",
+     "unit": {
+      "type": "C",
+      "at": "PAK"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "C KOR H",
+     "unit": {
+      "type": "C",
+      "at": "KOR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "dislodged"
+    },
+    {
+     "power": "JPN",
+     "text": "I OSA COMMONS",
+     "unit": {
+      "type": "I",
+      "at": "OSA"
+     },
+     "kind": "commons",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "F ECS - SOJ",
+     "unit": {
+      "type": "F",
+      "at": "ECS"
+     },
+     "kind": "move",
+     "to": "SOJ",
+     "target": null,
+     "result": "bounce"
+    },
+    {
+     "power": "GLF",
+     "text": "F HOR CLOSE CHN IND",
+     "unit": {
+      "type": "F",
+      "at": "HOR"
+     },
+     "kind": "close",
+     "to": "HOR",
+     "target": null,
+     "result": "failed",
+     "against": [
+      "CHN",
+      "IND"
+     ],
+     "note": "Freedom of Navigation resolution: both targets voted for it"
+    },
+    {
+     "power": "GLF",
+     "text": "C RIY - DUB",
+     "unit": {
+      "type": "C",
+      "at": "RIY"
+     },
+     "kind": "move",
+     "to": "DUB",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "C EGY H",
+     "unit": {
+      "type": "C",
+      "at": "EGY"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": "EU",
+    "ARG": null,
+    "UKR": null,
+    "TUR": "EU",
+    "MAG": null,
+    "EGY": "GLF",
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": "IND",
+    "KOR": "JPN",
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 6,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {},
+   "sanctions": {
+    "CHN": 1
+   },
+   "commons": {
+    "JPN": 1
+   },
+   "assembly": null,
+   "dislodged": [
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "KOR",
+     "from": "BEI"
+    }
+   ],
+   "events": [
+    "China, backed by Russian Influence, dislodges Japan's Capital from Korea",
+    "Europe sanctions China from aligned Brazil",
+    "Closures of Hormuz and Malacca fail under the Freedom of Navigation resolution",
+    "US and Japanese fleets bounce in the Sea of Japan"
+   ]
+  },
+  {
+   "name": "S2032R",
+   "year": 2032,
+   "season": "spring",
+   "kind": "retreat",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAR"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "NWP"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "AND"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "WAS"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "SCS"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "MNG"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "KOR"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BLR"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "BRA"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "TUR"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "PAK"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "MLC"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "PAK"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "ECS"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "HOR"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "DUB"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "EGY"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BER"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "KOR",
+     "dislodged": true
+    }
+   ],
+   "orders": [
+    {
+     "power": "JPN",
+     "text": "C KOR R TOK",
+     "unit": {
+      "type": "C",
+      "at": "KOR"
+     },
+     "kind": "retreat",
+     "to": "TOK",
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": "EU",
+    "ARG": null,
+    "UKR": null,
+    "TUR": "EU",
+    "MAG": null,
+    "EGY": "GLF",
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": "IND",
+    "KOR": "JPN",
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 6,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {},
+   "sanctions": {
+    "CHN": 1
+   },
+   "commons": {},
+   "assembly": null,
+   "dislodged": [
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "KOR",
+     "from": "BEI"
+    }
+   ],
+   "events": [
+    "Japan's Capital retreats home to Tokyo"
+   ]
+  },
+  {
+   "name": "F2032M",
+   "year": 2032,
+   "season": "fall",
+   "kind": "movement",
+   "units": [
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "CAR"
+    },
+    {
+     "power": "USA",
+     "type": "F",
+     "at": "NWP"
+    },
+    {
+     "power": "USA",
+     "type": "A",
+     "at": "AND"
+    },
+    {
+     "power": "USA",
+     "type": "C",
+     "at": "WAS"
+    },
+    {
+     "power": "CHN",
+     "type": "F",
+     "at": "SCS"
+    },
+    {
+     "power": "CHN",
+     "type": "A",
+     "at": "MNG"
+    },
+    {
+     "power": "CHN",
+     "type": "C",
+     "at": "KOR"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BLR"
+    },
+    {
+     "power": "EU",
+     "type": "C",
+     "at": "BRA"
+    },
+    {
+     "power": "EU",
+     "type": "I",
+     "at": "TUR"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "MOS"
+    },
+    {
+     "power": "RUS",
+     "type": "A",
+     "at": "SIB"
+    },
+    {
+     "power": "RUS",
+     "type": "I",
+     "at": "VLA"
+    },
+    {
+     "power": "IND",
+     "type": "A",
+     "at": "PAK"
+    },
+    {
+     "power": "IND",
+     "type": "F",
+     "at": "MLC"
+    },
+    {
+     "power": "IND",
+     "type": "C",
+     "at": "PAK"
+    },
+    {
+     "power": "JPN",
+     "type": "F",
+     "at": "ECS"
+    },
+    {
+     "power": "JPN",
+     "type": "I",
+     "at": "OSA"
+    },
+    {
+     "power": "GLF",
+     "type": "F",
+     "at": "HOR"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "DUB"
+    },
+    {
+     "power": "GLF",
+     "type": "C",
+     "at": "EGY"
+    },
+    {
+     "power": "EU",
+     "type": "A",
+     "at": "BER"
+    },
+    {
+     "power": "JPN",
+     "type": "C",
+     "at": "TOK"
+    }
+   ],
+   "orders": [
+    {
+     "power": "USA",
+     "text": "A AND H",
+     "unit": {
+      "type": "A",
+      "at": "AND"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F CAR - MAO",
+     "unit": {
+      "type": "F",
+      "at": "CAR"
+     },
+     "kind": "move",
+     "to": "MAO",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "F NWP - SOJ",
+     "unit": {
+      "type": "F",
+      "at": "NWP"
+     },
+     "kind": "move",
+     "to": "SOJ",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "USA",
+     "text": "USA WITHDRAW JPN",
+     "unit": null,
+     "kind": "withdraw",
+     "to": null,
+     "target": null,
+     "result": "failed",
+     "target_power": "JPN",
+     "note": "withdrawn order: shown for completeness"
+    },
+    {
+     "power": "CHN",
+     "text": "C KOR H",
+     "unit": {
+      "type": "C",
+      "at": "KOR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "F SCS - JAV",
+     "unit": {
+      "type": "F",
+      "at": "SCS"
+     },
+     "kind": "move",
+     "to": "JAV",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "CHN",
+     "text": "A MNG - SIB",
+     "unit": {
+      "type": "A",
+      "at": "MNG"
+     },
+     "kind": "move",
+     "to": "SIB",
+     "target": null,
+     "result": "void",
+     "note": "no entry into a nuclear power's home"
+    },
+    {
+     "power": "EU",
+     "text": "A BER - UKR",
+     "unit": {
+      "type": "A",
+      "at": "BER"
+     },
+     "kind": "move",
+     "to": "UKR",
+     "target": null,
+     "result": "void"
+    },
+    {
+     "power": "EU",
+     "text": "C BRA SANCTION CHN",
+     "unit": {
+      "type": "C",
+      "at": "BRA"
+     },
+     "kind": "sanction",
+     "to": null,
+     "target": null,
+     "result": "ok",
+     "target_power": "CHN"
+    },
+    {
+     "power": "EU",
+     "text": "I TUR - UKR",
+     "unit": {
+      "type": "I",
+      "at": "TUR"
+     },
+     "kind": "move",
+     "to": "UKR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "EU",
+     "text": "A BLR H",
+     "unit": {
+      "type": "A",
+      "at": "BLR"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "I VLA DISRUPT KOR",
+     "unit": {
+      "type": "I",
+      "at": "VLA"
+     },
+     "kind": "disrupt",
+     "to": "KOR",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "RUS",
+     "text": "A MOS - UKR",
+     "unit": {
+      "type": "A",
+      "at": "MOS"
+     },
+     "kind": "move",
+     "to": "UKR",
+     "target": null,
+     "result": "void"
+    },
+    {
+     "power": "IND",
+     "text": "F MLC - SCS",
+     "unit": {
+      "type": "F",
+      "at": "MLC"
+     },
+     "kind": "move",
+     "to": "SCS",
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "A PAK S C PAK H",
+     "unit": {
+      "type": "A",
+      "at": "PAK"
+     },
+     "kind": "support",
+     "to": null,
+     "target": {
+      "type": "C",
+      "at": "PAK"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "IND",
+     "text": "C PAK H",
+     "unit": {
+      "type": "C",
+      "at": "PAK"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "F ECS S F NWP - SOJ",
+     "unit": {
+      "type": "F",
+      "at": "ECS"
+     },
+     "kind": "support",
+     "to": "SOJ",
+     "target": {
+      "type": "F",
+      "at": "NWP"
+     },
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "C TOK H",
+     "unit": {
+      "type": "C",
+      "at": "TOK"
+     },
+     "kind": "hold",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "JPN",
+     "text": "I OSA COMMONS",
+     "unit": {
+      "type": "I",
+      "at": "OSA"
+     },
+     "kind": "commons",
+     "to": null,
+     "target": null,
+     "result": "ok"
+    },
+    {
+     "power": "GLF",
+     "text": "F HOR CLOSE CHN IND",
+     "unit": {
+      "type": "F",
+      "at": "HOR"
+     },
+     "kind": "close",
+     "to": "HOR",
+     "target": null,
+     "result": "failed",
+     "against": [
+      "CHN",
+      "IND"
+     ]
+    },
+    {
+     "power": "GLF",
+     "text": "C DUB - IRN",
+     "unit": {
+      "type": "C",
+      "at": "DUB"
+     },
+     "kind": "move",
+     "to": "IRN",
+     "target": null,
+     "result": "ok"
+    }
+   ],
+   "ownership": {
+    "WAS": "USA",
+    "TEX": "USA",
+    "CAL": "USA",
+    "ALA": "USA",
+    "BEI": "CHN",
+    "GUA": "CHN",
+    "XIN": "CHN",
+    "PAR": "EU",
+    "BER": "EU",
+    "ROM": "EU",
+    "MOS": "RUS",
+    "SIB": "RUS",
+    "VLA": "RUS",
+    "DEL": "IND",
+    "MUM": "IND",
+    "CHE": "IND",
+    "TOK": "JPN",
+    "OSA": "JPN",
+    "OKI": "JPN",
+    "RIY": "GLF",
+    "DUB": "GLF",
+    "JED": "GLF",
+    "MEX": null,
+    "BRA": "EU",
+    "ARG": null,
+    "UKR": null,
+    "TUR": "EU",
+    "MAG": null,
+    "EGY": "GLF",
+    "IRN": null,
+    "NGA": null,
+    "ETH": null,
+    "COD": null,
+    "ZAF": null,
+    "KAZ": null,
+    "PAK": "IND",
+    "KOR": "JPN",
+    "VNM": null,
+    "PHL": null,
+    "IDN": null,
+    "AUS": null,
+    "ARC": null,
+    "CAN": null,
+    "CAM": null,
+    "AND": null,
+    "GBR": null,
+    "BLR": null,
+    "CAU": null,
+    "LEV": null,
+    "IRQ": null,
+    "YEM": null,
+    "WAF": null,
+    "SAH": null,
+    "CAF": null,
+    "EAF": null,
+    "SAR": null,
+    "CAS": null,
+    "AFG": null,
+    "MNG": null,
+    "MMR": null,
+    "MAL": null,
+    "TWN": null,
+    "PRK": null,
+    "HIM": null,
+    "LKA": null
+   },
+   "crisis": 6,
+   "umbrellas": [
+    [
+     "USA",
+     "JPN"
+    ]
+   ],
+   "closed": {},
+   "sanctions": {
+    "CHN": 2
+   },
+   "commons": {
+    "JPN": 2
+   },
+   "assembly": null,
+   "dislodged": [],
+   "events": [
+    "US fleet enters the Sea of Japan with Japanese support",
+    "European Influence moves into Ukraine",
+    "Gulf Capital moves into Iran"
+   ]
+  }
+ ],
+ "result": null
+}

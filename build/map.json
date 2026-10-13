@@ -1,0 +1,3518 @@
+{
+ "version": 1,
+ "seam_lon": -168.6,
+ "powers": {
+  "USA": {
+   "name": "United States",
+   "adjective": "American",
+   "nuclear": true,
+   "homes": [
+    "WAS",
+    "TEX",
+    "CAL",
+    "ALA"
+   ]
+  },
+  "CHN": {
+   "name": "China",
+   "adjective": "Chinese",
+   "nuclear": true,
+   "homes": [
+    "BEI",
+    "GUA",
+    "XIN"
+   ]
+  },
+  "EU": {
+   "name": "European Union",
+   "adjective": "European",
+   "nuclear": true,
+   "homes": [
+    "PAR",
+    "BER",
+    "ROM"
+   ]
+  },
+  "RUS": {
+   "name": "Russia",
+   "adjective": "Russian",
+   "nuclear": true,
+   "homes": [
+    "MOS",
+    "SIB",
+    "VLA"
+   ]
+  },
+  "IND": {
+   "name": "India",
+   "adjective": "Indian",
+   "nuclear": true,
+   "homes": [
+    "DEL",
+    "MUM",
+    "CHE"
+   ]
+  },
+  "JPN": {
+   "name": "Japan",
+   "adjective": "Japanese",
+   "nuclear": false,
+   "homes": [
+    "TOK",
+    "OSA",
+    "OKI"
+   ]
+  },
+  "GLF": {
+   "name": "Gulf",
+   "adjective": "Gulf",
+   "nuclear": false,
+   "homes": [
+    "RIY",
+    "DUB",
+    "JED"
+   ]
+  }
+ },
+ "provinces": {
+  "WAS": {
+   "name": "Washington",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "USA",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TEX": {
+   "name": "Texas",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "USA",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAL": {
+   "name": "California",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "USA",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ALA": {
+   "name": "Alaska",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "USA",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BEI": {
+   "name": "Beijing",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "CHN",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "GUA": {
+   "name": "Guangzhou",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "CHN",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "XIN": {
+   "name": "Xinjiang",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "CHN",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PAR": {
+   "name": "Paris",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "EU",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BER": {
+   "name": "Berlin",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "EU",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ROM": {
+   "name": "Rome",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "EU",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MOS": {
+   "name": "Moscow",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "RUS",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SIB": {
+   "name": "Siberia",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "RUS",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "VLA": {
+   "name": "Vladivostok",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "RUS",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "DEL": {
+   "name": "Delhi",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "IND",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MUM": {
+   "name": "Mumbai",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "IND",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CHE": {
+   "name": "Chennai",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "IND",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TOK": {
+   "name": "Tokyo",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "JPN",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "OSA": {
+   "name": "Osaka",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "JPN",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "OKI": {
+   "name": "Kyushu & Okinawa",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "JPN",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "RIY": {
+   "name": "Riyadh",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "GLF",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "DUB": {
+   "name": "Dubai",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "GLF",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "JED": {
+   "name": "Jeddah",
+   "kind": "land",
+   "group": "home",
+   "centre": "home",
+   "home_of": "GLF",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MEX": {
+   "name": "Mexico",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BRA": {
+   "name": "Brazil",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARG": {
+   "name": "Argentina",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "UKR": {
+   "name": "Ukraine",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TUR": {
+   "name": "Turkey",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MAG": {
+   "name": "Maghreb",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "EGY": {
+   "name": "Egypt",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "IRN": {
+   "name": "Iran",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "NGA": {
+   "name": "Nigeria",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ETH": {
+   "name": "Ethiopia",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "COD": {
+   "name": "DR Congo",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ZAF": {
+   "name": "South Africa",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "KAZ": {
+   "name": "Kazakhstan",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PAK": {
+   "name": "Pakistan",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "KOR": {
+   "name": "Korea",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "VNM": {
+   "name": "Vietnam",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PHL": {
+   "name": "Philippines",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "IDN": {
+   "name": "Indonesia",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "AUS": {
+   "name": "Australia",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARC": {
+   "name": "Arctic Shelf",
+   "kind": "land",
+   "group": "swing",
+   "centre": "swing",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": 2034
+  },
+  "CAN": {
+   "name": "Canada",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAM": {
+   "name": "Central America",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "AND": {
+   "name": "Andes",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "GBR": {
+   "name": "Britain",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BLR": {
+   "name": "Belarus",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAU": {
+   "name": "Caucasus",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "LEV": {
+   "name": "Levant",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "IRQ": {
+   "name": "Iraq",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "YEM": {
+   "name": "Yemen",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "WAF": {
+   "name": "West Africa",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SAH": {
+   "name": "Sahel",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAF": {
+   "name": "Central Africa",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "EAF": {
+   "name": "East Africa",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SAR": {
+   "name": "Southern Africa",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAS": {
+   "name": "Central Asia",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "AFG": {
+   "name": "Afghanistan",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MNG": {
+   "name": "Mongolia",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MMR": {
+   "name": "Myanmar & Bangladesh",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MAL": {
+   "name": "Malaya",
+   "kind": "land",
+   "group": "filler",
+   "centre": "none",
+   "coastal": true,
+   "chokepoint": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TWN": {
+   "name": "Taiwan",
+   "kind": "land",
+   "group": "impassable",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": true,
+   "opens": null
+  },
+  "PRK": {
+   "name": "North Korea",
+   "kind": "land",
+   "group": "impassable",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": true,
+   "opens": null
+  },
+  "HIM": {
+   "name": "Nepal & Bhutan",
+   "kind": "land",
+   "group": "impassable",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": true,
+   "opens": null
+  },
+  "LKA": {
+   "name": "Sri Lanka",
+   "kind": "land",
+   "group": "impassable",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "impassable": true,
+   "opens": null
+  },
+  "NAO": {
+   "name": "North Atlantic",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "MAO": {
+   "name": "Mid-Atlantic",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "SAO": {
+   "name": "South Atlantic",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "GOG": {
+   "name": "Gulf of Guinea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "CAR": {
+   "name": "Caribbean & Gulf of Mexico",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "NTH": {
+   "name": "North Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BAL": {
+   "name": "Baltic Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "NWS": {
+   "name": "Norwegian & Barents Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARO": {
+   "name": "Arctic Ocean",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": 2034
+  },
+  "WME": {
+   "name": "Western Mediterranean",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "EME": {
+   "name": "Eastern Mediterranean",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BLK": {
+   "name": "Black Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ARA": {
+   "name": "Arabian Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BOB": {
+   "name": "Bay of Bengal",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "IOC": {
+   "name": "Indian Ocean",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "MOZ": {
+   "name": "Mozambique Channel",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SCS": {
+   "name": "South China Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "ECS": {
+   "name": "East China & Yellow Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SOJ": {
+   "name": "Sea of Japan",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "OKH": {
+   "name": "Sea of Okhotsk",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PHS": {
+   "name": "Philippine Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "JAV": {
+   "name": "Java & Banda Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "NWP": {
+   "name": "Northwest Pacific",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "CPA": {
+   "name": "Central Pacific",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "NEP": {
+   "name": "Northeast Pacific",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "EPA": {
+   "name": "East Pacific",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "SPA": {
+   "name": "South Pacific",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": true,
+   "impassable": false,
+   "opens": null
+  },
+  "CTS": {
+   "name": "Coral & Tasman Sea",
+   "kind": "sea",
+   "group": "sea",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": false,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BOS": {
+   "name": "Bosphorus",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "SUZ": {
+   "name": "Suez & Red Sea",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "HOR": {
+   "name": "Hormuz & Persian Gulf",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "MLC": {
+   "name": "Malacca",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "TWS": {
+   "name": "Taiwan Strait",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "PAN": {
+   "name": "Panama",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": null
+  },
+  "BRS": {
+   "name": "Bering Strait",
+   "kind": "sea",
+   "group": "chokepoint",
+   "centre": "none",
+   "coastal": false,
+   "chokepoint": true,
+   "ocean": false,
+   "impassable": false,
+   "opens": 2034
+  }
+ },
+ "adj": {
+  "army": {
+   "WAS": [
+    "CAN",
+    "TEX"
+   ],
+   "TEX": [
+    "CAL",
+    "CAN",
+    "MEX",
+    "WAS"
+   ],
+   "CAL": [
+    "CAN",
+    "MEX",
+    "TEX"
+   ],
+   "ALA": [
+    "CAN"
+   ],
+   "BEI": [
+    "GUA",
+    "MNG",
+    "VLA",
+    "XIN"
+   ],
+   "GUA": [
+    "BEI",
+    "MMR",
+    "VNM",
+    "XIN"
+   ],
+   "XIN": [
+    "AFG",
+    "BEI",
+    "CAS",
+    "CHE",
+    "DEL",
+    "GUA",
+    "KAZ",
+    "MMR",
+    "MNG",
+    "PAK",
+    "SIB"
+   ],
+   "PAR": [
+    "BER",
+    "GBR",
+    "ROM"
+   ],
+   "BER": [
+    "BLR",
+    "MOS",
+    "PAR",
+    "ROM",
+    "UKR"
+   ],
+   "ROM": [
+    "BER",
+    "PAR",
+    "TUR",
+    "UKR"
+   ],
+   "MOS": [
+    "BER",
+    "BLR",
+    "CAU",
+    "KAZ",
+    "SIB",
+    "UKR"
+   ],
+   "SIB": [
+    "KAZ",
+    "MNG",
+    "MOS",
+    "VLA",
+    "XIN"
+   ],
+   "VLA": [
+    "BEI",
+    "MNG",
+    "SIB"
+   ],
+   "DEL": [
+    "CHE",
+    "MUM",
+    "PAK",
+    "XIN"
+   ],
+   "MUM": [
+    "CHE",
+    "DEL",
+    "PAK"
+   ],
+   "CHE": [
+    "DEL",
+    "MMR",
+    "MUM",
+    "XIN"
+   ],
+   "TOK": [
+    "OSA"
+   ],
+   "OSA": [
+    "TOK"
+   ],
+   "OKI": [],
+   "RIY": [
+    "DUB",
+    "IRQ",
+    "JED",
+    "LEV",
+    "YEM"
+   ],
+   "DUB": [
+    "RIY",
+    "YEM"
+   ],
+   "JED": [
+    "RIY",
+    "YEM"
+   ],
+   "MEX": [
+    "CAL",
+    "CAM",
+    "TEX"
+   ],
+   "BRA": [
+    "AND",
+    "ARG"
+   ],
+   "ARG": [
+    "AND",
+    "BRA"
+   ],
+   "UKR": [
+    "BER",
+    "BLR",
+    "MOS",
+    "ROM"
+   ],
+   "TUR": [
+    "CAU",
+    "IRN",
+    "IRQ",
+    "LEV",
+    "ROM"
+   ],
+   "MAG": [
+    "EGY",
+    "SAH",
+    "WAF"
+   ],
+   "EGY": [
+    "LEV",
+    "MAG",
+    "SAH"
+   ],
+   "IRN": [
+    "AFG",
+    "CAS",
+    "CAU",
+    "IRQ",
+    "PAK",
+    "TUR"
+   ],
+   "NGA": [
+    "CAF",
+    "SAH",
+    "WAF"
+   ],
+   "ETH": [
+    "EAF",
+    "SAH"
+   ],
+   "COD": [
+    "CAF",
+    "EAF",
+    "SAH",
+    "SAR"
+   ],
+   "ZAF": [
+    "SAR"
+   ],
+   "KAZ": [
+    "CAS",
+    "MOS",
+    "SIB",
+    "XIN"
+   ],
+   "PAK": [
+    "AFG",
+    "DEL",
+    "IRN",
+    "MUM",
+    "XIN"
+   ],
+   "KOR": [],
+   "VNM": [
+    "GUA",
+    "MAL",
+    "MMR"
+   ],
+   "PHL": [],
+   "IDN": [
+    "AUS",
+    "MAL"
+   ],
+   "AUS": [
+    "IDN"
+   ],
+   "ARC": [],
+   "CAN": [
+    "ALA",
+    "CAL",
+    "TEX",
+    "WAS"
+   ],
+   "CAM": [
+    "AND",
+    "MEX"
+   ],
+   "AND": [
+    "ARG",
+    "BRA",
+    "CAM"
+   ],
+   "GBR": [
+    "PAR"
+   ],
+   "BLR": [
+    "BER",
+    "MOS",
+    "UKR"
+   ],
+   "CAU": [
+    "IRN",
+    "MOS",
+    "TUR"
+   ],
+   "LEV": [
+    "EGY",
+    "IRQ",
+    "RIY",
+    "TUR"
+   ],
+   "IRQ": [
+    "IRN",
+    "LEV",
+    "RIY",
+    "TUR"
+   ],
+   "YEM": [
+    "DUB",
+    "JED",
+    "RIY"
+   ],
+   "WAF": [
+    "MAG",
+    "NGA",
+    "SAH"
+   ],
+   "SAH": [
+    "CAF",
+    "COD",
+    "EAF",
+    "EGY",
+    "ETH",
+    "MAG",
+    "NGA",
+    "WAF"
+   ],
+   "CAF": [
+    "COD",
+    "NGA",
+    "SAH"
+   ],
+   "EAF": [
+    "COD",
+    "ETH",
+    "SAH",
+    "SAR"
+   ],
+   "SAR": [
+    "COD",
+    "EAF",
+    "ZAF"
+   ],
+   "CAS": [
+    "AFG",
+    "IRN",
+    "KAZ",
+    "XIN"
+   ],
+   "AFG": [
+    "CAS",
+    "IRN",
+    "PAK",
+    "XIN"
+   ],
+   "MNG": [
+    "BEI",
+    "SIB",
+    "VLA",
+    "XIN"
+   ],
+   "MMR": [
+    "CHE",
+    "GUA",
+    "MAL",
+    "VNM",
+    "XIN"
+   ],
+   "MAL": [
+    "IDN",
+    "MMR",
+    "VNM"
+   ],
+   "NAO": [],
+   "MAO": [],
+   "SAO": [],
+   "GOG": [],
+   "CAR": [],
+   "NTH": [],
+   "BAL": [],
+   "NWS": [],
+   "ARO": [],
+   "WME": [],
+   "EME": [],
+   "BLK": [],
+   "ARA": [],
+   "BOB": [],
+   "IOC": [],
+   "MOZ": [],
+   "SCS": [],
+   "ECS": [],
+   "SOJ": [],
+   "OKH": [],
+   "PHS": [],
+   "JAV": [],
+   "NWP": [],
+   "CPA": [],
+   "NEP": [],
+   "EPA": [],
+   "SPA": [],
+   "CTS": [],
+   "BOS": [],
+   "SUZ": [],
+   "HOR": [],
+   "MLC": [],
+   "TWS": [],
+   "PAN": [],
+   "BRS": []
+  },
+  "fleet": {
+   "WAS": [
+    "CAN",
+    "CAR",
+    "NAO",
+    "TEX"
+   ],
+   "TEX": [
+    "CAR",
+    "MEX",
+    "WAS"
+   ],
+   "CAL": [
+    "CAN",
+    "EPA",
+    "MEX",
+    "NEP"
+   ],
+   "ALA": [
+    "ARO",
+    "BRS",
+    "CAN",
+    "NEP"
+   ],
+   "BEI": [
+    "ECS",
+    "GUA"
+   ],
+   "GUA": [
+    "BEI",
+    "ECS",
+    "SCS",
+    "TWS",
+    "VNM"
+   ],
+   "XIN": [],
+   "PAR": [
+    "BER",
+    "GBR",
+    "MAO",
+    "NAO",
+    "NTH",
+    "ROM",
+    "WME"
+   ],
+   "BER": [
+    "BAL",
+    "MOS",
+    "NAO",
+    "NTH",
+    "NWS",
+    "PAR"
+   ],
+   "ROM": [
+    "BLK",
+    "BOS",
+    "EME",
+    "PAR",
+    "TUR",
+    "UKR",
+    "WME"
+   ],
+   "MOS": [
+    "ARO",
+    "BAL",
+    "BER",
+    "BLK",
+    "CAU",
+    "NWS",
+    "SIB",
+    "UKR"
+   ],
+   "SIB": [
+    "ARO",
+    "MOS",
+    "NWS",
+    "VLA"
+   ],
+   "VLA": [
+    "ARO",
+    "BRS",
+    "NEP",
+    "NWP",
+    "OKH",
+    "SIB",
+    "SOJ"
+   ],
+   "DEL": [],
+   "MUM": [
+    "ARA",
+    "BOB",
+    "CHE",
+    "PAK"
+   ],
+   "CHE": [
+    "BOB",
+    "MMR",
+    "MUM"
+   ],
+   "TOK": [
+    "NWP",
+    "OSA",
+    "SOJ"
+   ],
+   "OSA": [
+    "ECS",
+    "PHS",
+    "SOJ",
+    "TOK"
+   ],
+   "OKI": [
+    "ECS"
+   ],
+   "RIY": [
+    "DUB",
+    "HOR",
+    "IRQ"
+   ],
+   "DUB": [
+    "ARA",
+    "HOR",
+    "RIY",
+    "YEM"
+   ],
+   "JED": [
+    "SUZ",
+    "YEM"
+   ],
+   "MEX": [
+    "CAL",
+    "CAM",
+    "CAR",
+    "EPA",
+    "TEX"
+   ],
+   "BRA": [
+    "AND",
+    "ARG",
+    "CAR",
+    "MAO",
+    "SAO"
+   ],
+   "ARG": [
+    "AND",
+    "BRA",
+    "SAO"
+   ],
+   "UKR": [
+    "BLK",
+    "MOS",
+    "ROM"
+   ],
+   "TUR": [
+    "BLK",
+    "BOS",
+    "CAU",
+    "EME",
+    "LEV",
+    "ROM"
+   ],
+   "MAG": [
+    "EGY",
+    "EME",
+    "MAO",
+    "WAF",
+    "WME"
+   ],
+   "EGY": [
+    "EME",
+    "LEV",
+    "MAG",
+    "SAH",
+    "SUZ"
+   ],
+   "IRN": [
+    "ARA",
+    "HOR",
+    "IRQ",
+    "PAK"
+   ],
+   "NGA": [
+    "CAF",
+    "GOG",
+    "WAF"
+   ],
+   "ETH": [
+    "ARA",
+    "EAF",
+    "SAH",
+    "SUZ"
+   ],
+   "COD": [
+    "CAF",
+    "GOG",
+    "SAR"
+   ],
+   "ZAF": [
+    "MOZ",
+    "SAO",
+    "SAR"
+   ],
+   "KAZ": [],
+   "PAK": [
+    "ARA",
+    "IRN",
+    "MUM"
+   ],
+   "KOR": [
+    "ECS",
+    "SOJ"
+   ],
+   "VNM": [
+    "GUA",
+    "MAL",
+    "SCS"
+   ],
+   "PHL": [
+    "JAV",
+    "PHS",
+    "SCS"
+   ],
+   "IDN": [
+    "AUS",
+    "BOB",
+    "JAV",
+    "MAL",
+    "MLC",
+    "SCS"
+   ],
+   "AUS": [
+    "CTS",
+    "IDN",
+    "IOC",
+    "JAV",
+    "SPA"
+   ],
+   "ARC": [
+    "ARO",
+    "NAO",
+    "NWS"
+   ],
+   "CAN": [
+    "ALA",
+    "ARO",
+    "CAL",
+    "NAO",
+    "NEP",
+    "WAS"
+   ],
+   "CAM": [
+    "AND",
+    "CAR",
+    "EPA",
+    "MEX",
+    "PAN"
+   ],
+   "AND": [
+    "ARG",
+    "BRA",
+    "CAM",
+    "CAR",
+    "EPA",
+    "SAO",
+    "SPA"
+   ],
+   "GBR": [
+    "NAO",
+    "NTH",
+    "PAR"
+   ],
+   "BLR": [],
+   "CAU": [
+    "BLK",
+    "MOS",
+    "TUR"
+   ],
+   "LEV": [
+    "EGY",
+    "EME",
+    "SUZ",
+    "TUR"
+   ],
+   "IRQ": [
+    "HOR",
+    "IRN",
+    "RIY"
+   ],
+   "YEM": [
+    "ARA",
+    "DUB",
+    "JED",
+    "SUZ"
+   ],
+   "WAF": [
+    "GOG",
+    "MAG",
+    "MAO",
+    "NGA"
+   ],
+   "SAH": [
+    "EGY",
+    "ETH",
+    "SUZ"
+   ],
+   "CAF": [
+    "COD",
+    "GOG",
+    "NGA"
+   ],
+   "EAF": [
+    "ARA",
+    "ETH",
+    "MOZ",
+    "SAR"
+   ],
+   "SAR": [
+    "COD",
+    "EAF",
+    "GOG",
+    "MOZ",
+    "SAO",
+    "ZAF"
+   ],
+   "CAS": [],
+   "AFG": [],
+   "MNG": [],
+   "MMR": [
+    "BOB",
+    "CHE",
+    "MAL"
+   ],
+   "MAL": [
+    "BOB",
+    "IDN",
+    "MLC",
+    "MMR",
+    "SCS",
+    "VNM"
+   ],
+   "NAO": [
+    "ARC",
+    "ARO",
+    "BER",
+    "CAN",
+    "CAR",
+    "GBR",
+    "MAO",
+    "NTH",
+    "NWS",
+    "PAR",
+    "WAS"
+   ],
+   "MAO": [
+    "BRA",
+    "CAR",
+    "GOG",
+    "MAG",
+    "NAO",
+    "NTH",
+    "PAR",
+    "SAO",
+    "WAF",
+    "WME"
+   ],
+   "SAO": [
+    "AND",
+    "ARG",
+    "BRA",
+    "GOG",
+    "MAO",
+    "MOZ",
+    "SAR",
+    "SPA",
+    "ZAF"
+   ],
+   "GOG": [
+    "CAF",
+    "COD",
+    "MAO",
+    "NGA",
+    "SAO",
+    "SAR",
+    "WAF"
+   ],
+   "CAR": [
+    "AND",
+    "BRA",
+    "CAM",
+    "EPA",
+    "MAO",
+    "MEX",
+    "NAO",
+    "PAN",
+    "TEX",
+    "WAS"
+   ],
+   "NTH": [
+    "BAL",
+    "BER",
+    "GBR",
+    "MAO",
+    "NAO",
+    "NWS",
+    "PAR"
+   ],
+   "BAL": [
+    "BER",
+    "MOS",
+    "NTH"
+   ],
+   "NWS": [
+    "ARC",
+    "ARO",
+    "BER",
+    "MOS",
+    "NAO",
+    "NTH",
+    "SIB"
+   ],
+   "ARO": [
+    "ALA",
+    "ARC",
+    "BRS",
+    "CAN",
+    "MOS",
+    "NAO",
+    "NWS",
+    "SIB",
+    "VLA"
+   ],
+   "WME": [
+    "EME",
+    "MAG",
+    "MAO",
+    "PAR",
+    "ROM"
+   ],
+   "EME": [
+    "BOS",
+    "EGY",
+    "LEV",
+    "MAG",
+    "ROM",
+    "SUZ",
+    "TUR",
+    "WME"
+   ],
+   "BLK": [
+    "BOS",
+    "CAU",
+    "MOS",
+    "ROM",
+    "TUR",
+    "UKR"
+   ],
+   "ARA": [
+    "BOB",
+    "DUB",
+    "EAF",
+    "ETH",
+    "HOR",
+    "IOC",
+    "IRN",
+    "MOZ",
+    "MUM",
+    "PAK",
+    "SUZ",
+    "YEM"
+   ],
+   "BOB": [
+    "ARA",
+    "CHE",
+    "IDN",
+    "IOC",
+    "JAV",
+    "MAL",
+    "MLC",
+    "MMR",
+    "MUM"
+   ],
+   "IOC": [
+    "ARA",
+    "AUS",
+    "BOB",
+    "CTS",
+    "JAV",
+    "MOZ"
+   ],
+   "MOZ": [
+    "ARA",
+    "EAF",
+    "IOC",
+    "SAO",
+    "SAR",
+    "ZAF"
+   ],
+   "SCS": [
+    "ECS",
+    "GUA",
+    "IDN",
+    "JAV",
+    "MAL",
+    "MLC",
+    "PHL",
+    "PHS",
+    "TWS",
+    "VNM"
+   ],
+   "ECS": [
+    "BEI",
+    "GUA",
+    "KOR",
+    "OKI",
+    "OSA",
+    "PHS",
+    "SCS",
+    "SOJ",
+    "TWS"
+   ],
+   "SOJ": [
+    "ECS",
+    "KOR",
+    "NWP",
+    "OKH",
+    "OSA",
+    "PHS",
+    "TOK",
+    "VLA"
+   ],
+   "OKH": [
+    "NWP",
+    "SOJ",
+    "VLA"
+   ],
+   "PHS": [
+    "CPA",
+    "ECS",
+    "JAV",
+    "NWP",
+    "OSA",
+    "PHL",
+    "SCS",
+    "SOJ"
+   ],
+   "JAV": [
+    "AUS",
+    "BOB",
+    "CPA",
+    "CTS",
+    "IDN",
+    "IOC",
+    "PHL",
+    "PHS",
+    "SCS"
+   ],
+   "NWP": [
+    "CPA",
+    "NEP",
+    "OKH",
+    "PHS",
+    "SOJ",
+    "TOK",
+    "VLA"
+   ],
+   "CPA": [
+    "CTS",
+    "EPA",
+    "JAV",
+    "NEP",
+    "NWP",
+    "PHS",
+    "SPA"
+   ],
+   "NEP": [
+    "ALA",
+    "BRS",
+    "CAL",
+    "CAN",
+    "CPA",
+    "EPA",
+    "NWP",
+    "VLA"
+   ],
+   "EPA": [
+    "AND",
+    "CAL",
+    "CAM",
+    "CAR",
+    "CPA",
+    "MEX",
+    "NEP",
+    "PAN",
+    "SPA"
+   ],
+   "SPA": [
+    "AND",
+    "AUS",
+    "CPA",
+    "CTS",
+    "EPA",
+    "SAO"
+   ],
+   "CTS": [
+    "AUS",
+    "CPA",
+    "IOC",
+    "JAV",
+    "SPA"
+   ],
+   "BOS": [
+    "BLK",
+    "EME",
+    "ROM",
+    "TUR"
+   ],
+   "SUZ": [
+    "ARA",
+    "EGY",
+    "EME",
+    "ETH",
+    "JED",
+    "LEV",
+    "SAH",
+    "YEM"
+   ],
+   "HOR": [
+    "ARA",
+    "DUB",
+    "IRN",
+    "IRQ",
+    "RIY"
+   ],
+   "MLC": [
+    "BOB",
+    "IDN",
+    "MAL",
+    "SCS"
+   ],
+   "TWS": [
+    "ECS",
+    "GUA",
+    "SCS"
+   ],
+   "PAN": [
+    "CAM",
+    "CAR",
+    "EPA"
+   ],
+   "BRS": [
+    "ALA",
+    "ARO",
+    "NEP",
+    "VLA"
+   ]
+  },
+  "any": {
+   "WAS": [
+    "CAN",
+    "CAR",
+    "NAO",
+    "TEX"
+   ],
+   "TEX": [
+    "CAL",
+    "CAN",
+    "CAR",
+    "MEX",
+    "WAS"
+   ],
+   "CAL": [
+    "CAN",
+    "EPA",
+    "MEX",
+    "NEP",
+    "TEX"
+   ],
+   "ALA": [
+    "ARO",
+    "BRS",
+    "CAN",
+    "NEP"
+   ],
+   "BEI": [
+    "ECS",
+    "GUA",
+    "MNG",
+    "VLA",
+    "XIN"
+   ],
+   "GUA": [
+    "BEI",
+    "ECS",
+    "MMR",
+    "SCS",
+    "TWS",
+    "VNM",
+    "XIN"
+   ],
+   "XIN": [
+    "AFG",
+    "BEI",
+    "CAS",
+    "CHE",
+    "DEL",
+    "GUA",
+    "KAZ",
+    "MMR",
+    "MNG",
+    "PAK",
+    "SIB"
+   ],
+   "PAR": [
+    "BER",
+    "GBR",
+    "MAO",
+    "NAO",
+    "NTH",
+    "ROM",
+    "WME"
+   ],
+   "BER": [
+    "BAL",
+    "BLR",
+    "MOS",
+    "NAO",
+    "NTH",
+    "NWS",
+    "PAR",
+    "ROM",
+    "UKR"
+   ],
+   "ROM": [
+    "BER",
+    "BLK",
+    "BOS",
+    "EME",
+    "PAR",
+    "TUR",
+    "UKR",
+    "WME"
+   ],
+   "MOS": [
+    "ARO",
+    "BAL",
+    "BER",
+    "BLK",
+    "BLR",
+    "CAU",
+    "KAZ",
+    "NWS",
+    "SIB",
+    "UKR"
+   ],
+   "SIB": [
+    "ARO",
+    "KAZ",
+    "MNG",
+    "MOS",
+    "NWS",
+    "VLA",
+    "XIN"
+   ],
+   "VLA": [
+    "ARO",
+    "BEI",
+    "BRS",
+    "MNG",
+    "NEP",
+    "NWP",
+    "OKH",
+    "SIB",
+    "SOJ"
+   ],
+   "DEL": [
+    "CHE",
+    "MUM",
+    "PAK",
+    "XIN"
+   ],
+   "MUM": [
+    "ARA",
+    "BOB",
+    "CHE",
+    "DEL",
+    "PAK"
+   ],
+   "CHE": [
+    "BOB",
+    "DEL",
+    "MMR",
+    "MUM",
+    "XIN"
+   ],
+   "TOK": [
+    "NWP",
+    "OSA",
+    "SOJ"
+   ],
+   "OSA": [
+    "ECS",
+    "PHS",
+    "SOJ",
+    "TOK"
+   ],
+   "OKI": [
+    "ECS"
+   ],
+   "RIY": [
+    "DUB",
+    "HOR",
+    "IRQ",
+    "JED",
+    "LEV",
+    "YEM"
+   ],
+   "DUB": [
+    "ARA",
+    "HOR",
+    "RIY",
+    "YEM"
+   ],
+   "JED": [
+    "RIY",
+    "SUZ",
+    "YEM"
+   ],
+   "MEX": [
+    "CAL",
+    "CAM",
+    "CAR",
+    "EPA",
+    "TEX"
+   ],
+   "BRA": [
+    "AND",
+    "ARG",
+    "CAR",
+    "MAO",
+    "SAO"
+   ],
+   "ARG": [
+    "AND",
+    "BRA",
+    "SAO"
+   ],
+   "UKR": [
+    "BER",
+    "BLK",
+    "BLR",
+    "MOS",
+    "ROM"
+   ],
+   "TUR": [
+    "BLK",
+    "BOS",
+    "CAU",
+    "EME",
+    "IRN",
+    "IRQ",
+    "LEV",
+    "ROM"
+   ],
+   "MAG": [
+    "EGY",
+    "EME",
+    "MAO",
+    "SAH",
+    "WAF",
+    "WME"
+   ],
+   "EGY": [
+    "EME",
+    "LEV",
+    "MAG",
+    "SAH",
+    "SUZ"
+   ],
+   "IRN": [
+    "AFG",
+    "ARA",
+    "CAS",
+    "CAU",
+    "HOR",
+    "IRQ",
+    "PAK",
+    "TUR"
+   ],
+   "NGA": [
+    "CAF",
+    "GOG",
+    "SAH",
+    "WAF"
+   ],
+   "ETH": [
+    "ARA",
+    "EAF",
+    "SAH",
+    "SUZ"
+   ],
+   "COD": [
+    "CAF",
+    "EAF",
+    "GOG",
+    "SAH",
+    "SAR"
+   ],
+   "ZAF": [
+    "MOZ",
+    "SAO",
+    "SAR"
+   ],
+   "KAZ": [
+    "CAS",
+    "MOS",
+    "SIB",
+    "XIN"
+   ],
+   "PAK": [
+    "AFG",
+    "ARA",
+    "DEL",
+    "IRN",
+    "MUM",
+    "XIN"
+   ],
+   "KOR": [
+    "ECS",
+    "SOJ"
+   ],
+   "VNM": [
+    "GUA",
+    "MAL",
+    "MMR",
+    "SCS"
+   ],
+   "PHL": [
+    "JAV",
+    "PHS",
+    "SCS"
+   ],
+   "IDN": [
+    "AUS",
+    "BOB",
+    "JAV",
+    "MAL",
+    "MLC",
+    "SCS"
+   ],
+   "AUS": [
+    "CTS",
+    "IDN",
+    "IOC",
+    "JAV",
+    "SPA"
+   ],
+   "ARC": [
+    "ARO",
+    "NAO",
+    "NWS"
+   ],
+   "CAN": [
+    "ALA",
+    "ARO",
+    "CAL",
+    "NAO",
+    "NEP",
+    "TEX",
+    "WAS"
+   ],
+   "CAM": [
+    "AND",
+    "CAR",
+    "EPA",
+    "MEX",
+    "PAN"
+   ],
+   "AND": [
+    "ARG",
+    "BRA",
+    "CAM",
+    "CAR",
+    "EPA",
+    "SAO",
+    "SPA"
+   ],
+   "GBR": [
+    "NAO",
+    "NTH",
+    "PAR"
+   ],
+   "BLR": [
+    "BER",
+    "MOS",
+    "UKR"
+   ],
+   "CAU": [
+    "BLK",
+    "IRN",
+    "MOS",
+    "TUR"
+   ],
+   "LEV": [
+    "EGY",
+    "EME",
+    "IRQ",
+    "RIY",
+    "SUZ",
+    "TUR"
+   ],
+   "IRQ": [
+    "HOR",
+    "IRN",
+    "LEV",
+    "RIY",
+    "TUR"
+   ],
+   "YEM": [
+    "ARA",
+    "DUB",
+    "JED",
+    "RIY",
+    "SUZ"
+   ],
+   "WAF": [
+    "GOG",
+    "MAG",
+    "MAO",
+    "NGA",
+    "SAH"
+   ],
+   "SAH": [
+    "CAF",
+    "COD",
+    "EAF",
+    "EGY",
+    "ETH",
+    "MAG",
+    "NGA",
+    "SUZ",
+    "WAF"
+   ],
+   "CAF": [
+    "COD",
+    "GOG",
+    "NGA",
+    "SAH"
+   ],
+   "EAF": [
+    "ARA",
+    "COD",
+    "ETH",
+    "MOZ",
+    "SAH",
+    "SAR"
+   ],
+   "SAR": [
+    "COD",
+    "EAF",
+    "GOG",
+    "MOZ",
+    "SAO",
+    "ZAF"
+   ],
+   "CAS": [
+    "AFG",
+    "IRN",
+    "KAZ",
+    "XIN"
+   ],
+   "AFG": [
+    "CAS",
+    "IRN",
+    "PAK",
+    "XIN"
+   ],
+   "MNG": [
+    "BEI",
+    "SIB",
+    "VLA",
+    "XIN"
+   ],
+   "MMR": [
+    "BOB",
+    "CHE",
+    "GUA",
+    "MAL",
+    "VNM",
+    "XIN"
+   ],
+   "MAL": [
+    "BOB",
+    "IDN",
+    "MLC",
+    "MMR",
+    "SCS",
+    "VNM"
+   ],
+   "NAO": [
+    "ARC",
+    "ARO",
+    "BER",
+    "CAN",
+    "CAR",
+    "GBR",
+    "MAO",
+    "NTH",
+    "NWS",
+    "PAR",
+    "WAS"
+   ],
+   "MAO": [
+    "BRA",
+    "CAR",
+    "GOG",
+    "MAG",
+    "NAO",
+    "NTH",
+    "PAR",
+    "SAO",
+    "WAF",
+    "WME"
+   ],
+   "SAO": [
+    "AND",
+    "ARG",
+    "BRA",
+    "GOG",
+    "MAO",
+    "MOZ",
+    "SAR",
+    "SPA",
+    "ZAF"
+   ],
+   "GOG": [
+    "CAF",
+    "COD",
+    "MAO",
+    "NGA",
+    "SAO",
+    "SAR",
+    "WAF"
+   ],
+   "CAR": [
+    "AND",
+    "BRA",
+    "CAM",
+    "EPA",
+    "MAO",
+    "MEX",
+    "NAO",
+    "PAN",
+    "TEX",
+    "WAS"
+   ],
+   "NTH": [
+    "BAL",
+    "BER",
+    "GBR",
+    "MAO",
+    "NAO",
+    "NWS",
+    "PAR"
+   ],
+   "BAL": [
+    "BER",
+    "MOS",
+    "NTH"
+   ],
+   "NWS": [
+    "ARC",
+    "ARO",
+    "BER",
+    "MOS",
+    "NAO",
+    "NTH",
+    "SIB"
+   ],
+   "ARO": [
+    "ALA",
+    "ARC",
+    "BRS",
+    "CAN",
+    "MOS",
+    "NAO",
+    "NWS",
+    "SIB",
+    "VLA"
+   ],
+   "WME": [
+    "EME",
+    "MAG",
+    "MAO",
+    "PAR",
+    "ROM"
+   ],
+   "EME": [
+    "BOS",
+    "EGY",
+    "LEV",
+    "MAG",
+    "ROM",
+    "SUZ",
+    "TUR",
+    "WME"
+   ],
+   "BLK": [
+    "BOS",
+    "CAU",
+    "MOS",
+    "ROM",
+    "TUR",
+    "UKR"
+   ],
+   "ARA": [
+    "BOB",
+    "DUB",
+    "EAF",
+    "ETH",
+    "HOR",
+    "IOC",
+    "IRN",
+    "MOZ",
+    "MUM",
+    "PAK",
+    "SUZ",
+    "YEM"
+   ],
+   "BOB": [
+    "ARA",
+    "CHE",
+    "IDN",
+    "IOC",
+    "JAV",
+    "MAL",
+    "MLC",
+    "MMR",
+    "MUM"
+   ],
+   "IOC": [
+    "ARA",
+    "AUS",
+    "BOB",
+    "CTS",
+    "JAV",
+    "MOZ"
+   ],
+   "MOZ": [
+    "ARA",
+    "EAF",
+    "IOC",
+    "SAO",
+    "SAR",
+    "ZAF"
+   ],
+   "SCS": [
+    "ECS",
+    "GUA",
+    "IDN",
+    "JAV",
+    "MAL",
+    "MLC",
+    "PHL",
+    "PHS",
+    "TWS",
+    "VNM"
+   ],
+   "ECS": [
+    "BEI",
+    "GUA",
+    "KOR",
+    "OKI",
+    "OSA",
+    "PHS",
+    "SCS",
+    "SOJ",
+    "TWS"
+   ],
+   "SOJ": [
+    "ECS",
+    "KOR",
+    "NWP",
+    "OKH",
+    "OSA",
+    "PHS",
+    "TOK",
+    "VLA"
+   ],
+   "OKH": [
+    "NWP",
+    "SOJ",
+    "VLA"
+   ],
+   "PHS": [
+    "CPA",
+    "ECS",
+    "JAV",
+    "NWP",
+    "OSA",
+    "PHL",
+    "SCS",
+    "SOJ"
+   ],
+   "JAV": [
+    "AUS",
+    "BOB",
+    "CPA",
+    "CTS",
+    "IDN",
+    "IOC",
+    "PHL",
+    "PHS",
+    "SCS"
+   ],
+   "NWP": [
+    "CPA",
+    "NEP",
+    "OKH",
+    "PHS",
+    "SOJ",
+    "TOK",
+    "VLA"
+   ],
+   "CPA": [
+    "CTS",
+    "EPA",
+    "JAV",
+    "NEP",
+    "NWP",
+    "PHS",
+    "SPA"
+   ],
+   "NEP": [
+    "ALA",
+    "BRS",
+    "CAL",
+    "CAN",
+    "CPA",
+    "EPA",
+    "NWP",
+    "VLA"
+   ],
+   "EPA": [
+    "AND",
+    "CAL",
+    "CAM",
+    "CAR",
+    "CPA",
+    "MEX",
+    "NEP",
+    "PAN",
+    "SPA"
+   ],
+   "SPA": [
+    "AND",
+    "AUS",
+    "CPA",
+    "CTS",
+    "EPA",
+    "SAO"
+   ],
+   "CTS": [
+    "AUS",
+    "CPA",
+    "IOC",
+    "JAV",
+    "SPA"
+   ],
+   "BOS": [
+    "BLK",
+    "EME",
+    "ROM",
+    "TUR"
+   ],
+   "SUZ": [
+    "ARA",
+    "EGY",
+    "EME",
+    "ETH",
+    "JED",
+    "LEV",
+    "SAH",
+    "YEM"
+   ],
+   "HOR": [
+    "ARA",
+    "DUB",
+    "IRN",
+    "IRQ",
+    "RIY"
+   ],
+   "MLC": [
+    "BOB",
+    "IDN",
+    "MAL",
+    "SCS"
+   ],
+   "TWS": [
+    "ECS",
+    "GUA",
+    "SCS"
+   ],
+   "PAN": [
+    "CAM",
+    "CAR",
+    "EPA"
+   ],
+   "BRS": [
+    "ALA",
+    "ARO",
+    "NEP",
+    "VLA"
+   ]
+  }
+ },
+ "coasts": {},
+ "border_km": {
+  "AFG-CAS": 2030.3,
+  "AFG-IRN": 867.9,
+  "AFG-PAK": 2246.5,
+  "AFG-XIN": 84.7,
+  "ALA-ARO": 3560.6,
+  "ALA-BRS": 713.0,
+  "ALA-CAN": 2165.0,
+  "ALA-NEP": 21908.3,
+  "AND-ARG": 6466.6,
+  "AND-BRA": 8087.1,
+  "AND-CAM": 273.3,
+  "AND-CAR": 5964.4,
+  "AND-EPA": 8569.3,
+  "AND-SAO": 7671.7,
+  "AND-SPA": 7759.1,
+  "ARA-BOB": 688.6,
+  "ARA-DUB": 1637.6,
+  "ARA-EAF": 73.4,
+  "ARA-ETH": 3417.0,
+  "ARA-HOR": 229.5,
+  "ARA-IOC": 2494.3,
+  "ARA-IRN": 599.4,
+  "ARA-MOZ": 1810.9,
+  "ARA-MUM": 4199.9,
+  "ARA-PAK": 1421.0,
+  "ARA-SUZ": 138.4,
+  "ARA-YEM": 1607.1,
+  "ARC-ARO": 11284.6,
+  "ARC-NAO": 16159.0,
+  "ARC-NWS": 8403.1,
+  "ARG-BRA": 2767.3,
+  "ARG-SAO": 6344.6,
+  "ARO-BRS": 375.4,
+  "ARO-CAN": 63282.9,
+  "ARO-MOS": 1478.2,
+  "ARO-NAO": 1773.5,
+  "ARO-NWS": 2462.4,
+  "ARO-SIB": 12242.1,
+  "ARO-VLA": 11298.4,
+  "AUS-CTS": 24192.7,
+  "AUS-IDN": 749.2,
+  "AUS-IOC": 5212.1,
+  "AUS-JAV": 11145.2,
+  "AUS-SPA": 3686.2,
+  "BAL-BER": 13357.4,
+  "BAL-MOS": 789.4,
+  "BAL-NTH": 311.1,
+  "BEI-ECS": 6385.3,
+  "BEI-GUA": 3110.8,
+  "BEI-MNG": 3034.2,
+  "BEI-PRK": 1005.6,
+  "BEI-VLA": 3438.3,
+  "BEI-XIN": 3334.4,
+  "BER-BLR": 959.3,
+  "BER-MOS": 2200.1,
+  "BER-NAO": 1000.6,
+  "BER-NTH": 6469.4,
+  "BER-NWS": 14139.9,
+  "BER-PAR": 1529.2,
+  "BER-ROM": 1924.9,
+  "BER-UKR": 500.6,
+  "BLK-BOS": 366.6,
+  "BLK-CAU": 309.0,
+  "BLK-MOS": 2399.4,
+  "BLK-ROM": 771.7,
+  "BLK-TUR": 1159.1,
+  "BLK-UKR": 1706.4,
+  "BLR-MOS": 920.6,
+  "BLR-UKR": 862.4,
+  "BOB-CHE": 4898.1,
+  "BOB-IDN": 2086.3,
+  "BOB-IOC": 2772.4,
+  "BOB-JAV": 662.5,
+  "BOB-LKA": 1766.5,
+  "BOB-MAL": 942.4,
+  "BOB-MLC": 490.7,
+  "BOB-MMR": 6409.6,
+  "BOB-MUM": 808.5,
+  "BOS-EME": 7.9,
+  "BOS-ROM": 38.6,
+  "BOS-TUR": 1253.3,
+  "BRA-CAR": 2351.9,
+  "BRA-MAO": 6590.7,
+  "BRA-SAO": 9161.7,
+  "BRS-NEP": 456.8,
+  "BRS-VLA": 1040.1,
+  "CAF-COD": 2144.3,
+  "CAF-GOG": 2899.3,
+  "CAF-NGA": 1585.6,
+  "CAF-SAH": 1812.6,
+  "CAL-CAN": 1370.0,
+  "CAL-EPA": 469.0,
+  "CAL-MEX": 1115.7,
+  "CAL-NEP": 4573.9,
+  "CAL-TEX": 2517.5,
+  "CAM-CAR": 10893.5,
+  "CAM-EPA": 3574.0,
+  "CAM-MEX": 1049.3,
+  "CAM-PAN": 1735.8,
+  "CAN-NAO": 43279.2,
+  "CAN-NEP": 8198.8,
+  "CAN-TEX": 1178.5,
+  "CAN-WAS": 1371.6,
+  "CAR-EPA": 1542.2,
+  "CAR-MAO": 2000.4,
+  "CAR-MEX": 5410.1,
+  "CAR-NAO": 3047.0,
+  "CAR-PAN": 395.4,
+  "CAR-TEX": 3539.4,
+  "CAR-WAS": 4856.1,
+  "CAS-IRN": 958.6,
+  "CAS-KAZ": 3563.9,
+  "CAS-XIN": 1243.8,
+  "CAU-IRN": 623.0,
+  "CAU-MOS": 983.2,
+  "CAU-TUR": 504.4,
+  "CHE-DEL": 1648.2,
+  "CHE-HIM": 773.4,
+  "CHE-MMR": 3652.1,
+  "CHE-MUM": 3512.7,
+  "CHE-XIN": 1127.2,
+  "COD-EAF": 883.6,
+  "COD-GOG": 327.0,
+  "COD-SAH": 2478.2,
+  "COD-SAR": 4354.4,
+  "CPA-CTS": 3696.5,
+  "CPA-EPA": 1127.2,
+  "CPA-JAV": 358.0,
+  "CPA-NEP": 5542.5,
+  "CPA-NWP": 4474.0,
+  "CPA-PHS": 850.1,
+  "CPA-SPA": 5243.9,
+  "CTS-IOC": 2949.8,
+  "CTS-JAV": 1130.1,
+  "CTS-SPA": 5140.9,
+  "DEL-HIM": 1321.1,
+  "DEL-MUM": 1717.3,
+  "DEL-PAK": 2260.5,
+  "DEL-XIN": 1223.8,
+  "DUB-HOR": 1361.3,
+  "DUB-RIY": 1115.1,
+  "DUB-YEM": 290.2,
+  "EAF-ETH": 1443.3,
+  "EAF-MOZ": 1812.9,
+  "EAF-SAH": 744.2,
+  "EAF-SAR": 1132.5,
+  "ECS-GUA": 951.6,
+  "ECS-KOR": 2601.6,
+  "ECS-OKI": 3948.2,
+  "ECS-OSA": 1769.6,
+  "ECS-PHS": 1604.9,
+  "ECS-PRK": 1156.5,
+  "ECS-SCS": 338.1,
+  "ECS-SOJ": 215.0,
+  "ECS-TWN": 225.4,
+  "ECS-TWS": 175.9,
+  "EGY-EME": 1666.5,
+  "EGY-LEV": 216.5,
+  "EGY-MAG": 1098.4,
+  "EGY-SAH": 1303.2,
+  "EGY-SUZ": 1882.4,
+  "EME-LEV": 631.9,
+  "EME-MAG": 1787.7,
+  "EME-ROM": 11294.4,
+  "EME-TUR": 3285.0,
+  "EME-WME": 942.5,
+  "EPA-MEX": 7797.4,
+  "EPA-NEP": 3159.3,
+  "EPA-PAN": 499.7,
+  "EPA-SPA": 9181.8,
+  "ETH-SAH": 2189.1,
+  "ETH-SUZ": 1222.5,
+  "GBR-NAO": 89.0,
+  "GBR-NTH": 7687.3,
+  "GBR-PAR": 371.2,
+  "GOG-MAO": 1251.3,
+  "GOG-NGA": 2064.8,
+  "GOG-SAO": 4119.6,
+  "GOG-SAR": 1361.7,
+  "GOG-WAF": 3113.3,
+  "GUA-MMR": 1568.5,
+  "GUA-SCS": 5822.9,
+  "GUA-TWS": 950.7,
+  "GUA-VNM": 1410.9,
+  "GUA-XIN": 2473.3,
+  "HIM-XIN": 1533.7,
+  "HOR-IRN": 1559.4,
+  "HOR-IRQ": 91.9,
+  "HOR-RIY": 1903.2,
+  "IDN-JAV": 31361.0,
+  "IDN-MAL": 1473.9,
+  "IDN-MLC": 1070.0,
+  "IDN-SCS": 2173.1,
+  "IOC-JAV": 3365.8,
+  "IOC-MOZ": 6183.2,
+  "IRN-IRQ": 1311.5,
+  "IRN-PAK": 817.4,
+  "IRN-TUR": 442.9,
+  "IRQ-LEV": 780.3,
+  "IRQ-RIY": 1014.1,
+  "IRQ-TUR": 292.3,
+  "JAV-PHL": 895.7,
+  "JAV-PHS": 1805.2,
+  "JAV-SCS": 1365.0,
+  "JED-RIY": 2566.1,
+  "JED-SUZ": 2267.4,
+  "JED-YEM": 664.3,
+  "KAZ-MOS": 2747.3,
+  "KAZ-SIB": 3912.0,
+  "KAZ-XIN": 1503.3,
+  "KOR-PRK": 205.0,
+  "KOR-SOJ": 394.8,
+  "LEV-RIY": 728.8,
+  "LEV-SUZ": 39.3,
+  "LEV-TUR": 776.7,
+  "MAG-MAO": 862.1,
+  "MAG-SAH": 2731.8,
+  "MAG-WAF": 3268.7,
+  "MAG-WME": 4327.8,
+  "MAL-MLC": 640.1,
+  "MAL-MMR": 1833.6,
+  "MAL-SCS": 6087.5,
+  "MAL-VNM": 2281.0,
+  "MAO-NAO": 5100.4,
+  "MAO-NTH": 927.0,
+  "MAO-PAR": 3076.5,
+  "MAO-SAO": 2848.8,
+  "MAO-WAF": 5138.4,
+  "MAO-WME": 1304.3,
+  "MEX-TEX": 1527.6,
+  "MLC-SCS": 82.2,
+  "MMR-VNM": 230.1,
+  "MMR-XIN": 133.2,
+  "MNG-SIB": 1320.7,
+  "MNG-VLA": 1592.7,
+  "MNG-XIN": 1345.2,
+  "MOS-NWS": 11280.4,
+  "MOS-SIB": 3699.0,
+  "MOS-UKR": 1672.5,
+  "MOZ-SAO": 3291.7,
+  "MOZ-SAR": 8936.8,
+  "MOZ-ZAF": 2734.4,
+  "MUM-PAK": 463.7,
+  "NAO-NTH": 1008.2,
+  "NAO-NWS": 1109.7,
+  "NAO-PAR": 2141.0,
+  "NAO-WAS": 9708.5,
+  "NEP-NWP": 3490.9,
+  "NEP-VLA": 47.0,
+  "NGA-SAH": 1533.5,
+  "NGA-WAF": 736.9,
+  "NTH-NWS": 740.8,
+  "NTH-PAR": 4408.3,
+  "NWP-OKH": 1877.1,
+  "NWP-PHS": 2826.3,
+  "NWP-SOJ": 465.9,
+  "NWP-TOK": 1727.7,
+  "NWP-VLA": 6412.9,
+  "NWS-SIB": 902.2,
+  "OKH-SOJ": 382.6,
+  "OKH-VLA": 11779.4,
+  "OKI-PHS": 5.8,
+  "OSA-PHS": 622.0,
+  "OSA-SOJ": 2276.1,
+  "OSA-TOK": 509.0,
+  "PAK-XIN": 352.5,
+  "PAR-ROM": 404.2,
+  "PAR-WME": 3736.9,
+  "PHL-PHS": 1239.2,
+  "PHL-SCS": 10250.6,
+  "PHS-SCS": 1297.5,
+  "PHS-SOJ": 399.2,
+  "PRK-SOJ": 815.7,
+  "PRK-VLA": 32.2,
+  "RIY-SUZ": 60.7,
+  "RIY-YEM": 560.7,
+  "ROM-TUR": 378.7,
+  "ROM-UKR": 1041.0,
+  "ROM-WME": 1718.5,
+  "SAH-SUZ": 708.1,
+  "SAH-WAF": 1675.6,
+  "SAO-SAR": 474.8,
+  "SAO-SPA": 774.5,
+  "SAO-ZAF": 1748.5,
+  "SAR-ZAF": 3150.4,
+  "SCS-TWN": 454.1,
+  "SCS-TWS": 326.6,
+  "SCS-VNM": 5206.7,
+  "SIB-VLA": 6076.2,
+  "SIB-XIN": 41.0,
+  "SOJ-TOK": 3197.0,
+  "SOJ-VLA": 1513.1,
+  "SUZ-YEM": 641.3,
+  "TEX-WAS": 2794.2,
+  "TWN-TWS": 347.3
+ },
+ "trade_routes": [
+  {
+   "id": "TRA",
+   "name": "Transatlantic",
+   "ends": [
+    "WAS",
+    "PAR"
+   ],
+   "path": [
+    "NAO"
+   ],
+   "opens": null
+  },
+  {
+   "id": "SAT",
+   "name": "South Atlantic",
+   "ends": [
+    "TEX",
+    "BRA"
+   ],
+   "path": [
+    "CAR",
+    "MAO"
+   ],
+   "opens": null
+  },
+  {
+   "id": "CAP",
+   "name": "Cape",
+   "ends": [
+    "PAR",
+    "ZAF"
+   ],
+   "path": [
+    "MAO",
+    "SAO"
+   ],
+   "opens": null
+  },
+  {
+   "id": "TPA",
+   "name": "Transpacific",
+   "ends": [
+    "CAL",
+    "TOK"
+   ],
+   "path": [
+    "NEP",
+    "NWP"
+   ],
+   "opens": null
+  },
+  {
+   "id": "SPR",
+   "name": "South Pacific",
+   "ends": [
+    "CAL",
+    "AUS"
+   ],
+   "path": [
+    "NEP",
+    "CPA",
+    "CTS"
+   ],
+   "opens": null
+  },
+  {
+   "id": "INT",
+   "name": "Interoceanic",
+   "ends": [
+    "WAS",
+    "CAL"
+   ],
+   "path": [
+    "CAR",
+    "PAN",
+    "EPA"
+   ],
+   "opens": null
+  },
+  {
+   "id": "CSE",
+   "name": "China Seas",
+   "ends": [
+    "GUA",
+    "OKI"
+   ],
+   "path": [
+    "TWS",
+    "ECS"
+   ],
+   "opens": null
+  },
+  {
+   "id": "MLR",
+   "name": "Malacca",
+   "ends": [
+    "CHE",
+    "GUA"
+   ],
+   "path": [
+    "BOB",
+    "MLC",
+    "SCS"
+   ],
+   "opens": null
+  },
+  {
+   "id": "SUR",
+   "name": "Suez",
+   "ends": [
+    "ROM",
+    "MUM"
+   ],
+   "path": [
+    "EME",
+    "SUZ",
+    "ARA"
+   ],
+   "opens": null
+  },
+  {
+   "id": "GLR",
+   "name": "Gulf",
+   "ends": [
+    "RIY",
+    "MUM"
+   ],
+   "path": [
+    "HOR",
+    "ARA"
+   ],
+   "opens": null
+  },
+  {
+   "id": "GAR",
+   "name": "Gulf–Asia",
+   "ends": [
+    "RIY",
+    "GUA"
+   ],
+   "path": [
+    "HOR",
+    "ARA",
+    "BOB",
+    "MLC",
+    "SCS"
+   ],
+   "opens": null
+  },
+  {
+   "id": "IOR",
+   "name": "Indian Ocean",
+   "ends": [
+    "MUM",
+    "ZAF"
+   ],
+   "path": [
+    "ARA",
+    "IOC",
+    "MOZ"
+   ],
+   "opens": null
+  },
+  {
+   "id": "BSR",
+   "name": "Black Sea",
+   "ends": [
+    "ROM",
+    "UKR"
+   ],
+   "path": [
+    "EME",
+    "BOS",
+    "BLK"
+   ],
+   "opens": null
+  },
+  {
+   "id": "NSR",
+   "name": "Northern Sea",
+   "ends": [
+    "VLA",
+    "PAR"
+   ],
+   "path": [
+    "BRS",
+    "ARO",
+    "NWS",
+    "NTH"
+   ],
+   "opens": 2034
+  }
+ ],
+ "start": {
+  "year": 2031,
+  "crisis": 3,
+  "umbrellas": [
+   [
+    "USA",
+    "JPN"
+   ]
+  ],
+  "units": [
+   {
+    "power": "USA",
+    "type": "F",
+    "at": "WAS"
+   },
+   {
+    "power": "USA",
+    "type": "F",
+    "at": "CAL"
+   },
+   {
+    "power": "USA",
+    "type": "A",
+    "at": "TEX"
+   },
+   {
+    "power": "USA",
+    "type": "C",
+    "at": "ALA"
+   },
+   {
+    "power": "CHN",
+    "type": "F",
+    "at": "GUA"
+   },
+   {
+    "power": "CHN",
+    "type": "A",
+    "at": "XIN"
+   },
+   {
+    "power": "CHN",
+    "type": "C",
+    "at": "BEI"
+   },
+   {
+    "power": "EU",
+    "type": "A",
+    "at": "BER"
+   },
+   {
+    "power": "EU",
+    "type": "C",
+    "at": "PAR"
+   },
+   {
+    "power": "EU",
+    "type": "I",
+    "at": "ROM"
+   },
+   {
+    "power": "RUS",
+    "type": "A",
+    "at": "MOS"
+   },
+   {
+    "power": "RUS",
+    "type": "A",
+    "at": "SIB"
+   },
+   {
+    "power": "RUS",
+    "type": "I",
+    "at": "VLA"
+   },
+   {
+    "power": "IND",
+    "type": "A",
+    "at": "DEL"
+   },
+   {
+    "power": "IND",
+    "type": "F",
+    "at": "CHE"
+   },
+   {
+    "power": "IND",
+    "type": "C",
+    "at": "MUM"
+   },
+   {
+    "power": "JPN",
+    "type": "F",
+    "at": "OKI"
+   },
+   {
+    "power": "JPN",
+    "type": "C",
+    "at": "TOK"
+   },
+   {
+    "power": "JPN",
+    "type": "I",
+    "at": "OSA"
+   },
+   {
+    "power": "GLF",
+    "type": "F",
+    "at": "DUB"
+   },
+   {
+    "power": "GLF",
+    "type": "C",
+    "at": "RIY"
+   },
+   {
+    "power": "GLF",
+    "type": "C",
+    "at": "JED"
+   }
+  ]
+ }
+}

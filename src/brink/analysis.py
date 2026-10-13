@@ -4,7 +4,7 @@ Answers "who can reach what, how fast, and who is exposed to whom" straight from
 build/map.json, so map problems show up before any simulation runs.
 
 Movement model (start of game, chokepoints open, Arctic closed):
-- Civil reach: a Capital moves one land step, one short hop across a sea zone, or a whole
+- Civil reach: a Capital moves one land step, one short hop across a non-ocean sea, or a whole
   trade route; an Influence unit jumps up to 2 steps of the `any` graph. A civil unit can be
   built in any home, so distances are measured from the power's homes.
 - Military can't enter unaligned swing states, so the opening scramble for swing states is
@@ -71,7 +71,7 @@ def capital_graph(b: Board, power: str, year: int) -> dict[str, set[str]]:
                 g[p].add(q)
         if b.provinces[p].get("coastal"):
             for sea in b.any.get(p, []):
-                if b.provinces[sea]["kind"] != "sea" or not b.is_open(sea, year):
+                if b.provinces[sea]["kind"] != "sea" or b.provinces[sea].get("ocean") or not b.is_open(sea, year):
                     continue
                 for q in b.any.get(sea, []):
                     if q != p and ok(q) and b.provinces[q].get("coastal"):

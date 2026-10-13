@@ -15,8 +15,10 @@
 #       lon_between: [min, max]       region centroid longitude range (used for Russia)
 #   clip: [min_lon, min_lat, max_lon, max_lat]   drop parts outside this box (overseas territories)
 #   min_area_km2: drop islands smaller than this (default 2500)
+#   label_at: [lon, lat]   optional hint for where the label/unit slots go (any province or sea)
 #
 # Sea zones are Voronoi cells of their seed points, clipped to the ocean.
+# ocean: true marks open oceans: Capital short hops may only cross non-ocean seas (oceans need trade routes).
 # Chokepoints are carved out of the surrounding seas, either as a circle
 # (point + radius_km) or from their own seeds.
 
@@ -70,7 +72,8 @@ homes:
     name: Guangzhou
     owner: CHN
     admin1: {country: CHN, names: [Guangdong, Guangxi, Hainan, Fujian, Jiangxi, Hunan, Yunnan, Guizhou, Sichuan,
-                                   Chongqing, Hong Kong, Macau]}
+                                   Chongqing]}
+    countries: [HKG, MAC]    # Natural Earth has Hong Kong and Macau as admin-0 units, not CHN regions
   XIN:
     name: Xinjiang
     owner: CHN
@@ -80,7 +83,8 @@ homes:
   PAR:
     name: Paris
     owner: EU
-    countries: [FRA, BEL, NLD, LUX, ESP, PRT, IRL, AND, MCO]
+    countries: [FRA, BEL, NLD, LUX, ESP, PRT, IRL, AND, MCO, GIB]
+    label_at: [2.5, 47.0]    # optional label hint; the pole of France+Iberia would sit in Madrid
     clip: [-25, 34, 20, 60]
   BER:
     name: Berlin
@@ -90,7 +94,8 @@ homes:
   ROM:
     name: Rome
     owner: EU
-    countries: [ITA, SVN, HRV, HUN, ROU, BGR, GRC, CYP, MLT, BIH, SRB, MNE, MKD, ALB, KOS, SMR, VAT]
+    countries: [ITA, SVN, HRV, HUN, ROU, BGR, GRC, CYP, MLT, BIH, SRB, MNE, MKD, ALB, KOS, SMR, VAT,
+                CYN, CNM, ESB, WSB]   # N. Cyprus, UN buffer zone, Dhekelia, Akrotiri: NE splits Cyprus up
     clip: [5, 34, 35, 49]
 
   # Russia (split by region centroid longitude)
@@ -113,11 +118,12 @@ homes:
     owner: IND
     admin1: {country: IND, names: [Jammu and Kashmir, Ladakh, Himachal Pradesh, Punjab, Chandigarh, Haryana, Delhi,
                                    Uttarakhand, Uttar Pradesh, Rajasthan, Bihar, Madhya Pradesh]}
+    countries: [KAS]         # Siachen Glacier: separate NE admin-0 unit; would otherwise be a hole
   MUM:
     name: Mumbai
     owner: IND
     admin1: {country: IND, names: [Gujarat, Maharashtra, Goa, Karnataka, Kerala, Dadra and Nagar Haveli and Daman and Diu,
-                                   Dadra and Nagar Haveli, Daman and Diu, Lakshadweep]}
+                                   Lakshadweep]}   # NE has the merged 2020 UT only
   CHE:
     name: Chennai
     owner: IND
@@ -150,7 +156,7 @@ homes:
     name: Riyadh
     owner: GLF
     countries: [KWT, BHR, QAT]
-    admin1: {country: SAU, names: [Riyadh, Eastern Province, Ash Sharqiyah, Al Qassim, Ha'il, Al Jawf,
+    admin1: {country: SAU, names: [Riyadh, Ash Sharqiyah, Al Qassim, Ha'il, Al Jawf,
                                    Northern Borders, Al Hudud ash Shamaliyah]}
   DUB:
     name: Dubai
@@ -159,23 +165,23 @@ homes:
   JED:
     name: Jeddah
     owner: GLF
-    admin1: {country: SAU, names: [Makkah, Mecca, Medina, Al Madinah, Tabuk, Asir, 'Asir, Al Bahah, Jizan, Jazan, Najran]}
+    admin1: {country: SAU, names: [Makkah, Al Madinah, Tabuk, Asir, Al Bahah, Jizan, Jazan, Najran]}   # "'Asir" alias removed: it broke YAML parsing; matcher ignores apostrophes
 
 # ---------------------------------------------------------------- swing states (20)
 swing:
   MEX: {name: Mexico, countries: [MEX]}
-  BRA: {name: Brazil, countries: [BRA, GUY, SUR]}
+  BRA: {name: Brazil, countries: [BRA, GUY, SUR, BRI]}     # BRI: Brazilian Island (NE disputed unit)
   ARG: {name: Argentina, countries: [ARG, URY, PRY]}
   UKR: {name: Ukraine, countries: [UKR, MDA]}
   TUR: {name: Turkey, countries: [TUR]}
   MAG: {name: Maghreb, countries: [MAR, SAH, DZA, TUN, LBY]}
-  EGY: {name: Egypt, countries: [EGY]}
+  EGY: {name: Egypt, countries: [EGY, BRT]}               # BRT: Bir Tawil, else a hole
   IRN: {name: Iran, countries: [IRN]}
   NGA: {name: Nigeria, countries: [NGA]}
   ETH: {name: Ethiopia, countries: [ETH, ERI, DJI, SOM, SOL]}
   COD: {name: DR Congo, countries: [COD, COG]}
   ZAF: {name: South Africa, countries: [ZAF, LSO, SWZ, NAM, BWA]}
-  KAZ: {name: Kazakhstan, countries: [KAZ]}
+  KAZ: {name: Kazakhstan, countries: [KAZ, KAB]}          # KAB: Baikonur lease, else a hole
   PAK: {name: Pakistan, countries: [PAK]}
   KOR: {name: Korea, countries: [KOR]}
   VNM: {name: Vietnam, countries: [VNM, LAO, KHM]}
@@ -187,8 +193,8 @@ swing:
 # ---------------------------------------------------------------- other land (no centre, open to all)
 filler:
   CAN: {name: Canada, countries: [CAN]}
-  CAM: {name: Central America, countries: [GTM, BLZ, HND, SLV, NIC, CRI, PAN, CUB, HTI, DOM, JAM, BHS, PRI]}
-  AND: {name: Andes, countries: [COL, VEN, ECU, PER, BOL, CHL]}
+  CAM: {name: Central America, countries: [GTM, BLZ, HND, SLV, NIC, CRI, PAN, CUB, HTI, DOM, JAM, BHS, PRI, USG]}  # USG: Guantanamo
+  AND: {name: Andes, countries: [COL, VEN, ECU, PER, BOL, CHL, SPI]}   # SPI: S. Patagonian Ice Field
   GBR: {name: Britain, countries: [GBR]}
   BLR: {name: Belarus, countries: [BLR]}
   CAU: {name: Caucasus, countries: [GEO, ARM, AZE]}
@@ -216,15 +222,15 @@ impassable:
 # ---------------------------------------------------------------- sea zones
 seas:
   # Atlantic and Arctic approaches
-  NAO: {name: North Atlantic, seeds: [[-40, 50], [-30, 58], [-55, 40], [-65, 33], [-55, 60]]}
-  MAO: {name: Mid-Atlantic, seeds: [[-30, 28], [-22, 14], [-40, 20]]}
-  SAO: {name: South Atlantic, seeds: [[-25, -15], [-20, -35], [0, -25], [-45, -50]]}
+  NAO: {name: North Atlantic, ocean: true, seeds: [[-40, 50], [-30, 58], [-55, 40], [-65, 33], [-55, 60], [-15, 54]]}   # +[-15,54]: reach Ireland (TRA needs PAR-NAO)
+  MAO: {name: Mid-Atlantic, ocean: true, seeds: [[-30, 28], [-22, 14], [-40, 20], [-13, 41], [-8, 46]]}   # +Iberia, +Biscay (CAP needs PAR-MAO)
+  SAO: {name: South Atlantic, ocean: true, seeds: [[-25, -15], [-20, -35], [0, -25], [-45, -50]]}
   GOG: {name: Gulf of Guinea, seeds: [[2, -1], [-5, 2]]}
   CAR: {name: Caribbean & Gulf of Mexico, seeds: [[-78, 15], [-90, 25], [-68, 15]]}
   NTH: {name: North Sea, seeds: [[3, 56], [-5, 50]]}
   BAL: {name: Baltic Sea, seeds: [[19, 57], [20, 61]]}
   NWS: {name: Norwegian & Barents Sea, seeds: [[5, 68], [35, 73], [-10, 70]]}
-  ARO: {name: Arctic Ocean, seeds: [[0, 86], [90, 80], [-120, 78], [150, 78], [-75, 78], [45, 82]], opens: 2034}
+  ARO: {name: Arctic Ocean, ocean: true, seeds: [[0, 86], [90, 80], [-120, 78], [150, 78], [-75, 78], [45, 82]], opens: 2034}
 
   # Mediterranean
   WME: {name: Western Mediterranean, seeds: [[5, 39], [-2, 36.5]]}
@@ -234,21 +240,21 @@ seas:
   # Indian Ocean
   ARA: {name: Arabian Sea, seeds: [[63, 15], [55, 12], [48, 12.5]]}
   BOB: {name: Bay of Bengal, seeds: [[88, 15], [94, 9]]}
-  IOC: {name: Indian Ocean, seeds: [[75, -10], [90, -20], [105, -25], [70, -35]]}
+  IOC: {name: Indian Ocean, ocean: true, seeds: [[75, -10], [90, -20], [105, -25], [70, -35]]}
   MOZ: {name: Mozambique Channel, seeds: [[42, -18], [52, -30], [35, -38]]}
 
   # Pacific
-  SCS: {name: South China Sea, seeds: [[113, 12], [110, 5]]}
+  SCS: {name: South China Sea, seeds: [[113, 12], [110, 5], [116, 20], [103, 10]]}   # +[116,20]: else ECS wraps south of the Taiwan Strait; +[103,10]: Gulf of Thailand (else BOB)
   ECS: {name: East China & Yellow Sea, seeds: [[124, 31], [122, 37]]}
   SOJ: {name: Sea of Japan, seeds: [[135, 40]]}
   OKH: {name: Sea of Okhotsk, seeds: [[148, 53]]}
   PHS: {name: Philippine Sea, seeds: [[133, 20], [138, 28]]}
   JAV: {name: Java & Banda Sea, seeds: [[120, -5], [112, -6], [128, -6], [135, -10]]}
-  NWP: {name: Northwest Pacific, seeds: [[160, 38], [155, 25], [170, 50]]}
-  CPA: {name: Central Pacific, seeds: [[175, 10], [188, 20], [-160, 15], [160, 5]]}
-  NEP: {name: Northeast Pacific, seeds: [[-140, 45], [-145, 55], [-130, 33], [-165, 45]]}
-  EPA: {name: East Pacific, seeds: [[-110, 10], [-95, 0], [-120, -10], [-85, -20]]}
-  SPA: {name: South Pacific, seeds: [[-120, -35], [-150, -20], [-100, -45], [-160, -45], [185, -30]]}
+  NWP: {name: Northwest Pacific, ocean: true, seeds: [[160, 38], [155, 25], [170, 50], [148, 38]]}   # +[148,38]: reach Japan's Pacific coast (TPA needs NWP-TOK)
+  CPA: {name: Central Pacific, ocean: true, seeds: [[175, 10], [188, 20], [-160, 15], [160, 5]]}
+  NEP: {name: Northeast Pacific, ocean: true, seeds: [[-140, 45], [-145, 55], [-130, 33], [-165, 45]]}
+  EPA: {name: East Pacific, ocean: true, seeds: [[-110, 10], [-95, 0], [-120, -10], [-85, -20], [-84, 5], [-118, 26]]}   # +Gulf of Panama, +Baja (INT needs PAN-EPA, EPA-CAL)
+  SPA: {name: South Pacific, ocean: true, seeds: [[-120, -35], [-150, -20], [-100, -45], [-160, -45], [185, -30]]}
   CTS: {name: Coral & Tasman Sea, seeds: [[157, -25], [160, -40], [150, -12]]}
 
 # Chokepoints are sea zones too; the pipeline carves them out of the zones above.
@@ -266,9 +272,11 @@ adjacency_overrides:
   add:
     - [SUZ, EME, fleet]        # Suez Canal
     - [BRS, ARO, fleet]
+    - [BOS, EME, fleet]        # Dardanelles: closed at Natural Earth 10m resolution
     - [GBR, PAR, army]         # Channel Tunnel
     - [BER, PAR, fleet]        # Kiel/Danish straits handled by shared coast; keep explicit
-  remove: []
+  remove:
+    - [RIY, SUZ, fleet]        # NE's Al Jawf region has a ~60 km Gulf of Aqaba coast; Riyadh shouldn't reach the Red Sea
 
 trade_routes:
   - {id: TRA, name: Transatlantic, ends: [WAS, PAR], path: [NAO]}

@@ -21,6 +21,7 @@ class Province:
     chokepoint: bool = False
     impassable: bool = False
     opens: int | None = None
+    ocean: bool = False       # open ocean: Capital can't short-hop across it, only use trade routes
 
     @property
     def is_land(self) -> bool:
@@ -65,7 +66,7 @@ class BrinkMap:
                 id=pid, name=p.get("name", pid), kind=p["kind"], centre=p.get("centre", "none") or "none",
                 home_of=p.get("home_of"), coastal=bool(p.get("coastal", False)),
                 chokepoint=bool(p.get("chokepoint", False)), impassable=bool(p.get("impassable", False)),
-                opens=p.get("opens"))
+                opens=p.get("opens"), ocean=bool(p.get("ocean", False)))
         adj = data["adj"]
         self.army_adj: dict[str, frozenset[str]] = {k: frozenset(v) for k, v in adj.get("army", {}).items()}
         self.fleet_adj: dict[str, frozenset[str]] = {k: frozenset(v) for k, v in adj.get("fleet", {}).items()}
@@ -226,7 +227,7 @@ class BrinkMap:
         p = self.provinces[pid]
         if p.is_land:
             for z in sorted(self.sea_neighbours.get(pid, ())):
-                if not self.is_open(z, year):
+                if not self.is_open(z, year) or self.provinces[z].ocean:
                     continue
                 for q, qp in self.provinces.items():
                     if q == pid or not qp.is_land or not self.is_open(q, year):

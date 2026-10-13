@@ -1,4 +1,4 @@
-"""brink command line. Subcommands: play, validate-orders (more to come: sim, analyse, build-map)."""
+"""brink command line. Subcommands: play, validate-orders, sim, analyse."""
 from __future__ import annotations
 
 import argparse
@@ -16,9 +16,11 @@ def _load_map(path: str):
 
 def cmd_play(args) -> int:
     from .bots.random_bot import RandomBot
+    from .bots.strategist import StrategistBot
     from .game import Game, Rules
     gmap = _load_map(args.map)
-    players = {p: RandomBot(seed=(args.seed * 1000 + i) if args.seed is not None else None)
+    bot = {"random": RandomBot, "strategist": StrategistBot}[args.bot]
+    players = {p: bot(seed=(args.seed * 1000 + i) if args.seed is not None else None)
                for i, p in enumerate(gmap.power_order)}
     rules = Rules()
     if args.last_year:
@@ -72,6 +74,30 @@ def cmd_validate_orders(args) -> int:
     return 1 if bad else 0
 
 
+def cmd_sim(args) -> int:
+    from .sim import SimConfig, run
+    rules = {}
+    for kv in args.rule:
+        k, _, v = kv.partition("=")
+        rules[k] = v.lower() == "true" if v.lower() in ("true", "false") else int(v)
+    cfg = SimConfig(map_path=args.map, games=args.games, seed=args.seed, workers=args.workers,
+                    betrayal=args.betrayal, rules=rules, record_every=args.record_every, out=args.out)
+    summary = run(cfg)
+    from .sim import report
+    print(report(summary))
+    print(f"{summary['games']} games in {summary['seconds']}s -> {args.out}")
+    return 0
+
+
+def cmd_analyse(args) -> int:
+    from .analysis import report
+    text = report(args.map)
+    if args.out:
+        Path(args.out).write_text(text)
+    print(text)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="brink", description="Brink rules engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -82,7 +108,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--map-name", default=None)
     p.add_argument("--last-year", type=int, default=None)
     p.add_argument("--compact", action="store_true")
+    p.add_argument("--bot", choices=["random", "strategist"], default="strategist")
     p.set_defaults(func=cmd_play)
+    s = sub.add_parser("sim", help="run many bot games with random alliances and summarise balance")
+    s.add_argument("--map", default=DEFAULT_MAP)
+    s.add_argument("--games", type=int, default=200)
+    s.add_argument("--seed", type=int, default=1)
+    s.add_argument("--workers", type=int, default=0, help="processes (0 = all cores, 1 = in-process)")
+    s.add_argument("--betrayal", type=float, default=0.12, help="yearly chance each alliance pair breaks")
+    s.add_argument("--rule", action="append", default=[], help="override a Rules value, e.g. primacy=10")
+    s.add_argument("--record-every", type=int, default=0, help="also save every Nth game record")
+    s.add_argument("--out", default="runs/sim")
+    s.set_defaults(func=cmd_sim)
+    a = sub.add_parser("analyse", help="static reach and exposure analysis of the map")
+    a.add_argument("--map", default=DEFAULT_MAP)
+    a.add_argument("--out", default=None)
+    a.set_defaults(func=cmd_analyse)
     v = sub.add_parser("validate-orders", help="check orders ('USA: A TEX - MEX') against a position")
     v.add_argument("orders", nargs="*", help="orders as 'POWER: ORDER' (or read lines from stdin)")
     v.add_argument("--map", default=DEFAULT_MAP)
