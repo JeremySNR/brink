@@ -20,6 +20,7 @@ src/brink/sim.py           batch simulation + metrics
 src/brink/analysis.py      static graph analysis (reach, exposure)
 src/brink/cli.py           `brink analyse | play | sim | serve | validate-orders`
 src/brink/server.py        local HTTP API for human-vs-bots play (`brink serve`, web `?play`)
+src/brink/session.py       hosted play: JSON game state advanced one decision point at a time (stateless)
 tests/                     pytest; military layer is differential-tested against MILA `diplomacy`
 web/                       Vite + TypeScript board viewer (reads board.json + game records)
 build/                     generated artifacts (map.json is committed; cache/ is not)
@@ -191,3 +192,90 @@ Winter, in order:
   "result": { "kind": "time" | "primacy" | "collapse", "winner": null, "scores": { "USA": 23.1, ... } }
 }
 ```
+
+## Hosted play: state and decision points
+
+`brink serve` runs `Game.run()` in a thread and blocks it on a HumanPlayer; a stateless function
+(Vercel Python, Lambda) can't do that. `brink.session` exposes the same engine as pure functions over a
+JSON state that lives in a database row. Same rules, same records: a game advanced stepwise with the
+same bot instances produces a byte-identical record to `Game.run()` (tested), because `run()` itself is
+now `while result is None: step()`.
+
+### Decision points
+
+A game is a sequence of decision points, each a simultaneous decision by a set of powers.
+`Game.stage` is the one pending; `Game.step()` resolves exactly one.
+
+| kind (`pending`) | `Game.stage` | phase | who decides | missing decision (civil disorder) |
+|---|---|---|---|---|
+| `orders` | movement | `S2031M`, `F2031M` | active powers with a unit or an umbrella to withdraw | units hold |
+| `retreats` | retreats | `S2031R`, `F2031R` | powers with a dislodged unit | dislodged units disband |
+| `propose` | propose | `W2031A` | the Assembly chair only | proposes nothing |
+| `winter` | winter | `W2031A` | everyone with a vote, an adjustment or an umbrella | abstain, default disbands, umbrellas kept |
+
+Winter keeps the rules' order of operations. The decision-free prelude (alignment, drift, home
+capture, Crisis, possibly Collapse) runs at the end of the Fall step, so the chair is known while
+`propose` is pending. The `winter` step then applies the votes, then everyone's adjustments, then
+umbrellas, then the end checks. Votes, builds/disbands and umbrellas arrive together, so adjustments
+are written before the vote is known. They are checked against the position after the Assembly.
+Only a passed RECOGNITION can change a power's adjustment, and the options say so (`change_if_passed`).
+If it does change, excess builds are void and missing disbands follow the default rule.
+
+Winter orders are one list per power, sorted out by kind: `VOTE YES|NO|VETO` (bare `YES` works too),
+`BUILD ...`/`DISBAND ...`, and `USA UMBRELLA JPN` (a bare power code works too). The umbrella list is
+the full set for next year. If a power sends no umbrella orders it keeps its current umbrellas;
+`UMBRELLA NONE` drops them all.
+
+### API (`brink.session`)
+
+```python
+state = new_game(gmap, seed=None, humans={"USA"}, bot_kind="search", rules=None, alliances=())
+pending(gmap, state, powers=None) -> None | {"kind", "phase", "step", "powers", "position", "events",
+                                             "options": {power: ...}, ["chair", "proposal"] (Winter)}
+validate(gmap, state, power, ["A TEX - MEX"]) -> [{"text", "ok", "order", "reason"}]
+advance(gmap, state, {"USA": [...]}, bots=None, expect_step=None) -> new state   # one decision point
+run_bots_until_human(gmap, state, humans=None, bots=None) -> state             # skip bot-only points
+make_bots(state, powers, kind="search")                                        # search|strategist|random|hold
+record(state) -> game record
+```
+
+- The `options` payloads have the same shape as the `brink serve` decisions (`brink.bots.human.*_payload`).
+  `orders`: `{units: [{unit, name, options}], withdraw, status}`. `retreats`: `{units: [{unit, name, to}],
+  status}`. `propose`: `{resolutions, chair, status}`. `winter`: `{vote: {proposal, chair, can_veto, weight}
+  | null, adjust: {change, builds, disband, change_if_passed?} | null, umbrellas: {candidates, current} |
+  null, status}`. `pending(..., powers=[me])` computes options only for those powers.
+- `advance` treats a power present in `decisions` as decided by its texts, even an empty list. Bots
+  decide for the other non-human powers. Any seat left over is in civil disorder. The input state is
+  never mutated. `expect_step` gives optimistic concurrency (`StaleState`); a finished game raises `GameOver`.
+- Bots are rebuilt on every call. Temperament comes from (seed, power) and the RNG seed from (seed,
+  power, step), so the same state always gives the same bot orders. The coalition board (allies reading
+  this phase's posted orders) is only ever read within one phase, so a board shared by the bots of one
+  call is exact. Alliances are static pairs from `state["meta"]["alliances"]`; the sims' evolving
+  `Diplomat` is not carried into hosted games.
+
+### State format (`Game.to_state()`, version `v: 1`)
+
+```jsonc
+{
+  "v": 1, "map": "brink-v0", "seed": 7, "rules": { ...Rules fields... },
+  "players": { "USA": "human", "CHN": "search", ... },        // names for the record
+  "year": 2033, "season": "fall", "stage": "movement", "step": 9,
+  "units": [ { "power": "USA", "type": "A", "at": "TEX" } ],    // order matters (bots iterate it)
+  "ownership": { ... }, "crisis": 4, "umbrellas": [["USA","JPN"]], "vetoes_used": [], "drift": { "MEX": 1 },
+  "eliminated": [], "resolution": ["sanctions","CHN"] | null, "pending": null,   // effects derive from resolution
+  "year_acc": { "closed": [], "sanctions": {}, "commons": {}, "commons_issued": [], "clash": false },
+  "retreat": null | { "options": [[unit, ["BLR", ...]], ...], "dislodged": [...] },
+  "winter":  null | { "rec": {phase so far}, "events": [...], "orders": [...], "chair": "GLF", "proposal": [kind, arg] | null },
+  "phases": [ ...game record phases... ], "result": null | {...},
+  "meta": { "humans": ["USA"], "bot_kind": "search", "alliances": [] }    // session-level, opaque to Game
+}
+```
+
+Size: about 7 KB at the start, ~80-100 KB in 2035, ~175-230 KB by 2040 (gzip: 7-10 KB). `phases`
+is ~97% of it and only ever grows by appending. Bots read `len(phases)` and recent phases, so the engine
+needs the whole list. A backend can store it in a separate append-only table and reassemble the state.
+
+Cost per `advance` (full map, Apple silicon, one core): an `orders` step with 6-7 SearchBots takes
+~65 ms (max ~85 ms). Retreats, propose and winter take 3-7 ms. `pending` for every power takes 2-4 ms;
+`from_state` takes ~2 ms. A game is ~42-60 decision points.
+

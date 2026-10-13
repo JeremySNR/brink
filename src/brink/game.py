@@ -6,7 +6,7 @@ Players plug in through the `Player` interface (brink.bots.base): every decision
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Iterable
 
 from .adjudicator import MovementResult, adjudicate, resolve_retreats, retreat_options
@@ -71,6 +71,12 @@ class Game:
         self.phases: list[dict] = []
         self.result: dict | None = None
         self._pos_cache: Position | None = None
+        # stepwise play (brink.session): where the year stands and what a pending decision point carries
+        self.stage = "movement"                       # movement | retreats | propose | winter
+        self.steps = 0                                # decision points resolved so far
+        self.player_names: dict[str, str] | None = None   # names for the record (hosted games)
+        self._retreat: dict | None = None             # {"options": {Unit: [dest]}, "dislodged": [json]}
+        self._winter: dict | None = None              # {"rec", "events", "orders", "chair", "proposal"}
 
     # ------------------------------------------------------------------ queries for players
     def context(self) -> TurnContext:
@@ -124,12 +130,45 @@ class Game:
     # ------------------------------------------------------------------ phase loop
     def run(self) -> dict:
         while self.result is None:
-            self.play_movement()
-            self.season = "fall"
-            self.play_movement()
-            self.season = "winter"
-            self.play_winter()
+            self.step()
         return self.record()
+
+    def step(self) -> None:
+        """Resolve exactly one decision point (see `stage`), asking `self.players` for the decisions.
+
+        The year is: movement (Spring) -> [retreats] -> movement (Fall) -> [retreats] -> propose -> winter.
+        Decision-free work runs at the end of the step before it: the Winter prelude (alignment, drift,
+        home capture, Crisis, possibly Collapse) runs as soon as the Fall phase is over, so the chair of
+        the `propose` step is known while it is pending."""
+        if self.result is not None:
+            return
+        stage = self.stage
+        if stage == "movement":
+            mres = self._movement_phase()
+            if mres.dislodged:
+                self.stage = "retreats"
+            else:
+                self._after_movement()
+        elif stage == "retreats":
+            self._retreat_phase()
+            self._after_movement()
+        elif stage == "propose":
+            self._propose_phase()
+            self.stage = "winter"
+        elif stage == "winter":
+            self._winter_phase()
+        else:  # pragma: no cover
+            raise ValueError(f"unknown stage {stage!r}")
+        self.steps += 1
+        self._pos_cache = None
+
+    def _after_movement(self) -> None:
+        if self.season == "spring":
+            self.season = "fall"
+            self.stage = "movement"
+        else:
+            self.season = "winter"
+            self.stage = "propose" if self._winter_begin() else "over"
 
     def _reset_year(self):
         self.year_closed: set[str] = set()
@@ -161,6 +200,14 @@ class Game:
         }
 
     def play_movement(self) -> MovementResult:
+        """One movement phase and its retreats, if any (whole-phase helper; `step()` splits them)."""
+        mres = self._movement_phase()
+        if mres.dislodged:
+            self._retreat_phase()
+        self._pos_cache = None
+        return mres
+
+    def _movement_phase(self) -> MovementResult:
         self._pos_cache = None
         ctx = self.context()
         rec = self._phase("movement", self.units)
@@ -183,23 +230,31 @@ class Game:
         rec["dislodged"] = [dict(d.unit.to_json(), **{"from": d.attacker_from}) for d in mres.dislodged]
         rec["events"] = self._movement_events(mres)
         self.phases.append(rec)
-        if mres.dislodged:
-            self.play_retreats(mres, ctx)
         self._pos_cache = None
+        self._retreat = None
+        if mres.dislodged:
+            rctx = TurnContext(ctx.year, ctx.ownership, set(mres.umbrellas), ctx.effects)
+            self._retreat = {"options": retreat_options(self.map, mres, rctx), "dislodged": rec["dislodged"]}
         return mres
 
-    def play_retreats(self, mres: MovementResult, ctx: TurnContext) -> None:
-        ctx = TurnContext(ctx.year, ctx.ownership, set(mres.umbrellas), ctx.effects)
-        opts = retreat_options(self.map, mres, ctx)
-        rec = self._phase("retreat", mres.units)
-        rec["dislodged"] = [dict(d.unit.to_json(), **{"from": d.attacker_from}) for d in mres.dislodged]
+    def retreat_powers(self) -> list[str]:
+        """Powers with a dislodged unit while a retreat phase is pending."""
+        if not self._retreat:
+            return []
+        have = {u.power for u in self._retreat["options"]}
+        return [p for p in self.active_powers() if p in have]
+
+    def _retreat_phase(self) -> None:
+        opts: dict[Unit, list[str]] = self._retreat["options"]
+        rec = self._phase("retreat", self.units)
+        rec["dislodged"] = list(self._retreat["dislodged"])
         bad: list[dict] = []
         orders: list[tuple[str, Order]] = []
         for p in self.active_powers():
             mine = {u: o for u, o in opts.items() if u.power == p}
             if mine:
                 orders += self._parse(p, self.players[p].retreats(self, p, mine), bad)
-        rr = resolve_retreats(self.map, mres.units, opts, orders)
+        rr = resolve_retreats(self.map, self.units, opts, orders)
         self.units = rr.units
         rec["orders"] = [self._order_rec(r) for r in rr.results] + bad
         events = []
@@ -212,14 +267,25 @@ class Game:
             events.append(f"{self._unit_name(u)} is disbanded")
         rec["events"] = events
         self.phases.append(rec)
+        self._retreat = None
+        self._pos_cache = None
 
     # ------------------------------------------------------------------ winter
     def play_winter(self) -> None:
+        """A whole Winter (whole-phase helper; `step()` splits it into propose and winter steps)."""
+        if self._winter_begin():
+            self._propose_phase()
+            self._winter_phase()
+
+    def _winter_begin(self) -> bool:
+        """Winter steps 1-2, which need no decisions: alignment, drift, home capture, Crisis.
+        False if the Crisis collapsed the world (the game is over)."""
         self._pos_cache = None
         m, rules = self.map, self.rules
         rec = self._phase("winter", self.units)
         events: list[str] = []
         orders_rec: list[dict] = []
+        self._winter = None
 
         # 1. alignment, drift, home capture
         slots = {u.slot: u for u in self.units}
@@ -285,12 +351,41 @@ class Game:
             rec["orders"] = orders_rec
             self.phases.append(rec)
             self._finish("collapse", None)
-            return
+            return False
         if self.crisis >= rules.state_failure_at:
             for s in m.swing_states():
                 if self.ownership.get(s) and (s, MILITARY) not in slots and (s, CIVIL) not in slots:
                     events.append(f"State failure: {self.name(s)} becomes unaligned")
                     self.ownership[s] = None
+
+        self._winter = {"rec": rec, "events": events, "orders": orders_rec, "chair": None, "proposal": None}
+        return True
+
+    def _propose_phase(self) -> None:
+        """Winter step 3a: the chair proposes (or not)."""
+        w = self._winter
+        chair = self.assembly_chair()
+        w["chair"] = chair
+        w["proposal"] = None
+        text = self.players[chair].propose(self, chair)
+        if text:
+            try:
+                od = parse_order(text)
+            except OrderError:
+                od = None
+            valid = isinstance(od, Propose) and (od.resolution is None or od.resolution in
+                                                 self.resolution_options(chair))
+            w["orders"].append({"power": chair, "text": text, "unit": None, "kind": "propose", "to": None,
+                                "target": None, "result": "ok" if valid else "void"})
+            if valid:
+                w["proposal"] = od.resolution
+
+    def _winter_phase(self) -> None:
+        """Winter steps 3b-6: votes, adjustments, umbrellas, end checks, roll-over."""
+        m, rules = self.map, self.rules
+        w = self._winter
+        rec, events, orders_rec = w["rec"], w["events"], w["orders"]
+        self._pos_cache = None
 
         # 3. assembly
         rec["assembly"] = self._assembly(events, orders_rec)
@@ -311,6 +406,8 @@ class Game:
         rec["orders"] = orders_rec
         rec["events"] = events
         self.phases.append(rec)
+        self._winter = None
+        self.stage = "over"
         leaders = [p for p in self.active_powers() if self.swing_count(p) >= rules.primacy]
         if len(leaders) == 1:
             self._finish("primacy", leaders[0])
@@ -331,6 +428,7 @@ class Game:
         self._reset_year()
         self.year += 1
         self.season = "spring"
+        self.stage = "movement"
 
     def resolution_options(self, power: str) -> list[Resolution]:
         m = self.map
@@ -341,23 +439,14 @@ class Game:
         out += [Resolution("recognition", s) for s in m.swing_states()]
         return out
 
+    def assembly_chair(self) -> str:
+        """The Assembly chair: fewest centres, ties by power order."""
+        order_idx = {p: i for i, p in enumerate(self.map.power_order)}
+        return min(self.active_powers(), key=lambda p: (self.centres(p), order_idx[p]))
+
     def _assembly(self, events: list[str], orders_rec: list[dict]) -> dict:
         active = self.active_powers()
-        order_idx = {p: i for i, p in enumerate(self.map.power_order)}
-        chair = min(active, key=lambda p: (self.centres(p), order_idx[p]))
-        text = self.players[chair].propose(self, chair)
-        proposal: Resolution | None = None
-        if text:
-            try:
-                od = parse_order(text)
-            except OrderError:
-                od = None
-            valid = isinstance(od, Propose) and (od.resolution is None or od.resolution in
-                                                 self.resolution_options(chair))
-            orders_rec.append({"power": chair, "text": text, "unit": None, "kind": "propose", "to": None,
-                               "target": None, "result": "ok" if valid else "void"})
-            if valid:
-                proposal = od.resolution
+        chair, proposal = self._winter["chair"], self._winter["proposal"]
         info = {"chair": chair, "proposal": proposal.text() if proposal else None, "votes": {}, "passed": False}
         if proposal is None:
             events.append(f"The Assembly meets; {self.name(chair)}, in the chair, proposes nothing.")
@@ -467,7 +556,6 @@ class Game:
         return "armies build in owned original homes (or one forward base)"
 
     def _adjust(self, power: str, events: list[str], orders_rec: list[dict]) -> None:
-        rules = self.rules
         c = self.supply(power)
         if c < self.centres(power):
             states = [self.name(x) for x in self.contested(power)]
@@ -502,10 +590,7 @@ class Game:
             for u in removed:
                 events.append(f"{self._unit_name(u)} is disbanded")
             return
-        sanctions = self.year_sanctions.get(power, 0) + (1 if power in self.effects.sanctions_regime else 0)
-        recession = 1 if self.crisis >= rules.recession_at else 0
-        accord = 1 if self.effects.climate_accord and power not in self.year_commons_issued else 0
-        builds = max(0, c - n - sanctions - recession - accord)
+        builds, sanctions, recession, accord = self._builds_allowed(power, c, n)
         if c - n > 0 and builds < c - n:
             lost = c - n - builds
             why = [w for w, k in (("sanctions", sanctions), ("the recession", recession),
@@ -537,6 +622,22 @@ class Game:
             done += 1
             orders_rec.append(order_json(power, od, "ok"))
             events.append(f"{self.name(power)} builds {TYPE_NAMES[u.type]} in {self.name(u.prov)}")
+
+    def _builds_allowed(self, power: str, c: int, n: int) -> tuple[int, int, int, int]:
+        """(builds, sanctions, recession, accord) for a power with supply c and n units (c >= n)."""
+        rules = self.rules
+        sanctions = self.year_sanctions.get(power, 0) + (1 if power in self.effects.sanctions_regime else 0)
+        recession = 1 if self.crisis >= rules.recession_at else 0
+        accord = 1 if self.effects.climate_accord and power not in self.year_commons_issued else 0
+        return max(0, c - n - sanctions - recession - accord), sanctions, recession, accord
+
+    def adjustment(self, power: str) -> int:
+        """The Winter adjustment `power` faces in the current position: -k (disband k), +k (up to k
+        builds) or 0. Exactly what `_adjust` will ask the player for, if nothing changes first."""
+        c, n = self.supply(power), len(self.units_of(power))
+        if n > c:
+            return c - n
+        return self._builds_allowed(power, c, n)[0]
 
     def _default_disbands(self, power: str, units: list[Unit]) -> list[Unit]:
         homes = self.map.homes(power)
@@ -601,9 +702,90 @@ class Game:
     def record(self) -> dict:
         return {
             "map": self.map_name, "seed": self.seed,
-            "players": {p: getattr(pl, "name", type(pl).__name__) for p, pl in self.players.items()},
+            "players": self._player_names(),
             "phases": self.phases, "result": self.result,
         }
+
+    def _player_names(self) -> dict[str, str]:
+        if self.player_names:
+            return dict(self.player_names)
+        return {p: getattr(pl, "name", type(pl).__name__) for p, pl in self.players.items()}
+
+    # ------------------------------------------------------------------ persistence
+    STATE_VERSION = 1
+
+    def to_state(self) -> dict:
+        """Everything needed to continue this game identically, JSON-safe (docs/ARCHITECTURE.md,
+        "Hosted play"). Players are not part of the state: pass them to `from_state`."""
+        def res(r: Resolution | None):
+            return [r.kind, r.arg] if r else None
+
+        retreat = None
+        if self._retreat:
+            retreat = {"options": [[u.to_json(), list(d)] for u, d in self._retreat["options"].items()],
+                       "dislodged": self._retreat["dislodged"]}
+        winter = None
+        if self._winter:
+            w = self._winter
+            winter = {"rec": w["rec"], "events": w["events"], "orders": w["orders"], "chair": w["chair"],
+                      "proposal": res(w["proposal"])}
+        return {
+            "v": self.STATE_VERSION, "map": self.map_name, "seed": self.seed, "rules": asdict(self.rules),
+            "players": self._player_names(),
+            "year": self.year, "season": self.season, "stage": self.stage, "step": self.steps,
+            "units": [u.to_json() for u in self.units],
+            "ownership": dict(self.ownership), "crisis": self.crisis,
+            "umbrellas": sorted([list(x) for x in self.umbrellas]),
+            "vetoes_used": sorted(self.vetoes_used), "drift": dict(self.drift_count),
+            "eliminated": sorted(self.eliminated),
+            "resolution": res(self.resolution), "pending": res(self.pending),
+            "year_acc": {"closed": sorted(self.year_closed), "sanctions": dict(self.year_sanctions),
+                         "commons": dict(self.year_commons), "commons_issued": sorted(self.year_commons_issued),
+                         "clash": self.year_clash},
+            "retreat": retreat, "winter": winter,
+            "phases": self.phases, "result": self.result,
+        }
+
+    @classmethod
+    def from_state(cls, gmap: BrinkMap, state: dict, players: dict[str, Player] | None = None) -> "Game":
+        """Rebuild a game from `to_state()`. The state dict is not mutated or aliased (deep-copied)."""
+        import copy
+        if state.get("v") != cls.STATE_VERSION:
+            raise ValueError(f"unsupported game state version {state.get('v')!r}")
+        st = copy.deepcopy(state)
+
+        def res(x) -> Resolution | None:
+            return Resolution(x[0], x[1]) if x else None
+
+        def unit(d) -> Unit:
+            return Unit(d["power"], d["type"], d["at"])
+
+        g = cls(gmap, players, seed=st["seed"], rules=Rules(**st["rules"]), map_name=st["map"])
+        g.player_names = st.get("players") or None
+        g.year, g.season, g.stage, g.steps = st["year"], st["season"], st["stage"], st["step"]
+        g.units = [unit(d) for d in st["units"]]
+        g.ownership = st["ownership"]
+        g.crisis = st["crisis"]
+        g.umbrellas = {tuple(x) for x in st["umbrellas"]}
+        g.vetoes_used = set(st["vetoes_used"])
+        g.drift_count = st["drift"]
+        g.eliminated = set(st["eliminated"])
+        g.resolution, g.pending = res(st["resolution"]), res(st["pending"])
+        g.effects = Effects.from_resolution(g.resolution)
+        acc = st["year_acc"]
+        g.year_closed = set(acc["closed"])
+        g.year_sanctions = Counter(acc["sanctions"])
+        g.year_commons = Counter(acc["commons"])
+        g.year_commons_issued = set(acc["commons_issued"])
+        g.year_clash = acc["clash"]
+        r = st.get("retreat")
+        g._retreat = {"options": {unit(u): list(d) for u, d in r["options"]}, "dislodged": r["dislodged"]} \
+            if r else None
+        w = st.get("winter")
+        g._winter = dict(w, proposal=res(w["proposal"])) if w else None
+        g.phases = st["phases"]
+        g.result = st["result"]
+        return g
 
     # ------------------------------------------------------------------ helpers
     def _order_rec(self, r) -> dict:
