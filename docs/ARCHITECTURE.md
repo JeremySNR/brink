@@ -106,12 +106,13 @@ Layers. Land provinces have a military slot and a civil slot; sea zones have a m
 A, F = military; C, I = civil.
 
 Movement reach (own layer):
-- Army: `adj.army`, or by convoy along a chain of Fleets in sea zones (classic rules).
+- Army: `adj.army`, or by convoy along a chain of Fleets in sea zones (classic rules; VIA follows DATC 4.A.3).
 - Fleet: `adj.fleet`.
 - Capital: (a) `adj.army` neighbour; (b) **short hop**: from a coastal province to another coastal
-  province that borders the same sea zone; (c) the far end of a trade route whose end it stands on.
+  province that borders the same sea zone, unless that zone is an `ocean`; (c) the far end of a trade route whose end it stands on.
   Hops and routes are blocked if any sea zone used is a chokepoint closed to the mover, or not yet open.
-- Influence: any land province within distance 2 in `adj.any` (sea zones count as steps). It jumps:
+- Influence: any land province within range 2 in `adj.any`, where entering a sea costs 1 and an
+  `ocean` costs 2 (so Influence never crosses an ocean). It jumps:
   units on the way don't block it. Closed chokepoints don't block it. Not-yet-open zones do.
 - Nobody enters impassable provinces or zones before their `opens` year.
 
@@ -132,7 +133,7 @@ Strength. Classic: 1 + valid supports. Supports may come from either layer.
   tests against MILA `diplomacy` on the standard map).
 
 Special orders: CLOSE, SANCTION, DISRUPT, COMMONS, FORGE count as holds. Their effect applies unless
-the unit is dislodged. DISRUPT range = within 2 steps of `adj.any`, target any province.
+the unit is dislodged. DISRUPT range = the same range-2 rule (oceans cost 2), target any province.
 SANCTION requires the Capital to stand in its own home or in a swing state aligned to its owner.
 CLOSE requires a Fleet in a chokepoint; the chokepoint is closed for the *same* turn's Capital moves and
 convoys only if the Fleet is not dislodged (resolve the dependency in the resolver; if circular, the Fleet
@@ -160,7 +161,7 @@ Winter, in order:
    aligned swing state where the power has a civil unit, military slot empty.
    C, I: owned home or aligned swing state, civil slot empty.
 5. Umbrellas declared for next year.
-6. End: Primacy (>= 11 aligned swing states) or after Winter 2040.
+6. End: Primacy (>= 9 aligned swing states) or after Winter 2040.
 
 ## Game record (web replay)
 
