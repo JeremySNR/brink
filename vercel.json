@@ -7,14 +7,20 @@
   "functions": {
     "api/index.py": {
       "includeFiles": "{src/brink/**,build/map.json}",
-      "excludeFiles": "{src/brink/**/__pycache__/**,web/**,runs/**,tests/**,data/**}",
+      "excludeFiles": "{.impeccable/**,build/screenshots/**,build/board-preview.*,build/cache/**,web/**,runs/**,tests/**,data/**,docs/**,supabase/**,*.md,uv.lock}",
       "maxDuration": 60
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
   ],
   "crons": [
-    { "path": "/api/cron/tick", "schedule": "0 5 * * *" }
+    {
+      "path": "/api/cron/tick",
+      "schedule": "0 5 * * *"
+    }
   ]
 }

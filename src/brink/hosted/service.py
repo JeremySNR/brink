@@ -561,7 +561,11 @@ def submit(conn: Connection, user: User, game_id: str, body: dict) -> dict:
         "updated_at = now()", (g["id"], mine, step, Jsonb(orders), ready))
     if ready:
         advance_game(conn, str(g["id"]), "ready")
-    return get_game(conn, user, str(g["id"]))
+    try:
+        since = max(0, int(body.get("since") or 0))
+    except (TypeError, ValueError):
+        since = 0
+    return get_game(conn, user, str(g["id"]), since)
 
 
 # ---------------------------------------------------------------------------------------------- press

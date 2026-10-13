@@ -1,4 +1,7 @@
 # Runtime dependencies of the Vercel Python function (api/index.py): the engine and the hosted API.
+# They live next to the function, with api/.python-version (3.12): Vercel's Python builder reads the files
+# nearest the entrypoint first, and would otherwise use the root uv.lock and .python-version (3.11, the
+# dev environment, which the runtime doesn't support).
 # The engine's geo pipeline and the test oracle (geopandas, diplomacy) are not needed here.
 # Keep in step with the `hosted` extra in pyproject.toml.
 pyyaml==6.0.3
