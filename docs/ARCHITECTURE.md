@@ -21,6 +21,9 @@ src/brink/analysis.py      static graph analysis (reach, exposure)
 src/brink/cli.py           `brink analyse | play | sim | serve | validate-orders`
 src/brink/server.py        local HTTP API for human-vs-bots play (`brink serve`, web `?play`)
 src/brink/session.py       hosted play: JSON game state advanced one decision point at a time (stateless)
+src/brink/hosted/          hosted multiplayer API over session.py: Postgres, Supabase auth (docs/HOSTING.md)
+api/index.py               the Vercel Python function serving src/brink/hosted/app.py
+supabase/migrations/       the hosted database schema
 tests/                     pytest; military layer is differential-tested against MILA `diplomacy`
 web/                       Vite + TypeScript board viewer (reads board.json + game records)
 build/                     generated artifacts (map.json is committed; cache/ is not)

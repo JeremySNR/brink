@@ -3,5 +3,24 @@
   "installCommand": "cd web && npm ci",
   "buildCommand": "cd web && npm run build",
   "outputDirectory": "web/dist",
-  "framework": null
+  "framework": null,
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{src/brink/**,build/map.json}",
+      "excludeFiles": "{.impeccable/**,build/screenshots/**,build/board-preview.*,build/cache/**,web/**,runs/**,tests/**,data/**,docs/**,supabase/**,*.md,uv.lock}",
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/tick",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }

@@ -1,8 +1,11 @@
-// Play mode: one human against six bots through `brink serve` (src/brink/server.py).
+// Play mode: the decision UI over the board, driven by a PlayBackend.
 //
-// The server runs the engine and publishes the open decision ("pending"); this controller turns it into
-// board interactions (Backstabbr-style order entry), drafts, validation and submission. The board shows the
-// game record's phases followed by one "live" phase: the current position with the drafted orders on it.
+// Two backends: LocalBackend talks to `brink serve` (src/brink/server.py: one human against six bots, one
+// decision at a time); HostedBackend (src/hosted/game.ts) talks to the hosted multiplayer API, where a
+// decision is saved, marked ready, and resolved when every player is ready or the deadline passes.
+// The backend publishes the open decision ("pending"); this controller turns it into board interactions
+// (Backstabbr-style order entry), drafts, validation and submission. The board shows the game record's
+// phases followed by one "live" phase: the current position with the drafted orders on it.
 import type { BoardView } from "./board";
 import type { Overlay } from "./overlay";
 import { codeCounter, counterSvg } from "./counter";
@@ -12,8 +15,8 @@ import type { GameRecord, MapData, Order, Phase, Unit, UnitType } from "./types"
 import { html, normaliseOrder, seasonLabel, svg } from "./util";
 
 // ------------------------------------------------------------------ API shapes
-interface URef { type: UnitType; at: string }
-interface Opt {
+export interface URef { type: UnitType; at: string }
+export interface Opt {
   text: string;
   kind: string;
   unit: URef | null;
@@ -21,17 +24,19 @@ interface Opt {
   target: URef | null;
   about?: unknown;
 }
-interface UnitChoice { unit: URef; name: string; options: Opt[] }
-interface RetreatChoice { unit: URef; name: string; to: string[] }
-interface BuildChoice { type: UnitType; at: string; text: string; forward_base: boolean }
-interface DisbandChoice { unit: URef; name: string; text: string }
-interface Status {
+export interface UnitChoice { unit: URef; name: string; options: Opt[] }
+export interface RetreatChoice { unit: URef; name: string; to: string[] }
+export interface BuildChoice { type: UnitType; at: string; text: string; forward_base: boolean }
+export interface DisbandChoice { unit: URef; name: string; text: string }
+export interface Status {
   centres: number; units: number; swing: number; protected_by: string[]; protecting: string[];
   vetoes_left: number; vote_weight: number; nuclear: boolean; effects: string[];
 }
-interface Pending {
+/** The open decision. Local play asks one kind at a time; hosted play asks a whole Winter at once
+ * (kind "winter": the vote, adjustments and umbrellas together, flagged in `parts`). */
+export interface Pending {
   id: number;
-  kind: "orders" | "retreats" | "propose" | "vote" | "adjust" | "umbrellas";
+  kind: "orders" | "retreats" | "propose" | "vote" | "adjust" | "umbrellas" | "winter";
   power: string;
   phase: Phase;
   status: Status;
@@ -43,20 +48,55 @@ interface Pending {
   can_veto?: boolean;
   weight?: number;
   change?: number;
+  change_if_passed?: number;
   builds?: BuildChoice[];
   disband?: DisbandChoice[];
   candidates?: string[];
   current?: string[];
+  parts?: { vote: boolean; adjust: boolean; umbrellas: boolean };
 }
-interface PlayRecord extends GameRecord {
+export interface PlayRecord extends GameRecord {
   human?: string;
   result: (GameRecord["result"] & { year?: number; centres?: Record<string, number> }) | null;
 }
-interface GameState {
-  id: string; power: string; seed: number; status: "waiting" | "thinking" | "over" | "error" | "stopped";
+export interface PlayState {
+  id: string; power: string | null; seed?: number; status: "waiting" | "thinking" | "over" | "error" | "stopped";
   record: PlayRecord; pending: Pending | null; error: string | null;
+  /** The live position when you have no decision open (hosted: others are deciding). */
+  position?: Phase | null;
+  /** Hosted: your saved orders for the open decision and whether you are ready. */
+  saved?: string[] | null;
+  ready?: boolean;
 }
-interface Check { text: string; ok: boolean; reason: string | null }
+export interface Check { text: string; ok: boolean; reason: string | null }
+
+/** Where decisions come from and go to. */
+export interface PlayBackend {
+  readonly kind: "local" | "hosted";
+  /** Load a game (null: none to resume; local play then shows the start screen). */
+  load(param: string | null): Promise<PlayState | null>;
+  refresh(): Promise<PlayState>;
+  validate(texts: string[]): Promise<Check[]>;
+  /** Send the open decision. Local: commits it. Hosted: saves it, ready or not. */
+  submit(p: Pending, texts: string[], ready: boolean): Promise<PlayState>;
+  lastYear(): number;
+  /** Milliseconds until the next refresh, or null for none. */
+  pollDelay(st: PlayState, sinceCommit: number): number | null;
+  // ---- hosted extras
+  /** Player-aid sections under the decision (players, press). */
+  sections?(root: HTMLElement, live: boolean): void;
+  /** Who the phase is waiting for, in words. */
+  waitingFor?(): string;
+  deadline?(): Date | null;
+  /** First phase index this browser hasn't seen, and a hook to record what has been seen. */
+  unseenFrom?(): number | null;
+  markSeen?(n: number): void;
+  exit?(): void;
+}
+
+const isAdjust = (p: Pending) => p.kind === "adjust" || (p.kind === "winter" && !!p.parts?.adjust);
+const isVote = (p: Pending) => p.kind === "vote" || (p.kind === "winter" && !!p.parts?.vote);
+const isUmbrellas = (p: Pending) => p.kind === "umbrellas" || (p.kind === "winter" && !!p.parts?.umbrellas);
 
 export interface PlayHost {
   view: BoardView;
@@ -75,7 +115,7 @@ export interface PlayHost {
 
 // One hand-written line of character per power. It makes no countable claims: units, homes and umbrellas
 // on the start screen are read from map.json `start`, so they can't go stale.
-const CHARACTER: Record<string, string> = {
+export const CHARACTER: Record<string, string> = {
   USA: "The Americas are its backyard, and both oceans are within reach.",
   CHN: "Starts with money and influence rather than armies; Asia is the first market.",
   EU: "Sits at the centre of the board, with Ukraine, Turkey and Africa next door.",
@@ -114,11 +154,14 @@ interface UnitIndex {
 export class PlayController {
   power: string | null = null;
   private id: string | null = null;
-  private state: GameState | null = null;
+  private state: PlayState | null = null;
   private pending: Pending | null = null;
   private busy = false;
   private reviewFrom: number | null = null; // first phase the player hasn't seen yet
   private overShown = false;
+  private pollTimer = 0;
+  private lastCommit = 0;
+  private sig = "";
 
   // drafts for the open decision
   private orders = new Map<string, Opt>();
@@ -131,6 +174,11 @@ export class PlayController {
   private umbrellas = new Set<string>();
   private checks = new Map<string, Check>();
   private validateTimer = 0;
+  // hosted: the decision is saved as you go and resolves when everyone is ready
+  private ready = false;
+  private saveTimer = 0;
+  private saveState: "saved" | "saving" | "unsaved" | "error" = "saved";
+  private savedAt: Date | null = null;
 
   // selection
   private index = new Map<string, UnitIndex>();
@@ -141,8 +189,10 @@ export class PlayController {
   private statusChip: HTMLElement;
   private fab: HTMLButtonElement;
   private toast: HTMLElement;
+  readonly backend: PlayBackend;
 
-  constructor(private host: PlayHost) {
+  constructor(private host: PlayHost, backend?: PlayBackend) {
+    this.backend = backend ?? new LocalBackend();
     const top = document.querySelector(".top-actions")!;
     this.statusChip = html("span", { class: "you-chip", id: "play-status", hidden: true });
     top.prepend(this.statusChip);
@@ -154,35 +204,33 @@ export class PlayController {
     (window as unknown as { __brink: unknown }).__brink = this; // dev/testing hook (see web/README.md)
   }
 
+  get hosted() {
+    return this.backend.kind === "hosted";
+  }
+
   // ================================================================== lifecycle
   async start(param: string | null) {
-    const id = param && !["", "1", "new", "true"].includes(param) ? param : null;
-    if (id) {
-      try {
-        const st = await api<GameState>("GET", `/api/games/${id}`);
+    try {
+      const st = await this.backend.load(param);
+      if (st) {
         this.reviewFrom = null;
         this.accept(st, true);
         this.focusHome();
         return;
-      } catch {
-        /* unknown game (server restarted): fall through to a new one */
       }
+    } catch (e) {
+      if (this.hosted) return this.showError(String(e));
+      /* unknown game (server restarted): fall through to a new one */
     }
-    this.showStart();
+    if (!this.hosted) this.showStart();
   }
 
   private async create(power: string, seed: string, alliances: boolean, lastYear: string) {
+    const local = this.backend as LocalBackend;
     this.setBusy(true, "Setting up the board…");
     try {
-      const st = await api<GameState>("POST", "/api/games", {
-        power, seed: seed === "" ? null : Number(seed), alliances, last_year: lastYear === "" ? null : Number(lastYear),
-      });
+      const st = await local.create(power, seed, alliances, lastYear);
       closeModal();
-      try {
-        localStorage.setItem(`brink.play.${st.id}.last`, lastYear || "2040");
-      } catch {
-        /* ignore */
-      }
       const url = new URL(location.href);
       url.searchParams.set("play", st.id);
       url.hash = "";
@@ -197,17 +245,11 @@ export class PlayController {
     }
   }
 
-  /** The game's final year, for the turn record track (chosen at the start; the server doesn't echo it). */
+  /** The game's final year, for the turn record track. */
   lastYear(): number {
     const r = this.state?.record.result;
     if (r?.year && r.kind === "time") return r.year;
-    try {
-      const v = Number(localStorage.getItem(`brink.play.${this.id}.last`));
-      if (v > 2000) return v;
-    } catch {
-      /* ignore */
-    }
-    return 2040;
+    return this.backend.lastYear();
   }
 
   /** Zoom to the player's home provinces. */
@@ -217,64 +259,158 @@ export class PlayController {
   }
 
   /** Take a new server state: rebuild the record + live phase and move the view. */
-  private accept(st: GameState, fresh = false) {
+  private accept(st: PlayState, fresh = false) {
+    const n = st.record.phases.length;
+    const sig = `${n}|${st.pending?.id ?? "-"}|${st.status}|${st.ready ? 1 : 0}|${st.position?.name ?? ""}`;
+    this.schedulePoll(st);
+    if (!fresh && sig === this.sig) return; // nothing new: keep the board and panel as they are
+    this.sig = sig;
     const before = fresh ? null : (this.state?.record.phases.length ?? 0);
     this.state = st;
     this.id = st.id;
     this.power = st.power;
     this.host.overlay.you = st.power;
-    const newDecision = st.pending?.id !== this.pending?.id;
+    const newDecision = st.pending?.id !== this.pending?.id || st.pending?.kind !== this.pending?.kind;
     this.pending = st.pending;
-    if (newDecision) this.resetDrafts();
+    this.ready = !!st.ready;
+    if (newDecision) {
+      this.resetDrafts(st.saved ?? null);
+      this.saveState = "saved";
+    }
     const rec: PlayRecord = st.record;
-    const live = st.pending ? livePhase(st.pending.phase) : null;
-    const n = rec.phases.length;
+    const livePos = st.pending ? st.pending.phase : st.position ?? null;
+    const live = livePos ? livePhase(livePos) : null;
     let goTo = live ? n : Math.max(0, n - 1);
     if (before !== null && n > before) {
       this.reviewFrom = before;
       goTo = before; // step through what happened since the last decision
-    } else if (fresh) this.reviewFrom = null;
+    } else if (fresh) {
+      const unseen = this.backend.unseenFrom?.() ?? null;
+      this.reviewFrom = unseen !== null && unseen < n ? unseen : null;
+      if (this.reviewFrom !== null) goTo = this.reviewFrom;
+    }
     this.host.setRecord({ ...rec, phases: [...rec.phases] }, live, goTo);
     this.updateChip();
-    if (st.status === "thinking") window.setTimeout(() => this.poll(), 700);
     if (st.status === "error") this.showError(st.error ?? "the game stopped with an error");
     if (st.status === "over" && !this.overShown) {
       this.overShown = true;
-      this.showGameOver();
+      if (!fresh || this.reviewFrom === null) this.showGameOver();
     }
   }
 
-  private async poll() {
+  private schedulePoll(st: PlayState) {
+    window.clearTimeout(this.pollTimer);
+    const d = this.backend.pollDelay(st, Date.now() - this.lastCommit);
+    if (d !== null) this.pollTimer = window.setTimeout(() => this.poll(), d);
+  }
+
+  async poll() {
     if (!this.id) return;
     try {
-      const st = await api<GameState>("GET", `/api/games/${this.id}`);
-      this.accept(st);
+      this.accept(await this.backend.refresh());
     } catch (e) {
+      if (this.hosted) {
+        // a dropped connection shouldn't throw a modal at someone reading the board: try again later
+        window.clearTimeout(this.pollTimer);
+        this.pollTimer = window.setTimeout(() => this.poll(), 30000);
+        return;
+      }
       this.showError(String(e));
     }
   }
 
+  /** Local: commit the decision. Hosted: save it and mark yourself ready. */
   async commit() {
     const p = this.pending;
     if (!p || this.busy || !this.id) return;
     const texts = this.texts();
-    this.setBusy(true, p.kind === "orders" ? "Orders committed. The other powers are moving…" : "Committed…");
+    window.clearTimeout(this.saveTimer);
+    this.setBusy(true, this.hosted ? "Saving your orders…" : p.kind === "orders" ? "Orders committed. The other powers are moving…" : "Committed…");
     try {
-      const r = await api<{ state: GameState; accepted: boolean }>("POST", `/api/games/${this.id}/orders`, {
-        orders: texts, decision: p.id, submit: true,
-      });
+      const st = await this.backend.submit(p, texts, true);
+      this.lastCommit = Date.now();
       try {
         localStorage.removeItem(this.draftKey());
       } catch {
         /* ignore */
       }
-      this.accept(r.state);
+      this.saveState = "saved";
+      this.savedAt = new Date();
+      this.accept(st);
+      if (this.hosted && this.pending?.id === p.id) this.flash("Ready. The phase resolves when every player is ready, or at the deadline.");
     } catch (e) {
-      // 409: the decision moved on (another tab?): resync
+      // 409: the decision moved on (another tab, or the deadline passed): resync
       await this.poll();
       if (!String(e).includes("409")) this.showError(String(e));
     } finally {
       this.setBusy(false);
+    }
+  }
+
+  /** Hosted: take back "ready" and keep editing. */
+  async unready() {
+    const p = this.pending;
+    if (!p || this.busy) return;
+    this.setBusy(true, "Saving…");
+    try {
+      this.accept(await this.backend.submit(p, this.texts(), false));
+      this.ready = false;
+      this.host.redraw();
+    } catch (e) {
+      await this.poll();
+      if (!String(e).includes("409")) this.showError(String(e));
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /** Hosted: save drafts to the server as you go (not ready). */
+  private scheduleSave() {
+    if (!this.hosted || !this.pending) return;
+    this.saveState = "unsaved";
+    window.clearTimeout(this.saveTimer);
+    this.saveTimer = window.setTimeout(() => this.save(), 1200);
+  }
+
+  private async save() {
+    const p = this.pending;
+    if (!p || this.busy) return;
+    const wasReady = this.ready;
+    this.saveState = "saving";
+    this.paintSaveState();
+    try {
+      const st = await this.backend.submit(p, this.texts(), false);
+      this.saveState = "saved";
+      this.savedAt = new Date();
+      this.ready = false;
+      if (st.pending?.id !== p.id) this.accept(st);
+      else {
+        this.state = st;
+        this.sig = `${st.record.phases.length}|${st.pending?.id ?? "-"}|${st.status}|0|${st.position?.name ?? ""}`;
+        if (wasReady) {
+          this.flash("Orders changed: you are no longer ready.");
+          this.host.redraw();
+        } else this.paintSaveState();
+      }
+    } catch (e) {
+      this.saveState = "error";
+      this.paintSaveState();
+      if (String(e).includes("409")) await this.poll();
+    }
+  }
+
+  /** Update the "saved" note in the foot without re-rendering the panel. */
+  private paintSaveState() {
+    const el = document.getElementById("save-state");
+    if (el) el.textContent = this.saveNote();
+  }
+
+  private saveNote(): string {
+    switch (this.saveState) {
+      case "saving": return "Saving…";
+      case "unsaved": return "Unsaved changes";
+      case "error": return "Not saved: check your connection";
+      default: return this.savedAt || this.state?.saved ? `Orders saved${this.savedAt ? ` ${this.savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}` : "Nothing saved yet";
     }
   }
 
@@ -288,7 +424,7 @@ export class PlayController {
   }
 
   // ================================================================== drafts
-  private resetDrafts() {
+  private resetDrafts(serverSaved: string[] | null = null) {
     this.orders.clear();
     this.withdraw.clear();
     this.retreats.clear();
@@ -310,13 +446,16 @@ export class PlayController {
       const first = (p.units as RetreatChoice[])[0];
       if (first) this.retreatSel = keyOf(first.unit);
     }
-    // restore an unsent draft (page reload)
+    // restore an unsent draft (page reload), else what the server holds for you
+    let local: string[] | null = null;
     try {
       const saved = localStorage.getItem(this.draftKey());
-      if (saved) this.applyTexts(JSON.parse(saved) as string[]);
+      if (saved) local = JSON.parse(saved) as string[];
     } catch {
       /* ignore */
     }
+    const texts = local ?? serverSaved;
+    if (texts) this.applyTexts(texts);
   }
 
   private draftKey() {
@@ -327,9 +466,24 @@ export class PlayController {
   private applyTexts(texts: string[]) {
     const p = this.pending;
     if (!p) return;
+    let umbrellaSeen = false;
     for (const t of texts) {
-      const T = t.toUpperCase();
-      if (p.kind === "orders") {
+      const T = t.toUpperCase().trim();
+      if (p.kind === "winter") {
+        // one list carries the whole Winter: sort it out by kind
+        if (/^(VOTE )?(YES|NO|VETO)$/.test(T)) this.vote = T.replace("VOTE ", "");
+        else if (T.includes("UMBRELLA")) {
+          if (!umbrellaSeen) this.umbrellas.clear();
+          umbrellaSeen = true;
+          const who = T.split(/\s+/)[2];
+          if (who && who !== "NONE") this.umbrellas.add(who);
+        } else {
+          const b = p.builds?.find((x) => x.text === T);
+          if (b) this.builds.push(b);
+          const d = p.disband?.find((x) => x.text === T);
+          if (d) this.disbands.add(keyOf(d.unit));
+        }
+      } else if (p.kind === "orders") {
         if (T.includes(" WITHDRAW ")) this.withdraw.add(T.split(/\s+/)[2]);
         else
           for (const [k, ix] of this.index) {
@@ -372,6 +526,20 @@ export class PlayController {
         return this.vote ? [`VOTE ${this.vote}`] : [];
       case "umbrellas":
         return [...this.umbrellas].map((b) => `${p.power} UMBRELLA ${b}`);
+      case "winter": {
+        const out: string[] = [];
+        if (p.parts?.vote && this.vote) out.push(`VOTE ${this.vote}`);
+        if (p.parts?.adjust) {
+          if ((p.change ?? 0) > 0) out.push(...this.builds.map((b) => b.text));
+          else if ((p.change ?? 0) < 0) out.push(...(p.disband ?? []).filter((d) => this.disbands.has(keyOf(d.unit))).map((d) => d.text));
+        }
+        if (p.parts?.umbrellas) {
+          // the full list for next year; an empty list must say so (silence keeps the current ones)
+          if (this.umbrellas.size) out.push(...[...this.umbrellas].map((b) => `${p.power} UMBRELLA ${b}`));
+          else out.push(`${p.power} UMBRELLA NONE`);
+        }
+        return out;
+      }
     }
     return [];
   }
@@ -385,6 +553,7 @@ export class PlayController {
     this.host.redraw();
     window.clearTimeout(this.validateTimer);
     this.validateTimer = window.setTimeout(() => this.validate(), 120);
+    this.scheduleSave();
   }
 
   private async validate() {
@@ -393,10 +562,10 @@ export class PlayController {
     const texts = this.texts();
     if (!texts.length) return;
     try {
-      const r = await api<{ results: Check[] }>("POST", `/api/games/${this.id}/validate`, { orders: texts });
+      const results = await this.backend.validate(texts);
       if (this.pending?.id !== p.id) return;
       let dirty = false;
-      for (const c of r.results) {
+      for (const c of results) {
         const prev = this.checks.get(c.text);
         if (!prev || prev.ok !== c.ok) dirty = true;
         this.checks.set(c.text, c);
@@ -417,7 +586,8 @@ export class PlayController {
   displayPhase(): Phase {
     const i = this.host.liveIndex()!;
     const base = this.host.phase(i);
-    const p = this.pending!;
+    const p = this.pending;
+    if (!p) return base; // hosted: nothing for you to decide, just the live position
     const orders: Order[] = [];
     const add = (o: Partial<Order> & { text: string; kind: string }) => {
       const n = normaliseOrder({ power: p.power, unit: null, to: null, target: null, result: "ok", ...o } as Order);
@@ -432,7 +602,7 @@ export class PlayController {
         const T = t.split(/\s+/);
         add({ text: t, kind: T[2] === "R" ? "retreat" : "disband", unit: { type: type as UnitType, at }, to: T[2] === "R" ? T[3] : null });
       }
-    } else if (p.kind === "adjust") {
+    } else if (isAdjust(p)) {
       for (const b of this.builds) add({ text: b.text, kind: "build", unit: { type: b.type, at: b.at } });
       for (const d of p.disband ?? []) if (this.disbands.has(keyOf(d.unit))) add({ text: d.text, kind: "disband", unit: d.unit });
     }
@@ -493,12 +663,12 @@ export class PlayController {
         for (const d of c.to) mark(d);
         this.retreatBar(bar, c);
       }
-    } else if (p.kind === "adjust" && (p.change ?? 0) > 0) {
+    } else if (isAdjust(p) && (p.change ?? 0) > 0) {
       const sites = new Set((p.builds ?? []).map((b) => provOf(b.at)));
       for (const s of sites) mark(s, s === this.buildSite ? "origin" : "");
       active = !!this.buildSite;
       if (this.buildSite) this.buildBar(bar, this.buildSite);
-    } else if (p.kind === "adjust") {
+    } else if (isAdjust(p) && (p.change ?? 0) < 0) {
       for (const d of p.disband ?? []) mark(d.unit.at, this.disbands.has(keyOf(d.unit)) ? "pick" : "");
     }
     view.svg.classList.toggle("has-selection", active);
@@ -700,7 +870,7 @@ export class PlayController {
       }
       return this.onProvinceClick(provOf(u.at));
     }
-    if (p.kind === "adjust") {
+    if (isAdjust(p)) {
       if ((p.change ?? 0) < 0 && u.power === p.power) return this.toggleDisband(key);
       return this.onProvinceClick(provOf(u.at));
     }
@@ -778,7 +948,7 @@ export class PlayController {
       }
       return;
     }
-    if (p.kind === "adjust") {
+    if (isAdjust(p)) {
       if ((p.change ?? 0) > 0) {
         if ((p.builds ?? []).some((b) => provOf(b.at) === pid)) {
           this.buildSite = this.buildSite === pid ? null : pid;
@@ -788,7 +958,7 @@ export class PlayController {
         return this.host.redraw();
       }
       const mine = this.unitsAt(pid).filter((u) => u.power === p.power);
-      if (mine.length === 1) this.toggleDisband(`${mine[0].type} ${mine[0].at}`);
+      if ((p.change ?? 0) < 0 && mine.length === 1) this.toggleDisband(`${mine[0].type} ${mine[0].at}`);
     }
   }
 
@@ -812,7 +982,7 @@ export class PlayController {
     }
     const k = ev.key.toLowerCase();
     if (!live) {
-      if (ev.key === "Enter" && this.pending) {
+      if (ev.key === "Enter" && this.host.liveIndex() !== null) {
         ev.preventDefault();
         this.host.go(this.host.liveIndex()!);
         return true;
@@ -845,12 +1015,12 @@ export class PlayController {
       this.nextRetreat();
       return true;
     }
-    if (p?.kind === "adjust" && this.buildSite && "afci".includes(k) && k.length === 1) {
+    if (p && isAdjust(p) && this.buildSite && "afci".includes(k) && k.length === 1) {
       const b = (p.builds ?? []).find((x) => provOf(x.at) === this.buildSite && x.type === k.toUpperCase());
       if (b) this.toggleBuild(b);
       return true;
     }
-    if (p?.kind === "vote" && ["y", "n", "v"].includes(k)) {
+    if (p && isVote(p) && ["y", "n", "v"].includes(k)) {
       const choice = { y: "YES", n: "NO", v: "VETO" }[k as "y" | "n" | "v"];
       if (choice !== "VETO" || p.can_veto) {
         this.vote = choice;
@@ -892,7 +1062,7 @@ export class PlayController {
     if (this.reviewFrom !== null && i >= this.reviewFrom) {
       const n = (live ?? this.host.total()) - this.reviewFrom;
       const k = i - this.reviewFrom + 1;
-      html("p", { class: "banner-h" }, b, `Results ${k} of ${n} since your last move`);
+      html("p", { class: "banner-h" }, b, `Results ${k} of ${n} since your last ${this.hosted ? "visit" : "move"}`);
       html("p", {}, b, ph.kind === "movement" ? "These orders were resolved together. Arrows show each move; a crossed box marks one that failed."
         : ph.kind === "retreat" ? "Dislodged units retreated or were disbanded." : "Winter: alignment, the Crisis track, the Assembly and builds.");
     } else {
@@ -904,7 +1074,8 @@ export class PlayController {
         const nx = html("button", { class: "btn", type: "button" }, row, "Next phase");
         nx.addEventListener("click", () => this.host.go(i + 1));
       }
-      const go = html("button", { class: "btn commit-btn small", type: "button" }, row, i + 1 < live ? "Skip to your move" : "Continue to your move");
+      const label = this.pending ? (i + 1 < live ? "Skip to your move" : "Continue to your move") : (i + 1 < live ? "Skip to now" : "Continue to now");
+      const go = html("button", { class: "btn commit-btn small", type: "button" }, row, label);
       html("kbd", {}, go, "Enter");
       go.addEventListener("click", () => this.host.go(live));
     } else if (st.status === "over") {
@@ -917,23 +1088,29 @@ export class PlayController {
 
   renderPanel(root: HTMLElement) {
     root.replaceChildren();
-    const p = this.pending!;
+    const live = this.host.liveIndex();
+    if (live !== null) this.backend.markSeen?.(live);
+    const p = this.pending;
+    if (!p) return this.waitingPanel(root);
     const map = this.host.map;
     const ph = p.phase;
     const head = html("section", { class: "phase-head" }, root);
     const h = html("h2", { class: "phase-title" }, head);
     h.append(document.createTextNode(`${seasonLabel(ph.season, ph.kind)} `));
     html("span", { class: "num" }, h, String(ph.year));
+    const winterParts = [isVote(p) ? "vote" : "", isAdjust(p) && p.change ? ((p.change ?? 0) > 0 ? "build" : "disband") : "",
+      isUmbrellas(p) ? "declare your umbrellas" : ""].filter(Boolean);
     const kindLabel: Record<string, string> = {
       orders: "Order your units", retreats: "Retreat or disband your dislodged units",
       propose: "You chair the Assembly: choose a proposal", vote: "Vote on the Assembly proposal",
       adjust: (p.change ?? 0) > 0 ? "Build new units" : "Disband units",
       umbrellas: "Declare your nuclear umbrellas for next year",
+      winter: winterParts.length ? `Winter: ${listWords(winterParts)}` : "Winter",
     };
     const sub = html("p", { class: "phase-sub" }, head);
     sub.append(codeCounter(p.power, 18));
     const st = html("span", {}, sub);
-    html("em", { class: "move-tag" }, st, "Your move");
+    html("em", { class: "move-tag" }, st, this.ready ? "Ready" : "Your move");
     st.append(document.createTextNode(` ${map.powers[p.power]?.name}. ${kindLabel[p.kind]}.`));
 
     switch (p.kind) {
@@ -943,14 +1120,21 @@ export class PlayController {
       case "propose": this.proposeCard(root, p); break;
       case "vote": this.voteCard(root, p); break;
       case "umbrellas": this.umbrellaCard(root, p); break;
+      case "winter":
+        if (isVote(p)) this.voteCard(root, p);
+        if (isAdjust(p)) this.adjustCard(root, p);
+        if (isUmbrellas(p)) this.umbrellaCard(root, p);
+        break;
     }
 
+    this.backend.sections?.(root, true);
     this.statusCard(root, p);
     // the usual state sections (Crisis, centres, security)
     this.host.stateCards(root, ph);
 
     const foot = html("div", { class: "aid-foot" }, root);
     const label = this.commitLabel();
+    if (this.hosted) return this.hostedFoot(foot, label);
     const c = html("button", { class: "btn commit-btn commit", type: "button" }, foot, label);
     html("kbd", {}, c, "Enter");
     c.disabled = this.busy;
@@ -961,8 +1145,52 @@ export class PlayController {
     this.fab.textContent = label;
   }
 
+  /** Hosted: orders save as you go; Ready resolves the phase early once every player is ready. */
+  private hostedFoot(foot: HTMLElement, label: string) {
+    foot.classList.add("hosted-foot");
+    const line = html("p", { class: `ready-line${this.ready ? " is-ready" : ""}` }, foot);
+    line.append(tickBox(this.ready));
+    html("strong", {}, line, this.ready ? "Ready" : "Not ready");
+    html("span", { class: "save-state", id: "save-state" }, line, this.saveNote());
+    if (this.ready) {
+      const c = html("button", { class: "btn big-ish commit", type: "button" }, foot, "Not ready: keep editing");
+      c.disabled = this.busy;
+      c.addEventListener("click", () => this.unready());
+      this.fab.textContent = "Not ready";
+    } else {
+      const c = html("button", { class: "btn commit-btn commit", type: "button" }, foot, label);
+      html("kbd", {}, c, "Enter");
+      c.disabled = this.busy;
+      c.addEventListener("click", () => this.commit());
+      this.fab.textContent = label;
+    }
+    const dl = this.backend.deadline?.();
+    const wait = this.backend.waitingFor?.() ?? "";
+    html("p", { class: "foot-note" }, foot,
+      `The phase resolves when every player is ready, or at the deadline${dl ? ` (${deadlineWords(dl)})` : ""}. Saved orders count at the deadline; unordered units hold.${wait ? ` ${wait}` : ""}`);
+  }
+
+  /** Hosted: nothing for you to decide right now (others are deciding, or you're out). */
+  private waitingPanel(root: HTMLElement) {
+    const i = this.host.liveIndex();
+    if (i === null) return;
+    const ph = this.host.phase(i);
+    const head = html("section", { class: "phase-head" }, root);
+    const h = html("h2", { class: "phase-title" }, head);
+    h.append(document.createTextNode(`${seasonLabel(ph.season, ph.kind)} `));
+    html("span", { class: "num" }, h, String(ph.year));
+    const sub = html("p", { class: "phase-sub" }, head);
+    if (this.power) sub.append(codeCounter(this.power, 18));
+    html("span", {}, sub, this.backend.waitingFor?.() || "Waiting for the other players.");
+    const dl = this.backend.deadline?.();
+    if (dl) html("p", { class: "phase-sub" }, head, `Deadline ${deadlineWords(dl)}.`);
+    this.backend.sections?.(root, true);
+    this.host.stateCards(root, ph);
+  }
+
   private commitLabel(): string {
     const p = this.pending!;
+    if (this.hosted) return "Ready";
     switch (p.kind) {
       case "orders": return "Commit orders";
       case "retreats": return "Commit retreats";
@@ -970,6 +1198,7 @@ export class PlayController {
       case "propose": return this.proposal && this.proposal !== "PROPOSE NOTHING" ? "Propose" : "Propose nothing";
       case "vote": return this.vote ? `Vote ${this.vote}` : "Abstain";
       case "umbrellas": return "Declare umbrellas";
+      case "winter": return "Commit";
     }
   }
 
@@ -1060,8 +1289,16 @@ export class PlayController {
 
   private adjustCard(root: HTMLElement, p: Pending) {
     const change = p.change ?? 0;
+    const alt = p.change_if_passed;
+    if (change === 0) {
+      const card = aidSection(root, RULE.winter, "Adjustments", undefined, "decision");
+      html("p", { class: "help" }, card, `No builds or disbands this Winter${alt !== undefined && alt !== null
+        ? `, unless the Assembly passes the Recognition: then you ${alt > 0 ? `could build ${alt}, but builds can't be written ahead` : `disband ${-alt}, chosen for you`}` : ""}.`);
+      return;
+    }
     if (change > 0) {
       const card = aidSection(root, RULE.winter, `Build up to ${change}`, `${this.builds.length} chosen`, "decision");
+      this.altNote(card, p);
       html("p", { class: "help" }, card, "Click a highlighted province, then pick the unit type (A, F, C, I keys). Armies and Fleets build in your original homes; civil units in any owned home or aligned swing state; one forward-base Army a year where you have a civil unit.");
       const ul = html("ul", { class: "draft-list" }, card);
       for (const b of this.builds) {
@@ -1072,6 +1309,7 @@ export class PlayController {
       if (!this.builds.length) html("p", { class: "muted small" }, card, "No builds chosen yet. Unused builds are lost.");
     } else {
       const card = aidSection(root, RULE.winter, `Disband ${-change}`, `${this.disbands.size} chosen`, "decision");
+      this.altNote(card, p);
       html("p", { class: "help" }, card, "You have more units than centres. Click counters to mark them for disbanding; any shortfall is chosen for you (furthest from home first).");
       const ul = html("ul", { class: "draft-list" }, card);
       for (const d of p.disband ?? []) {
@@ -1085,6 +1323,13 @@ export class PlayController {
         li.addEventListener("click", () => this.toggleDisband(k));
       }
     }
+  }
+
+  /** Hosted Winter: adjustments are written before the vote; a passed Recognition can change them. */
+  private altNote(card: HTMLElement, p: Pending) {
+    const alt = p.change_if_passed;
+    if (alt === undefined || alt === null) return;
+    html("p", { class: "help" }, card, `If the Assembly passes the Recognition, this becomes ${alt > 0 ? `${alt} build${alt === 1 ? "" : "s"}` : alt < 0 ? `${-alt} disband${alt === -1 ? "" : "s"}` : "no adjustment"}: extra builds are void and missing disbands are chosen for you.`);
   }
 
   private proposeCard(root: HTMLElement, p: Pending) {
@@ -1194,20 +1439,27 @@ export class PlayController {
     c.hidden = false;
     c.replaceChildren();
     const map = this.host.map;
+    if (!st.power) {
+      html("span", { class: "you-n" }, c, "Watching");
+      const mg = html("button", { class: "link-btn", type: "button" }, c, "My games");
+      mg.addEventListener("click", () => this.backend.exit?.());
+      return;
+    }
+    const power = st.power;
     const last = st.pending?.phase ?? st.record.phases[st.record.phases.length - 1];
-    const centres = last ? Object.entries(last.ownership).filter(([pid, o]) => o === st.power && map.provinces[pid]?.centre !== "none").length : 0;
+    const centres = last ? Object.entries(last.ownership).filter(([pid, o]) => o === power && map.provinces[pid]?.centre !== "none").length : 0;
     const who = html("span", { class: "you-power" }, c);
-    who.append(codeCounter(st.power, 22));
-    html("strong", {}, who, map.powers[st.power]?.name ?? st.power);
+    who.append(codeCounter(power, 22));
+    html("strong", {}, who, map.powers[power]?.name ?? power);
     html("span", { class: "you-n" }, c, `${centres} centres`);
     const prot = st.pending?.status.protected_by ?? [];
     if (prot.length) {
       const u = html("span", { class: "you-n umb", title: `Protected by ${prot.join(", ")}` }, c);
       u.append(umbrellaSvg(), document.createTextNode(prot.join(" ")));
     }
-    c.title = `You play ${map.powers[st.power]?.name}`;
-    const nb = html("button", { class: "link-btn", type: "button" }, c, "New game");
-    nb.addEventListener("click", () => this.showStart());
+    c.title = `You play ${map.powers[power]?.name}`;
+    const nb = html("button", { class: "link-btn", type: "button" }, c, this.hosted ? "My games" : "New game");
+    nb.addEventListener("click", () => (this.hosted ? this.backend.exit?.() : this.showStart()));
   }
 
   showStart() {
@@ -1308,7 +1560,7 @@ export class PlayController {
     startBtn.addEventListener("click", go);
     pick(chosen);
     // ongoing games on this server
-    api<{ id: string; power: string; status: string; year: number; season: string }[]>("GET", "/api/games").then((games) => {
+    (this.backend as LocalBackend).list().then((games) => {
       const open = games.filter((g) => g.status === "waiting" || g.status === "thinking" || g.status === "over");
       if (!open.length) return;
       resume.hidden = false;
@@ -1345,7 +1597,7 @@ export class PlayController {
     const map = this.host.map;
     const m = modal("Game over", true);
     m.classList.add("over");
-    const you = st.power;
+    const you = st.power ?? "";
     const scores = r.scores ?? {};
     const ranked = POWER_ORDER.filter((p) => map.powers[p]).sort((a, b) => (scores[b] ?? 0) - (scores[a] ?? 0));
     const rank = 1 + ranked.filter((p) => (scores[p] ?? 0) > (scores[you] ?? 0)).length;
@@ -1353,7 +1605,7 @@ export class PlayController {
     const headline = r.kind === "primacy" ? (r.winner === you ? "Primacy: you win" : `Primacy for ${map.powers[r.winner ?? ""]?.name ?? r.winner}`)
       : r.kind === "collapse" ? "Collapse: the Crisis reached 10 and everyone loses" : `Time: the game ends after Winter ${r.year ?? ""}`;
     html("p", { class: "lede strong" }, m, headline);
-    html("p", { class: "muted" }, m, r.kind === "time" ? `Scores are shares of the squared centre counts. You finish ${tied ? "joint " : ""}${ordinal(rank)} of ${ranked.length}.` : "");
+    html("p", { class: "muted" }, m, r.kind === "time" && you ? `Scores are shares of the squared centre counts. You finish ${tied ? "joint " : ""}${ordinal(rank)} of ${ranked.length}.` : "");
     const tbl = html("table", { class: "scores" }, m);
     const hr = html("tr", {}, html("thead", {}, tbl));
     for (const t of ["", "Power", "Centres", "Score"]) html("th", {}, hr, t);
@@ -1372,10 +1624,11 @@ export class PlayController {
       closeModal();
       this.host.go(0);
     });
-    const nw = html("button", { class: "btn commit-btn", type: "button" }, row, "New game");
+    const nw = html("button", { class: "btn commit-btn", type: "button" }, row, this.hosted ? "My games" : "New game");
     nw.addEventListener("click", () => {
       closeModal();
-      this.showStart();
+      if (this.hosted) this.backend.exit?.();
+      else this.showStart();
     });
   }
 
@@ -1383,11 +1636,73 @@ export class PlayController {
     const m = modal("Something went wrong", true);
     html("pre", { class: "err" }, m, msg.slice(-1500));
     const row = html("div", { class: "btn-row end" }, m);
-    const b = html("button", { class: "btn primary", type: "button" }, row, "Start a new game");
+    const b = html("button", { class: "btn primary", type: "button" }, row, this.hosted ? "Back to my games" : "Start a new game");
     b.addEventListener("click", () => {
       closeModal();
-      this.showStart();
+      if (this.hosted) this.backend.exit?.();
+      else this.showStart();
     });
+  }
+}
+
+// ------------------------------------------------------------------ local backend (`brink serve`)
+export class LocalBackend implements PlayBackend {
+  readonly kind = "local";
+  private id: string | null = null;
+
+  async load(param: string | null): Promise<PlayState | null> {
+    const id = param && !["", "1", "new", "true"].includes(param) ? param : null;
+    if (!id) return null;
+    const st = await api<PlayState>("GET", `/api/games/${id}`);
+    this.id = st.id;
+    return st;
+  }
+
+  async create(power: string, seed: string, alliances: boolean, lastYear: string): Promise<PlayState> {
+    const st = await api<PlayState>("POST", "/api/games", {
+      power, seed: seed === "" ? null : Number(seed), alliances, last_year: lastYear === "" ? null : Number(lastYear),
+    });
+    this.id = st.id;
+    try {
+      localStorage.setItem(`brink.play.${st.id}.last`, lastYear || "2040");
+    } catch {
+      /* ignore */
+    }
+    return st;
+  }
+
+  list() {
+    return api<{ id: string; power: string; status: string; year: number; season: string }[]>("GET", "/api/games");
+  }
+
+  refresh(): Promise<PlayState> {
+    return api<PlayState>("GET", `/api/games/${this.id}`);
+  }
+
+  async validate(texts: string[]): Promise<Check[]> {
+    return (await api<{ results: Check[] }>("POST", `/api/games/${this.id}/validate`, { orders: texts })).results;
+  }
+
+  async submit(p: Pending, texts: string[]): Promise<PlayState> {
+    const r = await api<{ state: PlayState; accepted: boolean }>("POST", `/api/games/${this.id}/orders`, {
+      orders: texts, decision: p.id, submit: true,
+    });
+    return r.state;
+  }
+
+  /** The game's final year (chosen at the start; the server doesn't echo it). */
+  lastYear(): number {
+    try {
+      const v = Number(localStorage.getItem(`brink.play.${this.id}.last`));
+      if (v > 2000) return v;
+    } catch {
+      /* ignore */
+    }
+    return 2040;
+  }
+
+  pollDelay(st: PlayState): number | null {
+    return st.status === "thinking" ? 700 : null;
   }
 }
 
@@ -1406,6 +1721,27 @@ async function api<T>(method: string, path: string, body?: unknown): Promise<T> 
   }
   if (!r.ok) throw new Error(`${r.status} ${(data as { error?: string })?.error ?? r.statusText}`);
   return data as T;
+}
+
+export function listWords(xs: string[]): string {
+  return xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+}
+
+/** "in 13h 20m" / "in 4m" / "now". */
+export function deadlineWords(d: Date): string {
+  const ms = d.getTime() - Date.now();
+  if (ms <= 0) return "now";
+  const m = Math.ceil(ms / 60000);
+  const h = Math.floor(m / 60);
+  return h >= 48 ? `in ${Math.floor(h / 24)}d ${h % 24}h` : h ? `in ${h}h ${m % 60}m` : `in ${m}m`;
+}
+
+/** A printed tick box: empty, or ticked in ink. */
+export function tickBox(on: boolean, px = 16): SVGSVGElement {
+  const s = svg("svg", { viewBox: "0 0 16 16", width: px, height: px, class: `tickbox${on ? " on" : ""}`, "aria-hidden": "true" });
+  svg("rect", { x: 1, y: 1, width: 14, height: 14 }, s);
+  if (on) svg("path", { d: "M4 8.3l2.7 2.7L12 5.2" }, s);
+  return s;
 }
 
 function indexUnit(c: UnitChoice): UnitIndex {
