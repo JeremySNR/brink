@@ -409,6 +409,24 @@ export class BoardView {
     select(this.svg).transition().duration(500).call(this.zoomer.transform, t);
   }
 
+  /** Fit a group of provinces (e.g. a power's homes) with generous padding. */
+  zoomToProvinces(pids: string[]) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const pid of pids) {
+      const el = this.paths.get(pid);
+      if (!el) continue;
+      const bb = el.getBBox();
+      x0 = Math.min(x0, bb.x); y0 = Math.min(y0, bb.y);
+      x1 = Math.max(x1, bb.x + bb.width); y1 = Math.max(y1, bb.y + bb.height);
+    }
+    if (!isFinite(x0)) return;
+    const r = this.svg.getBoundingClientRect();
+    const w = Math.max(x1 - x0, 80) * 2.6, h = Math.max(y1 - y0, 50) * 2.6;
+    const k = clamp(Math.min(r.width / w, r.height / h), this.fitT.k, this.fitT.k * 5);
+    const t = zoomIdentity.translate(r.width / 2, r.height / 2).scale(k).translate(-(x0 + x1) / 2, -(y0 + y1) / 2);
+    select(this.svg).transition().duration(600).call(this.zoomer.transform, t);
+  }
+
   tint(hex: string, a: number) {
     return mix(hex, a);
   }

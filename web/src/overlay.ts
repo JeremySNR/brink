@@ -16,6 +16,8 @@ export class Overlay {
   private phase: Phase | null = null;
   selected: Unit | null = null;
   hoverOrder: number | null = null;
+  /** draw a ring for explicit HOLD orders (play mode drafts) */
+  showHolds = false;
 
   constructor(
     private view: BoardView,
@@ -268,6 +270,9 @@ export class Overlay {
       case "hold":
       default:
         if (o.kind === "hold" && failed && from) this.crossMark([from[0] + r, from[1] - r], r * 0.7, "#B42318", g);
+        else if (o.kind === "hold" && from && this.showHolds) {
+          svg("circle", { cx: from[0], cy: from[1], r: r * 1.6, class: "hold-ring", stroke: col, "stroke-width": w * 0.7 }, g);
+        }
         break;
     }
     const t = svg("title", {}, g);

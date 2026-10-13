@@ -2,7 +2,9 @@
 
 A Diplomat stands in for negotiation. Before each game it deals the seven powers into 0-3 alliances
 of two or three; at the start of every later year each alliance pair breaks with probability
-`betrayal` and, rarely, two unallied powers form a new pair. Bots read their current allies from it.
+`betrayal` and, rarely, two unallied powers form a new pair. With `balance` on it also plays
+realpolitik: when one power pulls two or more centres clear of the next, alliances with the leader
+tend to break and the chasing pack tends to team up against it. Bots read their current allies from it.
 Temperaments are drawn per power per game, so results average over play styles, not one script.
 """
 from __future__ import annotations
@@ -16,6 +18,7 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from .bots.search import SearchBot
 from .bots.strategist import StrategistBot, Temperament
 from .game import Game, Rules
 from .map import BrinkMap
@@ -23,11 +26,12 @@ from .map import BrinkMap
 
 class Diplomat:
     def __init__(self, powers: list[str], rng: random.Random, betrayal: float = 0.12, form: float = 0.08,
-                 blocs: int | None = None):
+                 blocs: int | None = None, balance: bool = True):
         self.powers = powers
         self.rng = rng
         self.betrayal = betrayal
         self.form = form
+        self.balance = balance
         self.pairs: set[frozenset[str]] = set()
         self.year = None
         self.log: list[str] = []
@@ -44,29 +48,43 @@ class Diplomat:
                     self.pairs.add(frozenset((a, b)))
         self.initial = sorted("-".join(sorted(p)) for p in self.pairs)
 
-    def _tick(self, year: int) -> None:
+    def _tick(self, game: Game) -> None:
+        year = game.year
         if self.year is None:
             self.year = year
             return
         while self.year < year:
             self.year += 1
+            active = [p for p in game.active_powers() if p in self.powers]
+            centres = {p: game.centres(p) for p in active}
+            ranked = sorted(active, key=lambda p: -centres[p])
+            leader = ranked[0]
+            threat = self.balance and len(ranked) > 1 and centres[leader] >= centres[ranked[1]] + 2
             for pair in sorted(self.pairs, key=sorted):
-                if self.rng.random() < self.betrayal:
+                chance = max(self.betrayal, 0.5) if threat and leader in pair else self.betrayal
+                if not pair <= set(active) or self.rng.random() < chance:
                     self.pairs.discard(pair)
                     self.log.append(f"{self.year}: {'-'.join(sorted(pair))} breaks")
+            if threat:
+                pack = ranked[1:4]
+                for i, a in enumerate(pack):
+                    for b in pack[i + 1:]:
+                        if frozenset((a, b)) not in self.pairs and self.rng.random() < 0.35:
+                            self.pairs.add(frozenset((a, b)))
+                            self.log.append(f"{self.year}: {a}-{b} unite against {leader}")
             if self.rng.random() < self.form:
-                a, b = self.rng.sample(self.powers, 2)
+                a, b = self.rng.sample(active, 2)
                 if frozenset((a, b)) not in self.pairs:
                     self.pairs.add(frozenset((a, b)))
                     self.log.append(f"{self.year}: {a}-{b} forms")
 
     def allies(self, game: Game, power: str) -> set[str]:
-        self._tick(game.year)
+        self._tick(game)
         return {next(iter(p - {power})) for p in self.pairs if power in p}
 
 
-def draw_temperament(rng: random.Random) -> Temperament:
-    return Temperament(civic=rng.betavariate(2, 2), aggression=rng.betavariate(2, 2),
+def draw_temperament(rng: random.Random, civic: tuple[float, float] = (2.0, 2.0)) -> Temperament:
+    return Temperament(civic=rng.betavariate(*civic), aggression=rng.betavariate(2, 2),
                        military=rng.uniform(0.25, 0.5))
 
 
@@ -77,6 +95,9 @@ class SimConfig:
     seed: int = 1
     workers: int = 0
     betrayal: float = 0.12
+    balance: bool = True
+    bot: str = "strategist"          # strategist | search
+    civic: tuple[float, float] = (2.0, 2.0)   # Beta(a, b) for each bot's share of the Crisis burden
     rules: dict = field(default_factory=dict)
     record_every: int = 0          # write every Nth game record to out/games/
     out: str | None = None
@@ -87,9 +108,11 @@ def play_one(args) -> dict:
     gmap = _load_map(cfg.map_path)
     rng = random.Random(cfg.seed * 1_000_003 + i)
     powers = gmap.power_order
-    diplomat = Diplomat(powers, rng, betrayal=cfg.betrayal)
-    temps = {p: draw_temperament(rng) for p in powers}
-    players = {p: StrategistBot(seed=rng.randrange(1 << 30), temperament=temps[p], allies=diplomat.allies)
+    diplomat = Diplomat(powers, rng, betrayal=cfg.betrayal, balance=cfg.balance)
+    temps = {p: draw_temperament(rng, cfg.civic) for p in powers}
+    board: dict = {}
+    bot = {"strategist": StrategistBot, "search": SearchBot}[cfg.bot]
+    players = {p: bot(seed=rng.randrange(1 << 30), temperament=temps[p], allies=diplomat.allies, coalition=board)
                for p in powers}
     game = Game(gmap, players, seed=i, rules=Rules(**cfg.rules))
     record = game.run()
@@ -115,7 +138,7 @@ def play_one(args) -> dict:
     if cfg.out and cfg.record_every and i % cfg.record_every == 0:
         path = Path(cfg.out) / "games" / f"game-{i:05d}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        record["players"] = {p: f"strategist (civic {temps[p].civic:.2f}, aggression {temps[p].aggression:.2f})"
+        record["players"] = {p: f"{cfg.bot} (civic {temps[p].civic:.2f}, aggression {temps[p].aggression:.2f})"
                              for p in powers}
         record["alliances"] = {"initial": diplomat.initial, "log": diplomat.log}
         path.write_text(json.dumps(record))

@@ -1,4 +1,4 @@
-"""brink command line. Subcommands: play, validate-orders, sim, analyse."""
+"""brink command line. Subcommands: play, validate-orders, sim, analyse, serve."""
 from __future__ import annotations
 
 import argparse
@@ -19,7 +19,8 @@ def cmd_play(args) -> int:
     from .bots.strategist import StrategistBot
     from .game import Game, Rules
     gmap = _load_map(args.map)
-    bot = {"random": RandomBot, "strategist": StrategistBot}[args.bot]
+    from .bots.search import SearchBot
+    bot = {"random": RandomBot, "strategist": StrategistBot, "search": SearchBot}[args.bot]
     players = {p: bot(seed=(args.seed * 1000 + i) if args.seed is not None else None)
                for i, p in enumerate(gmap.power_order)}
     rules = Rules()
@@ -80,8 +81,10 @@ def cmd_sim(args) -> int:
     for kv in args.rule:
         k, _, v = kv.partition("=")
         rules[k] = v.lower() == "true" if v.lower() in ("true", "false") else int(v)
+    civic = tuple(float(x) for x in args.civic.split(","))
     cfg = SimConfig(map_path=args.map, games=args.games, seed=args.seed, workers=args.workers,
-                    betrayal=args.betrayal, rules=rules, record_every=args.record_every, out=args.out)
+                    betrayal=args.betrayal, balance=not args.no_balance, bot=args.bot, civic=civic,
+                    rules=rules, record_every=args.record_every, out=args.out)
     summary = run(cfg)
     from .sim import report
     print(report(summary))
@@ -98,6 +101,14 @@ def cmd_analyse(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    from .server import DEFAULT_MAP, DEFAULT_WEB, serve
+    serve(host=args.host, port=args.port, power=args.power.upper() if args.power else None, seed=args.seed,
+          map_path=args.map or DEFAULT_MAP, web_dir=args.web or DEFAULT_WEB, save_dir=None if args.no_save else args.save_dir,
+          last_year=args.last_year, alliances=args.alliances, verbose=args.verbose)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="brink", description="Brink rules engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -108,7 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--map-name", default=None)
     p.add_argument("--last-year", type=int, default=None)
     p.add_argument("--compact", action="store_true")
-    p.add_argument("--bot", choices=["random", "strategist"], default="strategist")
+    p.add_argument("--bot", choices=["random", "strategist", "search"], default="search")
     p.set_defaults(func=cmd_play)
     s = sub.add_parser("sim", help="run many bot games with random alliances and summarise balance")
     s.add_argument("--map", default=DEFAULT_MAP)
@@ -116,6 +127,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--seed", type=int, default=1)
     s.add_argument("--workers", type=int, default=0, help="processes (0 = all cores, 1 = in-process)")
     s.add_argument("--betrayal", type=float, default=0.12, help="yearly chance each alliance pair breaks")
+    s.add_argument("--bot", choices=["strategist", "search"], default="search")
+    s.add_argument("--no-balance", action="store_true", help="alliances ignore a runaway leader")
+    s.add_argument("--civic", default="2,2", help="Beta(a,b) for bots' share of the Crisis burden; '1,3' = selfish")
     s.add_argument("--rule", action="append", default=[], help="override a Rules value, e.g. primacy=10")
     s.add_argument("--record-every", type=int, default=0, help="also save every Nth game record")
     s.add_argument("--out", default="runs/sim")
@@ -131,6 +145,19 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--record", default=None, help="game.json to take the position from")
     v.add_argument("--phase", default=None, help="phase name in the record (default: last)")
     v.set_defaults(func=cmd_validate_orders)
+    sv = sub.add_parser("serve", help="play in the browser: you against six bots")
+    sv.add_argument("--host", default="127.0.0.1")
+    sv.add_argument("--port", type=int, default=8765)
+    sv.add_argument("--power", default=None, help="start a game as this power right away (USA, CHN, ...)")
+    sv.add_argument("--seed", type=int, default=None, help="seed for that game")
+    sv.add_argument("--last-year", type=int, default=None, help="end games after this Winter (default 2040)")
+    sv.add_argument("--alliances", action="store_true", help="let the bots form alliances among themselves")
+    sv.add_argument("--map", default=None, help="engine map (default build/map.json in the repo)")
+    sv.add_argument("--web", default=None, help="built web viewer to serve (default web/dist)")
+    sv.add_argument("--save-dir", default="runs/play", help="where finished/ongoing game records are written")
+    sv.add_argument("--no-save", action="store_true")
+    sv.add_argument("--verbose", action="store_true", help="log API requests")
+    sv.set_defaults(func=cmd_serve)
     return ap
 
 

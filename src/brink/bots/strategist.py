@@ -20,7 +20,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Iterable
 
-from ..orders import (Close, Commons, Disrupt, Hold, Move, Order, Sanction, Support, Withdraw)
+from ..orders import (Close, Commons, Disrupt, Hold, Move, Order, OrderError, Sanction, Support, Withdraw,
+                      parse_order)
 from ..state import CIVIL, MILITARY, Unit, prov_of
 from .base import Player
 
@@ -40,12 +41,15 @@ class StrategistBot(Player):
     name = "strategist"
 
     def __init__(self, seed: int | None = None, temperament: Temperament | None = None,
-                 allies: Callable[["Game", str], Iterable[str]] | Iterable[str] = ()):
+                 allies: Callable[["Game", str], Iterable[str]] | Iterable[str] = (), noise: float = 0.6,
+                 coalition: dict | None = None):
         self.rng = random.Random(seed)
         self.t = temperament or Temperament()
         self._allies = allies
         self._cache: dict = {}
-        self._commons_year: dict[int, int] = defaultdict(int)
+        self.noise = noise            # random jitter on move scores; search bots raise it to sample plans
+        self.coalition = coalition    # shared board: {phase index: {power: [order text]}}; allies read it
+        self.post = True
 
     # ------------------------------------------------------------------ alliances
     def allies(self, game: "Game", power: str) -> set[str]:
@@ -91,9 +95,12 @@ class StrategistBot(Player):
                 elif owner == power:
                     civ = 3.0 + 2.5 * threats.get((pid, CIVIL), 0)
                     mil = 2.0 + 2.0 * threats.get((pid, MILITARY), 0)
+                    if any(u.prov == pid and u.power != power for u in pos.units):
+                        mil += 4.0   # an occupier denies this state's supply: evict it
                 elif not self.friendly(game, power, owner):
                     civ = 8.0
-                    mil = (6.0 if pid in civil_near else 2.5) * (0.6 + t.aggression)
+                    # occupying a rival's state denies its supply even without a civil follow-up
+                    mil = (6.5 if pid in civil_near else 4.5) * (0.6 + t.aggression)
             elif p.centre == "home":
                 if p.home_of == power:
                     civ = 0.5
@@ -178,13 +185,14 @@ class StrategistBot(Player):
                 score -= 0.7 * rivals
                 if (u.loc, mv.to) in bounced:
                     score -= 2.5
-                score += self.rng.random() * 0.6
+                score += self.rng.random() * self.noise
                 cands.append((score, u, mv))
         cands.sort(key=lambda c: -c[0])
 
-        # 2. greedy assignment
+        # 2. greedy assignment (slots an ally already plans to take are off limits)
+        ally_moves = self._ally_moves(game, power, pos)
         plan: dict[Unit, Order] = {}
-        claimed: dict[tuple[str, str], Unit] = {}
+        claimed: dict[tuple[str, str], Unit | None] = {(prov_of(mv.to), au.layer): None for au, mv in ally_moves}
         leaving: set[tuple[str, str]] = set()
         for score, u, od in cands:
             if u in plan:
@@ -233,6 +241,12 @@ class StrategistBot(Player):
             dest = prov_of(od.to)
             for s in supporters_for(u, dest)[:1]:
                 plan[s] = Support(s.type, s.loc, u.type, u.loc, dest)
+        for au, mv in ally_moves:   # back an ally's attack with a spare unit
+            dest = prov_of(mv.to)
+            occ = occupied.get((dest, au.layer))
+            if (occ is not None and not self.friendly(game, power, occ.power)) or threats.get((dest, au.layer), 0):
+                for s in supporters_for(au, dest)[:1]:
+                    plan[s] = Support(s.type, s.loc, au.type, au.loc, dest)
         for u in sorted(mine, key=lambda x: -stay_value[x]):
             if isinstance(plan.get(u), Hold) and threats.get(u.slot, 0) and stay_value[u] >= 2:
                 for s in supporters_for(u, u.prov)[: min(2, threats[u.slot])]:
@@ -243,6 +257,30 @@ class StrategistBot(Player):
         self._commons(game, power, plan, stay_value)
         out = [o.text() for o in plan.values()]
         out += self._withdrawals(game, power, pos, plan)
+        if self.post:
+            self.publish(game, power, out)
+        return out
+
+    def publish(self, game: "Game", power: str, orders: list[str]) -> None:
+        if self.coalition is not None:
+            self.coalition.setdefault(len(game.phases), {})[power] = list(orders)
+
+    def _ally_moves(self, game: "Game", power: str, pos) -> list[tuple[Unit, Move]]:
+        """Moves allies have already committed to this phase (allies plan in power order)."""
+        if self.coalition is None:
+            return []
+        posted = self.coalition.get(len(game.phases), {})
+        out = []
+        for ally in self.allies(game, power):
+            for text in posted.get(ally, ()):
+                try:
+                    od = parse_order(text)
+                except OrderError:
+                    continue
+                if isinstance(od, Move):
+                    u = pos.find(od.utype, od.loc, ally)
+                    if u is not None:
+                        out.append((u, od))
         return out
 
     def _leader(self, game: "Game", power: str) -> str | None:
@@ -296,7 +334,7 @@ class StrategistBot(Player):
             tolerance -= 2
         deficit = max(0.0, projected - tolerance)
         share = math.ceil(deficit * r.commons_per_point / n * (0.4 + 1.2 * t.civic))
-        accord = game.effects.climate_accord and self._commons_year[game.year] == 0
+        accord = game.effects.climate_accord and power not in game.year_commons_issued
         need = max(share // 2 + (share % 2 if game.season == "spring" else 0), 1 if accord else 0)
         if need <= 0:
             return
@@ -304,7 +342,6 @@ class StrategistBot(Player):
                       key=lambda u: stay_value[u])
         for u in idle[:need]:
             plan[u] = Commons(u.type, u.loc)
-            self._commons_year[game.year] += 1
 
     def _withdrawals(self, game, power, pos, plan) -> list[str]:
         """A betrayal: drop an umbrella and attack the newly exposed home in the same turn."""

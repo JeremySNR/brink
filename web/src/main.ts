@@ -3,6 +3,7 @@ import "./style.css";
 import { BoardView } from "./board";
 import { Overlay } from "./overlay";
 import { Panel } from "./panel";
+import { PlayController } from "./play";
 import { POWER_COLOURS, POWER_ORDER, UNIT_NAMES, powerColour } from "./theme";
 import type { Board, GameRecord, MapData, Phase, Unit } from "./types";
 import { html, loadJSON, normaliseRecord, seasonLabel, svg } from "./util";
@@ -46,13 +47,14 @@ function initTheme() {
 async function main() {
   const setTheme = initTheme();
   const params = new URLSearchParams(location.search);
+  const playMode = params.has("play");
   const gameUrl = params.get("game") || "sample-game.json";
   let board: Board, map: MapData, rec: GameRecord;
   try {
     [board, map, rec] = await Promise.all([
       loadJSON<Board>("board.json"),
       loadJSON<MapData>("map.json"),
-      loadJSON<GameRecord>(gameUrl),
+      playMode ? Promise.resolve({ map: "brink-v0", phases: [], result: null } as GameRecord) : loadJSON<GameRecord>(gameUrl),
     ]);
   } catch (e) {
     $("#map").innerHTML = `<div class="load-error"><h2>Couldn't load the board</h2><p>${String(e)}</p>
@@ -60,15 +62,21 @@ async function main() {
     return;
   }
   rec = normaliseRecord(rec, map);
-  $("#game-name").textContent = gameUrl === "sample-game.json" ? "Sample game" : gameUrl.split("/").slice(-2).join("/");
+  $("#game-name").textContent = playMode ? "Play" : gameUrl === "sample-game.json" ? "Sample game" : gameUrl.split("/").slice(-2).join("/");
+  document.body.classList.toggle("play-mode", playMode);
 
   const view = new BoardView($("#map"), board, map);
   const tip = $("#tooltip");
   let current = 0;
   let selected: Unit | null = null;
+  // play mode: the controller owns the live (pending decision) phase, appended as the last phase
+  let play: PlayController | null = null;
+  let liveIndex: number | null = null;
+  const isLive = () => play !== null && liveIndex !== null && current === liveIndex;
 
   const overlay = new Overlay(view, {
     onUnitClick(u) {
+      if (isLive()) return play!.onUnitClick(u);
       selected = selected && selected.at === u.at && selected.type === u.type ? null : u;
       overlay.selected = selected;
       showReach();
@@ -246,15 +254,22 @@ async function main() {
     html("div", { class: "tt-type" }, d, `in ${map.provinces[u.at]?.name}${u.dislodged ? " · dislodged" : ""}`);
     const o = rec.phases[current].orders.find((x) => x.unit?.at === u.at && x.unit?.type === u.type && x.power === u.power);
     if (o) html("code", { class: "tt-order" }, d, `${o.text}${o.result !== "ok" ? `  (${o.result})` : ""}`);
-    html("div", { class: "tt-foot" }, d, "Click to show where it can reach");
+    const foot = !isLive() ? "Click to show where it can reach" : u.power === play!.power ? "Click to give it an order" : "";
+    if (foot) html("div", { class: "tt-foot" }, d, foot);
     return d;
   }
 
   for (const [pid, el] of view.paths) {
     el.addEventListener("mousemove", (ev) => showTip(ev, provinceTip(pid)));
     el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("click", (ev) => {
+      if (!isLive()) return;
+      ev.stopPropagation();
+      play!.onProvinceClick(pid);
+    });
   }
   view.svg.addEventListener("click", () => {
+    if (isLive()) return play!.cancel();
     if (selected) {
       selected = null;
       overlay.selected = null;
@@ -266,15 +281,25 @@ async function main() {
   // ---------------------------------------------------------------- timeline
   const scrub = $("#scrubber") as HTMLInputElement;
   const ticks = $("#ticks");
-  scrub.max = String(rec.phases.length - 1);
-  rec.phases.forEach((ph, i) => {
-    const b = html("button", {
-      class: `tick ${ph.kind}`, type: "button", "aria-label": `${seasonLabel(ph.season, ph.kind)} ${ph.year}`, title: `${seasonLabel(ph.season, ph.kind)} ${ph.year}`,
-    }, ticks);
-    b.style.left = `${rec.phases.length === 1 ? 50 : (i / (rec.phases.length - 1)) * 100}%`;
-    html("span", { class: "tick-label" }, b, ph.kind === "winter" ? `W${String(ph.year).slice(2)}` : ph.kind === "retreat" ? "R" : `${ph.season[0].toUpperCase()}${String(ph.year).slice(2)}`);
-    b.addEventListener("click", () => go(i));
-  });
+  function buildTicks() {
+    ticks.replaceChildren();
+    scrub.max = String(rec.phases.length - 1);
+    const n = rec.phases.length;
+    // long games: label only years (spring ticks) so the labels don't collide
+    const dense = n > 28;
+    rec.phases.forEach((ph, i) => {
+      const live = i === liveIndex;
+      const label = live ? "Now" : ph.kind === "winter" ? `W${String(ph.year).slice(2)}` : ph.kind === "retreat" ? "R" : `${ph.season[0].toUpperCase()}${String(ph.year).slice(2)}`;
+      const b = html("button", {
+        class: `tick ${ph.kind}${live ? " live" : ""}${dense && !live && !(ph.kind === "movement" && ph.season === "spring") ? " minor" : ""}`, type: "button",
+        "aria-label": `${seasonLabel(ph.season, ph.kind)} ${ph.year}${live ? " (your decision)" : ""}`, title: `${seasonLabel(ph.season, ph.kind)} ${ph.year}${live ? " · your decision" : ""}`,
+      }, ticks);
+      b.style.left = `${n === 1 ? 50 : (i / (n - 1)) * 100}%`;
+      html("span", { class: "tick-label" }, b, label);
+      b.addEventListener("click", () => go(i));
+    });
+  }
+  buildTicks();
 
   function go(i: number) {
     current = Math.max(0, Math.min(rec.phases.length - 1, i));
@@ -291,9 +316,24 @@ async function main() {
       overlay.selected = null;
     }
     view.paintPhase(ph);
+    if (isLive()) {
+      selected = null;
+      overlay.selected = null;
+      overlay.setPhase(play!.displayPhase());
+      showReach();
+      play!.renderPanel($("#panel-body"));
+      play!.paint();
+      $("#phase-label").textContent = `${seasonLabel(ph.season, ph.kind)} ${ph.year} · your move`;
+      return;
+    }
+    play?.leaveLive();
     overlay.setPhase(ph);
     showReach();
-    panel.render(ph, current, rec.phases.length);
+    panel.render(ph, current, rec.phases.length, play ? { you: play.power ?? undefined } : {});
+    if (play) {
+      play.renderBanner($("#panel-body"), current);
+      return;
+    }
     const url = new URL(location.href);
     url.hash = ph.name;
     history.replaceState(null, "", url);
@@ -321,6 +361,8 @@ async function main() {
   document.addEventListener("keydown", (ev) => {
     const tag = (ev.target as HTMLElement)?.tagName;
     if (tag === "INPUT" && (ev.target as HTMLInputElement).type !== "range") return;
+    if (tag === "SELECT" || tag === "TEXTAREA") return;
+    if (play && play.onKey(ev, isLive())) return;
     if (ev.key === "ArrowLeft") { ev.preventDefault(); setPlaying(false); go(current - 1); }
     else if (ev.key === "ArrowRight") { ev.preventDefault(); setPlaying(false); go(current + 1); }
     else if (ev.key === "Home") { go(0); }
@@ -357,6 +399,30 @@ async function main() {
   const start = rec.phases.findIndex((p) => p.name === location.hash.slice(1));
   view.fit(false);
   go(start >= 0 ? start : 0);
+  if (playMode) {
+    play = new PlayController({
+      view, map, overlay,
+      setRecord(next, live, goTo) {
+        setPlaying(false);
+        rec = next.phases.length ? normaliseRecord(next, map) : next;
+        liveIndex = null;
+        if (live) {
+          rec.phases.push(live);
+          liveIndex = rec.phases.length - 1;
+        }
+        buildTicks();
+        go(goTo ?? rec.phases.length - 1);
+      },
+      go: (i) => go(i),
+      redraw: () => go(current),
+      current: () => current,
+      total: () => rec.phases.length,
+      liveIndex: () => liveIndex,
+      phase: (i) => rec.phases[i],
+      stateCards: (root, ph) => panel.render(ph, current, rec.phases.length, { root, header: false, orders: false, you: play?.power ?? undefined }),
+    });
+    play.start(params.get("play"));
+  }
   const focus = params.get("focus")?.toUpperCase();
   if (focus && board.provinces[focus]) setTimeout(() => view.zoomTo(focus), 50);
   requestAnimationFrame(() => setTimeout(() => document.body.classList.add("ready"), 200));

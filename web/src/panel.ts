@@ -18,14 +18,16 @@ export class Panel {
     private h: PanelHandlers,
   ) {}
 
-  render(ph: Phase, index: number, total: number) {
-    const r = this.root;
-    r.replaceChildren();
+  /** Render a phase. `opts.root` renders into another element (without clearing it);
+   * `opts.header`/`opts.orders` false leave out the phase title and the order list (play mode). */
+  render(ph: Phase, index: number, total: number, opts: { root?: HTMLElement; header?: boolean; orders?: boolean; you?: string } = {}) {
+    const r = opts.root ?? this.root;
+    if (!opts.root) r.replaceChildren();
     const P = this.map.powers;
     const pname = (p: string) => P[p]?.name ?? p;
 
     // ---- phase header
-    const head = html("section", { class: "phase-head" }, r);
+    const head = html("section", { class: "phase-head" }, opts.header === false ? null : r);
     html("div", { class: "eyebrow" }, head, `Phase ${index + 1} of ${total}`);
     const h = html("h2", { class: "phase-title" }, head);
     html("span", { class: "phase-season" }, h, seasonLabel(ph.season, ph.kind));
@@ -72,10 +74,11 @@ export class Panel {
     const order = [...POWER_ORDER].sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0));
     for (const p of order) {
       if (!P[p]) continue;
-      const li = html("li", {}, list);
+      const li = html("li", { class: p === opts.you ? "you" : "" }, list);
       const sw = html("span", { class: "swatch" }, li);
       sw.style.background = powerColour(p);
-      html("span", { class: "pname" }, li, P[p].name);
+      const pn = html("span", { class: "pname" }, li, P[p].name);
+      if (p === opts.you) pn.title = "You";
       const bar = html("span", { class: "bar", "aria-hidden": "true" }, li);
       const fill = html("span", { class: "bar-fill" }, bar);
       fill.style.width = `${((counts[p] ?? 0) / max) * 100}%`;
@@ -146,6 +149,7 @@ export class Panel {
     }
 
     // ---- orders
+    if (opts.orders === false) return;
     const os = html("section", { class: "card orders" }, r);
     const oh = html("div", { class: "card-head" }, os);
     html("h3", {}, oh, "Orders");

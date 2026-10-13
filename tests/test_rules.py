@@ -501,3 +501,19 @@ def test_capital_sea_moves_pass_each_other():
     assert t["C TEX"] == "ok" and t["C BRA"] == "ok"   # trade route TEX-BRA; hop BRA-MEX over CAR
     res, t = resolve(["USA C MEX", "CHN C BRA"], ["USA: C MEX - BRA", "CHN: C BRA - MEX"])
     assert set(t.values()) == {"ok"}          # hops by sea swap like a convoy, no head-to-head
+
+
+def test_contested_states_give_no_supply():
+    usa = Scripted(builds={2031: ["BUILD C WAS", "BUILD A TEX"]})
+    base = ["USA C MEX", "USA C BRA"]
+    g = game_with(base, owners={"MEX": "USA", "BRA": "USA"}, players={"USA": usa})
+    g.play_winter()
+    control = len(g.units_of("USA"))
+    g = game_with(base + ["CHN A BRA"], owners={"MEX": "USA", "BRA": "USA"}, players={"USA": usa})
+    g.play_winter()
+    assert g.ownership["BRA"] == "USA"               # split slots: alignment holds...
+    assert len(g.units_of("USA")) == control - 1     # ...but Brazil pays nothing this Winter
+    g = game_with(base + ["CHN A BRA"], owners={"MEX": "USA", "BRA": "USA"}, players={"USA": usa},
+                  rules=Rules(contested_supply=False))
+    g.play_winter()
+    assert len(g.units_of("USA")) == control

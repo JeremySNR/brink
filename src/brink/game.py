@@ -33,6 +33,7 @@ class Rules:
     drift: bool = True
     drift_winters: int = 2
     forward_bases_per_year: int = 1
+    contested_supply: bool = True    # a swing state with a foreign unit in it gives its owner no supply
 
 
 SEASON_CODE = {"spring": "S", "fall": "F", "winter": "W"}
@@ -86,6 +87,16 @@ class Game:
 
     def centres(self, power: str) -> int:
         return sum(1 for owner in self.ownership.values() if owner == power)
+
+    def contested(self, power: str) -> list[str]:
+        """Swing states aligned to `power` with another power's unit in either slot."""
+        foreign = {u.prov for u in self.units if u.power != power}
+        return [s for s in self.map.swing_states() if self.ownership.get(s) == power and s in foreign]
+
+    def supply(self, power: str) -> int:
+        """Units a power may keep: its centres, less contested states when that rule is on."""
+        c = self.centres(power)
+        return c - len(self.contested(power)) if self.rules.contested_supply else c
 
     def swing_count(self, power: str) -> int:
         return sum(1 for s in self.map.swing_states() if self.ownership.get(s) == power)
@@ -434,7 +445,10 @@ class Game:
 
     def _adjust(self, power: str, events: list[str], orders_rec: list[dict]) -> None:
         rules = self.rules
-        c = self.centres(power)
+        c = self.supply(power)
+        if c < self.centres(power):
+            events.append(f"{self.name(power)} gets no supply from contested "
+                          + ", ".join(self.name(x) for x in self.contested(power)))
         mine = self.units_of(power)
         n = len(mine)
         if n > c:
