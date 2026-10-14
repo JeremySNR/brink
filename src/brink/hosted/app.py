@@ -13,11 +13,14 @@ import logging
 import os
 import uuid
 from typing import Callable
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from starlette.concurrency import run_in_threadpool
 
+from . import email as mail
+from . import email_templates as T
 from . import service as svc
 from .auth import AuthError, User, bearer, dev_auth_enabled, verify_token
 from .db import connect
@@ -207,6 +210,37 @@ async def messages(req: Request, game_id: str, after: int = 0):
 @app.post("/api/games/{game_id}/messages")
 async def post_message(req: Request, game_id: str):
     return await handle(req, lambda conn, user, body: svc.post_message(conn, user, game_id, body), body=True)
+
+
+# ---------------------------------------------------------------------------------------------- email
+def _unsubscribe(token: str | None, on: bool) -> Response:
+    uid = mail.verify_unsubscribe_token(token)
+    if uid is None:
+        return Response(T.unsubscribe_page("invalid", site_url=mail.site_url()), status_code=400,
+                        media_type="text/html", headers={"Cache-Control": "no-store"})
+    try:
+        with connect() as conn:
+            mail.set_preference(conn, uid, on)
+    except Exception:
+        log.exception("unsubscribe failed")
+        return err(503, "could not save that just now: try the link again")
+    action = f"/api/email/unsubscribe?t={token}"
+    return Response(T.unsubscribe_page("resumed" if on else "stopped", action, mail.site_url()),
+                    media_type="text/html", headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+
+@app.get("/api/email/unsubscribe")
+async def unsubscribe(t: str = ""):
+    """The "Stop turn emails" link: turns them off and says so (with a button to turn them back on)."""
+    return await run_in_threadpool(_unsubscribe, t, False)
+
+
+@app.post("/api/email/unsubscribe")
+async def unsubscribe_post(req: Request, t: str = ""):
+    """One-click unsubscribe (RFC 8058: body `List-Unsubscribe=One-Click`) and the page's own buttons."""
+    form = parse_qs((await req.body()).decode("utf-8", "replace"))
+    on = (form.get("action") or [""])[0] == "resubscribe"
+    return await run_in_threadpool(_unsubscribe, t, on)
 
 
 @app.api_route("/api/{rest:path}", methods=["GET", "POST", "PUT", "DELETE"])

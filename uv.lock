@@ -133,6 +133,7 @@ geo = [
 ]
 hosted = [
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pyjwt", extra = ["crypto"] },
 ]
@@ -150,6 +151,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", marker = "extra == 'hosted'", specifier = ">=0.115" },
     { name = "geopandas", marker = "extra == 'geo'", specifier = ">=1.0" },
+    { name = "httpx", marker = "extra == 'hosted'", specifier = ">=0.27" },
     { name = "networkx", specifier = ">=3.2" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'hosted'", specifier = ">=3.2" },
     { name = "pyjwt", extras = ["crypto"], marker = "extra == 'hosted'", specifier = ">=2.9" },

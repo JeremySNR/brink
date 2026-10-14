@@ -31,7 +31,7 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
 }
 
 // ------------------------------------------------------------------ shapes
-export interface Me { id: string; display_name: string; email: string | null; unread: number }
+export interface Me { id: string; display_name: string; email: string | null; unread: number; email_notifications: boolean }
 
 export interface GameSummary {
   id: string; name: string; status: "forming" | "active" | "finished" | "cancelled";

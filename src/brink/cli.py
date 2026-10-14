@@ -1,4 +1,4 @@
-"""brink command line. Subcommands: play, validate-orders, sim, analyse, serve."""
+"""brink command line. Subcommands: play, validate-orders, sim, analyse, serve, email-preview."""
 from __future__ import annotations
 
 import argparse
@@ -109,6 +109,15 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_email_preview(args) -> int:
+    from .hosted.email_preview import render_all
+    written = render_all(Path(args.out), shots=not args.no_screenshots,
+                         review_dir=Path(args.review) if args.review else None)
+    for p in written:
+        print(p)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="brink", description="Brink rules engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -158,6 +167,11 @@ def build_parser() -> argparse.ArgumentParser:
     sv.add_argument("--no-save", action="store_true")
     sv.add_argument("--verbose", action="store_true", help="log API requests")
     sv.set_defaults(func=cmd_serve)
+    ep = sub.add_parser("email-preview", help="render the hosted game's emails (HTML, text, PNG) from a sample game")
+    ep.add_argument("--out", default="runs/email-preview")
+    ep.add_argument("--review", default=None, help="also copy the key screenshots here (e.g. .impeccable/review)")
+    ep.add_argument("--no-screenshots", action="store_true", help="HTML and text only (no headless Chrome)")
+    ep.set_defaults(func=cmd_email_preview)
     return ap
 
 

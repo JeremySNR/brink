@@ -9,3 +9,4 @@ networkx==3.6.1
 fastapi==0.143.0
 psycopg[binary]==3.3.6
 pyjwt[crypto]==2.15.1
+httpx==0.28.1

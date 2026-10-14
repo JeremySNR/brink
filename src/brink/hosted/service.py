@@ -28,6 +28,7 @@ from psycopg.types.json import Jsonb
 from .. import session as S
 from ..game import Rules
 from ..map import BrinkMap
+from . import email as mail
 from .auth import User
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -65,8 +66,9 @@ def now() -> dt.datetime:
 
 
 # ---------------------------------------------------------------------------------------------- notify
-# In-app notifications today. A notifier (email, push) can be added later by appending a callable to
-# NOTIFIERS: it receives the same arguments after the rows are written, inside the transaction.
+# In-app notifications. A notifier can be added by appending a callable to NOTIFIERS: it receives the same
+# arguments after the rows are written, inside the transaction. Turn emails are not a notifier: they go out
+# after the advance commits (brink.hosted.email, called from start, advance_game and tick).
 NOTIFIERS: list[Callable[..., None]] = []
 
 
@@ -99,19 +101,29 @@ def me(conn: Connection, user: User) -> dict:
     p = ensure_profile(conn, user)
     unread = conn.execute("select count(*) as n from notifications where user_id = %s and read_at is null",
                           (user.id,)).fetchone()["n"]
-    return {"id": str(p["id"]), "display_name": p["display_name"], "email": user.email, "unread": unread}
+    pref = conn.execute("select email_notifications from profiles where id = %s", (user.id,)).fetchone()
+    return {"id": str(p["id"]), "display_name": p["display_name"], "email": user.email, "unread": unread,
+            "email_notifications": bool(pref["email_notifications"])}
 
 
 def update_me(conn: Connection, user: User, body: dict) -> dict:
+    """Change the display name and/or the turn-email preference (either key may be left out)."""
     ensure_profile(conn, user)
-    name = " ".join(str(body.get("display_name") or "").split())
-    if not NAME_RE.match(name):
-        raise bad("display name: 2 to 32 letters, digits, spaces, '.', '_' or '-'")
-    taken = conn.execute("select 1 from profiles where lower(display_name) = lower(%s) and id <> %s",
-                         (name, user.id)).fetchone()
-    if taken:
-        raise ApiError(409, f"the name {name!r} is taken")
-    conn.execute("update profiles set display_name = %s where id = %s", (name, user.id))
+    if "display_name" not in body and "email_notifications" not in body:
+        raise bad("nothing to change: send display_name and/or email_notifications")
+    if "email_notifications" in body:
+        if not isinstance(body["email_notifications"], bool):
+            raise bad("email_notifications must be true or false")
+        mail.set_preference(conn, user.id, body["email_notifications"])
+    if "display_name" in body:
+        name = " ".join(str(body.get("display_name") or "").split())
+        if not NAME_RE.match(name):
+            raise bad("display name: 2 to 32 letters, digits, spaces, '.', '_' or '-'")
+        taken = conn.execute("select 1 from profiles where lower(display_name) = lower(%s) and id <> %s",
+                             (name, user.id)).fetchone()
+        if taken:
+            raise ApiError(409, f"the name {name!r} is taken")
+        conn.execute("update profiles set display_name = %s where id = %s", (name, user.id))
     return me(conn, user)
 
 
@@ -342,6 +354,8 @@ def start(conn: Connection, user: User, game_id: str) -> dict:
     _write_state(conn, g, state, 0, started=True)
     notify(conn, [s["user_id"] for s in seats], str(g["id"]), "started",
            f"{g['name']} has started: write your orders")
+    conn.commit()                                   # the first decision point is open: email it after commit
+    mail.send_due(conn, str(g["id"]))
     return get_game(conn, user, g["id"])
 
 
@@ -423,6 +437,8 @@ def advance_game(conn: Connection, game_id: str, reason: str) -> bool:
                          (g["id"], missing))
         _notify_advanced(conn, g, seats, new)
         advanced = True
+    if advanced and new.get("result") is None:     # committed: tell whoever decides next (never raises)
+        mail.send_due(conn, str(g["id"]))
     return advanced
 
 
@@ -448,7 +464,8 @@ def _phase_label(name: str) -> str:
 
 
 def tick(conn: Connection) -> dict:
-    """Advance every active game whose deadline has passed. Idempotent; safe to call any time."""
+    """Advance every active game whose deadline has passed, then send deadline reminders. Idempotent;
+    safe to call any time."""
     t0 = time.monotonic()
     ids = [r["id"] for r in conn.execute(
         "select id from games where status = 'active' and deadline <= now() order by deadline limit 50")]
@@ -461,7 +478,9 @@ def tick(conn: Connection) -> dict:
                 advanced.append(str(gid))
         except Exception:   # one broken game must not stop the others
             conn.rollback()
-    return {"due": len(ids), "advanced": advanced}
+    budget = max(0.0, TICK_BUDGET_S + 10.0 - (time.monotonic() - t0))
+    reminders = mail.send_reminders(conn, budget_s=min(15.0, budget)) if budget > 0 else {}
+    return {"due": len(ids), "advanced": advanced, "reminders": reminders}
 
 
 # ---------------------------------------------------------------------------------------------- playing
