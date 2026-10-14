@@ -26,7 +26,7 @@ Supabase pg_cron (every minute) ── POST /api/cron/tick ───┘   + Verc
   one decision point at a time. `games.state` holds the state without its phases; the phases live in the
   append-only `game_phases` table and are reassembled when the engine needs them.
 
-## Data model (`supabase/migrations/0001_init.sql`)
+## Data model (`supabase/migrations/0001_init.sql`, `0002_email.sql`)
 
 | Table | What it holds |
 | --- | --- |
@@ -37,6 +37,9 @@ Supabase pg_cron (every minute) ── POST /api/cron/tick ───┘   + Verc
 | `submissions` | `(game_id, power, step)` → `orders`, `ready`; drafts are saved here as the player edits |
 | `messages` | press: `sender_power`, `recipients` (sorted, includes the sender), `body` ≤ 2000, `phase_name` |
 | `notifications` | in-app notices (`turn`, `joined`, `started`, `message`, `finished`, `cancelled`) |
+| `email_log` | one row per turn email `(user_id, game_id, step, kind)` (unique; kind `due` / `reminder`), `status` queued / sent / failed, `error`, Resend `provider_id`, `sent_at` |
+
+`profiles.email_notifications` (default true) is the turn-email preference (0002).
 
 ## How a game moves
 
@@ -82,7 +85,41 @@ All JSON; errors are `{"error": "..."}` with a 4xx/5xx status. Signed-in endpoin
 | `POST /api/games/{id}/submit {step, orders, ready, since?}` | yes | upsert my submission for that step (409 if the step has moved on); advances when everyone is ready |
 | `GET /api/games/{id}/messages?after=<id>` · `POST {recipients, body}` | yes | press (full-press games): only messages where my power is a recipient; recipients must be other human players |
 | `GET /api/notifications` · `POST /api/notifications/read {ids?}` | yes | notices, mark read (all when no ids) |
-| `GET\|POST /api/cron/tick` | – | advance every game past its deadline; safe to call any time |
+| `GET\|POST /api/cron/tick` | – | advance every game past its deadline, then send deadline reminders; safe to call any time |
+| `GET /api/email/unsubscribe?t=<token>` | token | the "Stop turn emails" link: turns them off, shows a confirmation page (with a button to turn them back on) |
+| `POST /api/email/unsubscribe?t=<token>` | token | one-click unsubscribe (RFC 8058, `List-Unsubscribe=One-Click`); `action=resubscribe` turns them back on |
+
+`GET /api/me` includes `email_notifications`; `PUT /api/me` takes `display_name` and/or `email_notifications`.
+
+## Turn emails
+
+Two emails, nothing else (no game-started, game-over or press emails; sign-in links come from Supabase):
+
+- **"Your orders are due"**: when a decision point opens that involves the player's power (the first
+  Spring at the start, each new movement phase, retreats, the Assembly proposal when they chair, the
+  Winter). One per player per decision point; not sent to a player already Ready for that step, and
+  never to bots. Sent by `service.start` and `service.advance_game` *after* the advance commits (a
+  rolled-back advance sends nothing).
+- **Deadline reminder**: from the per-minute tick, to each human in the open decision who hasn't marked
+  Ready once the deadline is within 6 hours (3 hours for 12-hour games). Once per player per step. It
+  says whether they have orders saved (they count at the deadline anyway).
+
+`src/brink/hosted/email.py` builds them from real game data (the open decision, the last phase's events and
+the player's order results, the Crisis track, their centres) and sends them through Resend's batch
+endpoint (`POST https://api.resend.com/emails/batch`, up to 100 per call, 8 s timeout).
+`email_templates.py` prints them in the Wargame Box design (table layout, inline styles, 600px, no images;
+HTML and plain text). Dedupe: the `email_log` row is inserted and committed *before* sending with
+`on conflict do nothing`, so concurrent ticks or requests send once. A row left `queued` (the function died
+mid-send) or `failed` is not retried. Without `RESEND_API_KEY` (or a signing secret) nothing is sent and
+nothing is logged to the table; sending failures are recorded on the row and never break advancing.
+
+Every email carries a "Stop turn emails" link (an HMAC-signed token, no expiry) and `List-Unsubscribe` /
+`List-Unsubscribe-Post` headers; the account page (`#/me`) has the same toggle.
+
+Preview: `brink email-preview --out runs/email-preview/` renders every email (and the Supabase templates
+and the unsubscribe page) from a sample engine game to HTML, text and PNGs at 700 and 375px (headless
+Chrome), plus a `-fallback` variant without the web fonts. `--review .impeccable/review` copies the key
+screenshots there.
 
 ## Environment variables (names only)
 
@@ -98,6 +135,16 @@ The client build (Vite, `envPrefix: ["VITE_", "NEXT_PUBLIC_"]`) inlines only:
 
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
 
+Turn emails (set in Vercel → Settings → Environment Variables, Production):
+
+- `RESEND_API_KEY`: Resend API key. Unset: no turn emails (everything else works).
+- `BRINK_EMAIL_FROM`: the sender, e.g. `Brink <turns@your-domain>`. Default `Brink <onboarding@resend.dev>`,
+  Resend's test sender, which **only delivers to the Resend account owner's own address** until a domain
+  is verified in Resend (Domains → Add, then the DNS records). Friends get no email before that.
+- `BRINK_SITE_URL`: where links point. Default `https://brink-sepia.vercel.app`.
+- `BRINK_EMAIL_SECRET`: signs the stop links (any long random string). Falls back to
+  `SUPABASE_JWT_SECRET`; with neither, no turn emails are sent. Changing it breaks old stop links.
+
 Not used anywhere: `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY` (the API needs no Supabase admin
 access). Local development only: `BRINK_DATABASE_URL` (overrides `POSTGRES_URL`), `BRINK_DEV_AUTH=1`.
 
@@ -106,10 +153,11 @@ environment variable is absent, so it cannot be switched on in a deployment.
 
 ## Going live
 
-1. **Apply the migration** (idempotent), in the Supabase SQL editor (paste the file) or:
+1. **Apply the migrations** in order (each is idempotent), in the Supabase SQL editor (paste the file) or:
 
    ```sh
    psql "$POSTGRES_URL_NON_POOLING" -f supabase/migrations/0001_init.sql
+   psql "$POSTGRES_URL_NON_POOLING" -f supabase/migrations/0002_email.sql
    ```
 
 2. **Auth URL configuration** (Supabase dashboard → Authentication → URL Configuration):
@@ -122,6 +170,20 @@ environment variable is absent, so it cannot be switched on in a deployment.
    Email provider on, magic links allowed (the default). The client uses the implicit flow, so a link opened
    in another browser or device signs that browser in. Supabase's built-in mailer is rate-limited (a few
    emails an hour); for a real playgroup, set a custom SMTP sender under Authentication → Emails.
+
+   **Email templates** (Authentication → Emails → Templates): paste the files from `supabase/templates/`
+   (they use Supabase's Go-template variables `{{ .ConfirmationURL }}`, `{{ .Email }}`, `{{ .SiteURL }}`):
+
+   | Template | File | Subject |
+   | --- | --- | --- |
+   | Magic link | `supabase/templates/magic_link.html` | `Your Brink sign-in link` |
+   | Confirm signup | `supabase/templates/confirm_signup.html` | `Confirm your email for Brink` |
+
+   They are generated from `email_templates.auth_email()`; a test fails if the files fall behind it.
+
+   **SMTP through Resend** (once a domain is verified there): Authentication → Emails → SMTP settings, enable
+   custom SMTP: host `smtp.resend.com`, port `465`, username `resend`, password = the Resend API key,
+   sender address on the verified domain, sender name `Brink`. This lifts the built-in mailer's limits.
 
 3. **Deadline tick every minute.** Enable the `pg_cron` and `pg_net` extensions (Database → Extensions),
    then run once in the SQL editor:
@@ -142,7 +204,10 @@ environment variable is absent, so it cannot be switched on in a deployment.
    a backstop (Vercel crons run on production deployments only), and any visit to a game past its
    deadline advances it too.
 
-4. **Merge `hosted-multiplayer` into `main`.** Vercel deploys production from `main`.
+4. **Turn emails**: set `RESEND_API_KEY`, `BRINK_EMAIL_SECRET` (and `BRINK_EMAIL_FROM` once a domain is
+   verified) in Vercel, then redeploy. Until the domain is verified, only the Resend account owner gets them.
+
+5. **Merge into `main`.** Vercel deploys production from `main`.
 
 ## Packaging notes
 
@@ -180,15 +245,15 @@ cd web && BRINK_API=http://127.0.0.1:8799 npm run dev    # the client gets the S
 
 Or `vercel dev`, which runs the function and the client together with the project's environment.
 
-Tests: `.venv/bin/pytest -q tests/test_hosted.py` runs the service against an embedded Postgres
+Tests: `.venv/bin/pytest -q tests/test_hosted.py tests/test_email.py` runs the service against an embedded Postgres
 (`pgserver`) with HS256 tokens signed by a test secret: create, join, invite, start, submit, ready-advance,
 deadline tick, civil disorder and `missed`, the optimistic-lock race, press visibility, notifications,
 auth rejections, a game run to its end, and RLS on every table.
 
 ## Known gaps
 
-- No email or push notifications yet: `service.notify()` records in-app notices; add a sender by appending
-  to `service.NOTIFIERS`.
+- Email covers turns only (due and reminder); no push notifications. `service.notify()` records in-app
+  notices; other senders can be appended to `service.NOTIFIERS` (they run inside the transaction).
 - Polling, not Supabase Realtime: the game page every 15 s (5 s for two minutes after you act), press every
   15 s, My games every 30 s.
 - No kicking or replacing absent players; a seat in civil disorder keeps its `missed` count only.
