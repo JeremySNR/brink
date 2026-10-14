@@ -72,7 +72,7 @@ def test_due_email_on_phase_open_for_humans_only(resend, db_url, players):
     assert resend.to() == ["ada@example.com", "bob@example.com"]
     assert len(resend.calls) == 1                               # one batch
     m = next(m for m in resend.sent if m["to"] == ["ada@example.com"])
-    assert m["from"] == "Brink <onboarding@resend.dev>"
+    assert m["from"] == "Brink <turns@brinkgame.app>"
     assert m["subject"] == "Friday game: Spring 2031 orders due by " + \
         f"{g['game']['deadline'] and dt.datetime.fromisoformat(g['game']['deadline']).astimezone(dt.timezone.utc):%a %H:%M} UTC"
     assert f"https://brink.example/#/g/{gid}" in m["html"] and f"https://brink.example/#/g/{gid}" in m["text"]
