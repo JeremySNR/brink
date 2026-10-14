@@ -138,9 +138,9 @@ The client build (Vite, `envPrefix: ["VITE_", "NEXT_PUBLIC_"]`) inlines only:
 Turn emails (set in Vercel → Settings → Environment Variables, Production):
 
 - `RESEND_API_KEY`: Resend API key. Unset: no turn emails (everything else works).
-- `BRINK_EMAIL_FROM`: the sender, e.g. `Brink <turns@your-domain>`. Default `Brink <onboarding@resend.dev>`,
-  Resend's test sender, which **only delivers to the Resend account owner's own address** until a domain
-  is verified in Resend (Domains → Add, then the DNS records). Friends get no email before that.
+- `BRINK_EMAIL_FROM`: the sender. Default `Brink <turns@brinkgame.app>`; brinkgame.app is verified in Resend
+  (region eu-west-1) through four records in Vercel DNS: TXT `resend._domainkey` (DKIM), CNAME `rsend` and
+  CNAME `send` (sending and return path), TXT `_dmarc` (`v=DMARC1; p=none;`).
 - `BRINK_SITE_URL`: where links point. Default `https://www.brinkgame.app`.
 - `BRINK_EMAIL_SECRET`: signs the stop links (any long random string). Falls back to
   `SUPABASE_JWT_SECRET`; with neither, no turn emails are sent. Changing it breaks old stop links.

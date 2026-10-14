@@ -38,7 +38,7 @@ from . import email_templates as T
 log = logging.getLogger("brink.hosted.email")
 
 RESEND_URL = "https://api.resend.com"
-DEFAULT_FROM = "Brink <onboarding@resend.dev>"
+DEFAULT_FROM = "Brink <turns@brinkgame.app>"
 DEFAULT_SITE = "https://www.brinkgame.app"
 BATCH_MAX = 100
 TIMEOUT = httpx.Timeout(8.0, connect=4.0)
