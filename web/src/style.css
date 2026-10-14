@@ -332,18 +332,24 @@ kbd {
 }
 .cartouche-logo { font-family: var(--f-ui); font-weight: 800; font-size: 15px; letter-spacing: 0.18em; line-height: 1; }
 .cartouche-sub { font-family: var(--f-cond); font-style: italic; font-weight: 500; font-size: 13px; letter-spacing: 0.06em; color: var(--ink-2); }
+.map { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.map:active { cursor: grabbing; }
+/* The svg is twice the map's size with half of it beyond each edge, and moves as one composited layer
+   while you pan or zoom (board.ts commit()): the vector map is redrawn only when the gesture settles. */
 .board {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
   display: block;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
+  transform-origin: 0 0;
+  will-change: transform;
   --px: 1;
 }
-.board:active { cursor: grabbing; }
-.board:focus-visible { outline-offset: -3px; }
+.moving .board { pointer-events: none; }
+.board:focus-visible { outline: none; }
+.map:has(.board:focus-visible) { outline: 2px solid var(--ink); outline-offset: -3px; }
 .load-error { padding: 40px; max-width: 560px; }
 .load-error h2 { font-family: var(--f-cond); text-transform: uppercase; letter-spacing: 0.04em; }
 
@@ -1511,9 +1517,7 @@ kbd {
   stroke-width: 3;
   stroke-dasharray: 7 4;
   vector-effect: non-scaling-stroke;
-  animation: coach-march 1.2s linear infinite;
 }
-@keyframes coach-march { to { stroke-dashoffset: -22; } }
 .coach-point { outline: 3px dashed var(--ink) !important; outline-offset: 3px; }
 
 /* the aid column's lesson list */
@@ -1560,5 +1564,4 @@ kbd {
   .coach-kicker { font-size: 11px; letter-spacing: 0.1em; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .coach-mark { animation: none; }
 }

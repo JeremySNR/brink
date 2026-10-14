@@ -41,15 +41,21 @@ export class BoardView {
   f = 1;
   /** Screen pixels covered by floating furniture (the tutorial's card): zooms centre in what's left. */
   inset = { left: 0, bottom: 0 };
-  private zoomer: ZoomBehavior<SVGSVGElement, unknown>;
+  private zoomer: ZoomBehavior<HTMLElement, unknown>;
   private fitT: ZoomTransform = zoomIdentity;
   private listeners: (() => void)[] = [];
-  private raf = 0;
+  // Panning and zooming move the drawn map as one composited layer (a CSS transform on the svg, which is
+  // twice the host's size so there's map beyond each edge); the vector map is redrawn once the gesture
+  // settles ("commit"). Redrawing ~50k points of coastline on every frame is what made dragging lag.
+  private shown: ZoomTransform = zoomIdentity; // the transform the svg was last drawn at
+  private target: ZoomTransform = zoomIdentity; // where the gesture is now
+  private settle = 0;
+  private drawn = false;
   private leftEdge: Pt[] = [];
   private rightEdge: Pt[] = [];
 
   constructor(
-    host: HTMLElement,
+    readonly host: HTMLElement,
     readonly board: Board,
     readonly map: MapData,
   ) {
@@ -72,15 +78,18 @@ export class BoardView {
     this.leftEdge = parsePolyline(board.seam.left);
     this.rightEdge = parsePolyline(board.seam.right);
 
-    this.zoomer = zoom<SVGSVGElement, unknown>()
+    this.zoomer = zoom<HTMLElement, unknown>()
       .scaleExtent([0.2, 40])
       .on("zoom", (ev) => this.applyZoom(ev.transform));
-    select(this.svg).call(this.zoomer).on("dblclick.zoom", null);
-    select(this.svg).on("dblclick", (ev: MouseEvent) => {
-      const pt = this.svg.getBoundingClientRect();
+    select(host).call(this.zoomer).on("dblclick.zoom", null);
+    select(host).on("dblclick", (ev: MouseEvent) => {
+      const pt = host.getBoundingClientRect();
       this.zoomBy(ev.shiftKey ? 0.5 : 2, [ev.clientX - pt.left, ev.clientY - pt.top]);
     });
-    new ResizeObserver(() => this.fit(false)).observe(host);
+    new ResizeObserver(() => {
+      this.fit(false);
+      this.commit(); // the margin is a share of the host's size: redraw at the new one
+    }).observe(host);
   }
 
   onZoom(fn: () => void) {
@@ -347,12 +356,42 @@ export class BoardView {
 
   // ------------------------------------------------------------------ zoom
   private applyZoom(t: ZoomTransform) {
-    this.viewport.setAttribute("transform", t.toString());
-    this.k = t.k;
-    this.svg.style.setProperty("--px", String(1 / t.k));
-    cancelAnimationFrame(this.raf);
-    this.raf = requestAnimationFrame(() => this.afterZoom());
+    this.target = t;
+    if (!this.drawn) return this.commit();
+    const r = this.host.getBoundingClientRect();
+    const ox = r.width / 2, oy = r.height / 2; // the svg's margin beyond each edge
+    const s = t.k / this.shown.k;
+    const dx = t.x - s * this.shown.x + ox - s * ox;
+    const dy = t.y - s * this.shown.y + oy - s * oy;
+    // past what the drawn layer covers (or too blurry): redraw now, then carry on moving the layer
+    if (s < 0.6 || s > 1.9 || Math.abs(t.x - this.shown.x) > ox * 0.9 || Math.abs(t.y - this.shown.y) > oy * 0.9) {
+      return this.commit();
+    }
+    this.svg.style.transform = `translate(${dx}px, ${dy}px) scale(${s})`;
+    this.host.classList.add("moving");
+    window.clearTimeout(this.settle);
+    this.settle = window.setTimeout(() => this.commit(), 140);
   }
+
+  /** Draw the vector map at the current transform and drop the layer transform. */
+  private commit() {
+    window.clearTimeout(this.settle);
+    const t = this.target;
+    const r = this.host.getBoundingClientRect();
+    this.viewport.setAttribute("transform", `translate(${t.x + r.width / 2},${t.y + r.height / 2}) scale(${t.k})`);
+    this.svg.style.transform = "";
+    this.host.classList.remove("moving");
+    this.shown = t;
+    this.drawn = true;
+    const kChanged = Math.abs(t.k - this.k) > 1e-9;
+    this.k = t.k;
+    if (kChanged || !this.labelled) {
+      this.svg.style.setProperty("--px", String(1 / t.k));
+      this.afterZoom(); // labels, token sizes and the overlay depend on scale only: a pan needs none of it
+      this.labelled = true;
+    }
+  }
+  private labelled = false;
 
   private afterZoom() {
     const k = this.k;
@@ -424,7 +463,7 @@ export class BoardView {
   }
 
   fit(animate = true) {
-    const r = this.svg.getBoundingClientRect();
+    const r = this.host.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return;
     const pad = 12;
     const W = this.board.width, Hh = this.board.height;
@@ -449,13 +488,13 @@ export class BoardView {
     this.zoomer
       .scaleExtent([minK * 0.95, Math.max(minK * 14, k * 6)])
       .translateExtent([[-W * 0.04, Math.min(-Hh * 0.04, b0)], [W * 1.04, Math.max(Hh * 1.04, b1)]]);
-    const sel = select(this.svg);
+    const sel = select(this.host);
     if (animate) sel.transition().duration(450).call(this.zoomer.transform, this.fitT);
     else if (wasFit) sel.call(this.zoomer.transform, this.fitT);
   }
 
   zoomBy(factor: number, at?: [number, number]) {
-    const sel = select(this.svg);
+    const sel = select(this.host);
     if (at) sel.transition().duration(300).call(this.zoomer.scaleBy, factor, at);
     else sel.transition().duration(300).call(this.zoomer.scaleBy, factor);
   }
@@ -467,7 +506,7 @@ export class BoardView {
     const r = this.visible();
     const k = clamp(Math.min(r.width / (bb.width * 3), r.height / (bb.height * 3)), this.fitT.k, this.fitT.k * 6);
     const t = zoomIdentity.translate(r.cx, r.cy).scale(k).translate(-(bb.x + bb.width / 2), -(bb.y + bb.height / 2));
-    select(this.svg).transition().duration(500).call(this.zoomer.transform, t);
+    select(this.host).transition().duration(500).call(this.zoomer.transform, t);
   }
 
   /** Fit a group of provinces (e.g. a power's homes) with generous padding. */
@@ -489,12 +528,12 @@ export class BoardView {
     const vh = r.height / k;
     const cy = clamp((y0 + y1) / 2, b0 + vh / 2, Math.max(b0 + vh / 2, b1 - vh / 2));
     const t = zoomIdentity.translate(r.cx, r.cy).scale(k).translate(-(x0 + x1) / 2, -cy);
-    select(this.svg).transition().duration(600).call(this.zoomer.transform, t);
+    select(this.host).transition().duration(600).call(this.zoomer.transform, t);
   }
 
   /** The part of the board not covered by `inset`: its size and centre, in svg pixels. */
   private visible() {
-    const r = this.svg.getBoundingClientRect();
+    const r = this.host.getBoundingClientRect();
     const width = Math.max(r.width - this.inset.left, r.width * 0.4);
     const height = Math.max(r.height - this.inset.bottom, r.height * 0.4);
     return { width, height, cx: r.width - width / 2, cy: height / 2 };
