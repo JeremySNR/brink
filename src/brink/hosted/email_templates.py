@@ -416,36 +416,75 @@ def turn_text(ctx: dict) -> str:
 AUTH = {
     "magic_link": {
         "subject": "Your Brink sign-in link",
+        "bar": "Sign in",
         "title": "Sign in to Brink",
         "lede": "Use this link to sign in as {{ .Email }}. It works once, and only for a short while.",
         "cta": "Sign in",
+        "welcome": False,
         "note": "If you didn't ask to sign in, you can ignore this email: nobody can use it without the link.",
     },
     "confirm_signup": {
         "subject": "Confirm your email for Brink",
-        "title": "Confirm your email",
-        "lede": "Confirm {{ .Email }} to finish signing up. Then you can join a game or start your own.",
+        "bar": "Welcome",
+        "title": "Welcome to Brink",
+        "lede": "Confirm {{ .Email }} to finish signing up. Then join a game from an invite link, or start your own.",
         "cta": "Confirm and sign in",
+        "welcome": True,
         "note": "If you didn't sign up for Brink, you can ignore this email.",
     },
 }
+
+POWER_CAST = ("USA", "CHN", "EU", "RUS", "IND", "JPN", "GLF")
+
+# Three rules a new player needs first.
+WELCOME_RULES = (
+    (1, "Secret orders", "Everyone writes orders at the same time; they resolve together."),
+    (2, "Swing states", "Hold both slots of a swing state to align it. Align 9 to win outright."),
+    (3, "The Crisis track", "If it reaches 10, the game ends and every power scores zero."),
+)
+
+
+def power_cast() -> str:
+    """The seven powers as a row of die-cut counters: the game's cast, on every sign-in email."""
+    cells = "".join(f'<td align="center" style="padding:0 3px">{counter(p, 34, 3, PAPER)}</td>' for p in POWER_CAST)
+    return (f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'
+            f'<tr>{cells}</tr></table>')
 
 
 def auth_email(kind: str) -> tuple[str, str]:
     """(subject, html) for a Supabase Auth template, with Go-template placeholders left in."""
     a = AUTH[kind]
     url = "{{ .ConfirmationURL }}"
+    rules = ""
+    if a["welcome"]:
+        items = "".join(
+            f'<tr><td valign="top" style="padding:7px 10px 7px 0;width:28px;color:{RED};'
+            f'{_font(COND, 18, 700, "0", "line-height:20px;")}">{n}</td>'
+            f'<td valign="top" style="padding:7px 0;border-bottom:1px dotted {RULE_SOFT};">'
+            f'<span style="color:{INK};text-transform:uppercase;{_font(COND, 14, 700, "0.04em", "line-height:18px;")}">'
+            f'{e(t)}</span><br><span style="color:{INK_2};{_font(BODY, 13, 400, "0", "line-height:19px;")}">{e(d)}</span></td></tr>'
+            for n, t, d in WELCOME_RULES)
+        rules = (f'<tr><td bgcolor="{PAPER_HI}" class="sec" style="padding:16px 22px 18px;background:{PAPER_HI};'
+                 f'border-top:2px solid {INK};">'
+                 f'<div style="color:{INK};text-transform:uppercase;margin:0 0 4px;'
+                 f'{_font(COND, 17, 700, "0.04em", "line-height:20px;")}">How Brink works</div>'
+                 f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+                 f'style="border-collapse:collapse">{items}</table></td></tr>')
     body = (
-        f'<tr><td bgcolor="{PAPER}" class="sec" style="padding:26px 22px 22px;background:{PAPER};">'
-        f'<h1 class="display" style="margin:0;color:{INK};text-transform:uppercase;'
+        f'<tr><td bgcolor="{PAPER}" class="sec" style="padding:24px 22px 22px;background:{PAPER};">'
+        f'{power_cast()}'
+        f'<h1 class="display" style="margin:18px 0 0;color:{INK};text-transform:uppercase;'
         f'{_font(COND, 36, 700, "0.02em", "line-height:36px;")}">{e(a["title"])}</h1>'
         f'<p style="margin:12px 0 18px;color:{INK};{_font(BODY, 14, 400, "0", "line-height:21px;")}">{a["lede"]}</p>'
         f'{button(a["cta"], url).replace(e(url), url)}'
         f'<p style="margin:14px 0 0;color:{INK_2};{_font(BODY, 12.5, 400, "0", "line-height:18px;")}">'
         f'Or paste this address into your browser:<br>'
-        f'<a href="{url}" style="color:{INK_2};word-break:break-all">{url}</a></p></td></tr>')
-    rows = _top_bar("") + body
-    footer = f'{e(a["note"])}<br>{_link("{{ .SiteURL }}", "Brink")}'.replace(e("{{ .SiteURL }}"), "{{ .SiteURL }}")
+        f'<a href="{url}" style="color:{INK_2};word-break:break-all">{url}</a></p></td></tr>'
+        f'{rules}')
+    rows = _top_bar(e(a["bar"])) + body
+    site = "{{ .SiteURL }}"
+    footer = (f'{e(a["note"])}<br>Brink: seven powers, one board, secret orders. '
+              f'{_link(site, "brinkgame.app")}').replace(e(site), site)
     return a["subject"], _document(a["subject"], a["lede"].replace("{{ .Email }}", "your email"), rows, footer)
 
 
