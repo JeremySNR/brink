@@ -11,7 +11,7 @@ What makes it different from classic Diplomacy:
 
 ## Play with friends
 
-https://brink-sepia.vercel.app hosts multiplayer games: sign in with your email, start a game, send the
+https://www.brinkgame.app hosts multiplayer games: sign in with your email, start a game, send the
 invite link. Each friend takes a power and bots play the empty seats; orders are due by a deadline (12 to
 72 hours a phase), and a phase resolves as soon as everyone is ready. Private press between players, and
 every phase replays on the board. How it's built and deployed: [docs/HOSTING.md](docs/HOSTING.md).

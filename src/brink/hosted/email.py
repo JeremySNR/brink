@@ -39,7 +39,7 @@ log = logging.getLogger("brink.hosted.email")
 
 RESEND_URL = "https://api.resend.com"
 DEFAULT_FROM = "Brink <onboarding@resend.dev>"
-DEFAULT_SITE = "https://brink-sepia.vercel.app"
+DEFAULT_SITE = "https://www.brinkgame.app"
 BATCH_MAX = 100
 TIMEOUT = httpx.Timeout(8.0, connect=4.0)
 TRACK_WINDOW = 5          # years shown on the email's turn record

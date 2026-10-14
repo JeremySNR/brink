@@ -157,7 +157,7 @@ end $$;
 -- select cron.schedule(
 --   'brink-tick',
 --   '* * * * *',
---   $$ select net.http_post(url := 'https://brink-sepia.vercel.app/api/cron/tick',
+--   $$ select net.http_post(url := 'https://www.brinkgame.app/api/cron/tick',
 --                           headers := '{"Content-Type": "application/json"}'::jsonb,
 --                           body := '{}'::jsonb,
 --                           timeout_milliseconds := 55000) $$

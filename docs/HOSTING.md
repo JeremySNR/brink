@@ -141,7 +141,7 @@ Turn emails (set in Vercel → Settings → Environment Variables, Production):
 - `BRINK_EMAIL_FROM`: the sender, e.g. `Brink <turns@your-domain>`. Default `Brink <onboarding@resend.dev>`,
   Resend's test sender, which **only delivers to the Resend account owner's own address** until a domain
   is verified in Resend (Domains → Add, then the DNS records). Friends get no email before that.
-- `BRINK_SITE_URL`: where links point. Default `https://brink-sepia.vercel.app`.
+- `BRINK_SITE_URL`: where links point. Default `https://www.brinkgame.app`.
 - `BRINK_EMAIL_SECRET`: signs the stop links (any long random string). Falls back to
   `SUPABASE_JWT_SECRET`; with neither, no turn emails are sent. Changing it breaks old stop links.
 
@@ -161,9 +161,9 @@ environment variable is absent, so it cannot be switched on in a deployment.
    ```
 
 2. **Auth URL configuration** (Supabase dashboard → Authentication → URL Configuration):
-   - Site URL: `https://brink-sepia.vercel.app`
+   - Site URL: `https://www.brinkgame.app`
    - Redirect URLs:
-     - `https://brink-sepia.vercel.app/**`
+     - `https://www.brinkgame.app/**`
      - `https://brink-*-jeremys-projects-8dbe961d.vercel.app/**` (preview deployments)
      - `http://localhost:5173/**` and `http://127.0.0.1:5173/**` (local dev)
 
@@ -192,7 +192,7 @@ environment variable is absent, so it cannot be switched on in a deployment.
    select cron.schedule(
      'brink-tick',
      '* * * * *',
-     $$ select net.http_post(url := 'https://brink-sepia.vercel.app/api/cron/tick',
+     $$ select net.http_post(url := 'https://www.brinkgame.app/api/cron/tick',
                              headers := '{"Content-Type": "application/json"}'::jsonb,
                              body := '{}'::jsonb,
                              timeout_milliseconds := 55000) $$
