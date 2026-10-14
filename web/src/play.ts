@@ -72,7 +72,8 @@ export interface Check { text: string; ok: boolean; reason: string | null }
 
 /** Where decisions come from and go to. */
 export interface PlayBackend {
-  readonly kind: "local" | "hosted";
+  /** local: `brink serve`; hosted: the multiplayer API; tutorial: the lessons' sandbox (src/tutorial.ts). */
+  readonly kind: "local" | "hosted" | "tutorial";
   /** Load a game (null: none to resume; local play then shows the start screen). */
   load(param: string | null): Promise<PlayState | null>;
   refresh(): Promise<PlayState>;
@@ -508,6 +509,19 @@ export class PlayController {
     if (p.kind === "umbrellas" && texts.length === 0) this.umbrellas.clear();
   }
 
+  /** Replace the drafts with these order texts (the tutorial's "Show me"). */
+  setDraft(texts: string[]) {
+    if (!this.pending || this.busy) return;
+    try {
+      localStorage.removeItem(this.draftKey()); // or resetDrafts would restore it
+    } catch {
+      /* ignore */
+    }
+    this.resetDrafts();
+    this.applyTexts(texts);
+    this.changed();
+  }
+
   /** The order texts the open decision would submit now. */
   texts(): string[] {
     const p = this.pending;
@@ -611,6 +625,10 @@ export class PlayController {
 
   /** Highlights + the selection bar for the live phase. */
   paint() {
+    // the tutorial's coach follows the drafts and the selection
+    document.dispatchEvent(new CustomEvent("brink:draft", {
+      detail: { texts: this.texts(), sel: this.sel ? { ...this.sel } : null, phase: this.pending?.phase.name ?? null },
+    }));
     const view = this.host.view;
     const L = view.layer.reach;
     L.replaceChildren();

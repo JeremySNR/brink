@@ -4,7 +4,10 @@
 //   #/            landing (signed out) or My games + Open games (signed in)
 //   #/signin      email magic link        #/me        display name, turn emails, sign out
 //   #/new         new game                #/join/CODE  invite landing
+//   #/practice    you against six bots, one click (the tutorial ends here)
 //   #/g/<id>      forming: seats + invite; active or finished: the board (handed to main.ts)
+//
+// Learn to play is the board itself (`?learn`, src/tutorial.ts), linked from here.
 //
 // Built from the same printed parts as the board's start screen: the box lid, aid sections, die-cut counters.
 import { codeCounter, counterSvg } from "../counter";
@@ -17,6 +20,7 @@ import type { GameSummary, GameView, Me, MyGame, Notification } from "./api";
 import { configured, devAvailable, devSignIn, initAuth, onAuthChange, sendMagicLink, session, signOut, takeUrlError } from "./auth";
 
 const SAMPLE_REPLAY = "?game=games/sim-1000.json";
+const LEARN = "?learn";
 const FORMING_POLL_MS = 10000;
 const HOME_POLL_MS = 30000;
 
@@ -62,11 +66,12 @@ async function route() {
   if (head === "join" && arg) return joinPage(arg.toUpperCase());
   if (head === "g" && arg) return gamePage(arg);
   if (!session()) {
-    if (head === "me" || head === "new") return needSignIn(`#/${head}`);
+    if (head === "me" || head === "new" || head === "practice") return needSignIn(`#/${head}`);
     return landingPage();
   }
   if (head === "me") return mePage();
   if (head === "new") return newGamePage();
+  if (head === "practice") return practicePage();
   return homePage();
 }
 
@@ -97,6 +102,7 @@ function page(title: string, cls = ""): HTMLElement {
   logo.append(document.createTextNode("RINK"));
   if (title) html("span", { class: "game-name" }, brand, title);
   const nav = html("nav", { class: "top-actions page-nav", "aria-label": "Account" }, top);
+  html("a", { class: "nav-link", href: LEARN }, nav, "Learn to play");
   if (session()) {
     if (me?.unread) {
       const n = html("a", { class: "nav-link", href: "#/" }, nav, "Notices ");
@@ -170,8 +176,9 @@ function landingPage() {
     const b = html("a", { class: "btn commit-btn big", href: "#/signin" }, go1, "Sign in to play");
     b.setAttribute("role", "button");
   } else {
-    html("p", { class: "help" }, go1, "Sign-in isn't configured on this server. You can still watch a game, or play against six bots locally with brink serve.");
+    html("p", { class: "help" }, go1, "Sign-in isn't configured on this server. You can still learn the game, watch one, or play against six bots locally with brink serve.");
   }
+  learnButton(go1);
   html("a", { class: "btn wide", href: SAMPLE_REPLAY }, go1, "Watch a sample game");
 
   heading(right, "How a game runs");
@@ -287,7 +294,7 @@ function mePage() {
   const mcb = html("input", { type: "checkbox" }, ml) as HTMLInputElement;
   mcb.checked = me?.email_notifications ?? true;
   html("span", {}, ml, "Email me when my orders are due");
-  html("p", { class: "help" }, mail, "One email when a phase needs your decision, and one more a few hours before the deadline if you haven't marked Ready.");
+  html("p", { class: "help" }, mail, "One email when a phase needs your decision, and one more a few hours before the deadline if you haven't marked Ready. Only for games with other people in them: a game against bots waits for you.");
   const mout = html("div", { class: "form-out", "aria-live": "polite" }, mail);
   mcb.addEventListener("change", async () => {
     mout.replaceChildren();
@@ -338,7 +345,8 @@ async function homePage() {
 
   const mineEl = html("section", { class: "page-sec" }, right);
   const lobbyEl = html("section", { class: "page-sec" }, right);
-  html("p", { class: "muted" }, mineEl, "Loading your games…");
+  // say nothing for a fast answer; a slow one (a cold server) gets a quiet line
+  const slow = window.setTimeout(() => html("p", { class: "muted" }, mineEl, "Checking for your games…"), 900);
 
   const load = async () => {
     try {
@@ -346,10 +354,12 @@ async function homePage() {
         api<MyGame[]>("GET", "games/mine"), api<GameSummary[]>("GET", "lobby"),
         api<{ unread: number; items: Notification[] }>("GET", "notifications"),
       ]);
+      window.clearTimeout(slow);
       renderMine(mineEl, mine);
       renderLobby(lobbyEl, lobby.filter((g) => !mine.some((m) => m.id === g.id)));
       renderNotes(notes, nots);
     } catch (e) {
+      window.clearTimeout(slow);
       mineEl.replaceChildren();
       errorLine(mineEl, e);
     }
@@ -362,10 +372,7 @@ function renderMine(el: HTMLElement, games: MyGame[]) {
   el.replaceChildren();
   const turn = games.filter((g) => g.my_turn).length;
   heading(el, "Your games", turn ? `${turn} waiting for you` : games.length ? `${games.length}` : undefined);
-  if (!games.length) {
-    html("p", { class: "help" }, el, "You're not in a game yet. Start one and invite your friends, or join an open game below.");
-    return;
-  }
+  if (!games.length) return welcome(el);
   const ul = html("ul", { class: "game-list" }, el);
   for (const g of games) {
     const li = html("li", {}, ul);
@@ -386,6 +393,31 @@ function renderMine(el: HTMLElement, games: MyGame[]) {
     } else if (g.status === "forming") html("span", { class: "gr-tag" }, st, "Forming");
     else html("span", { class: "gr-tag" }, st, "Finished");
   }
+}
+
+/** Signed in with no games yet: where to start. */
+function welcome(el: HTMLElement) {
+  el.replaceChildren();
+  heading(el, "Welcome to Brink");
+  const w = html("div", { class: "welcome" }, el);
+  const steps = html("ol", { class: "welcome-steps" }, w);
+  const step = (n: string, title: string, text: string, href: string, label: string, cls: string) => {
+    const li = html("li", {}, steps);
+    html("span", { class: "ws-n num" }, li, n);
+    const b = html("div", { class: "ws-b" }, li);
+    html("strong", {}, b, title);
+    html("span", {}, b, text);
+    html("a", { class: `btn ${cls}`, href, role: "button" }, li, label);
+  };
+  step("1", "Learn to play", "Ten minutes on the real board: your first move, winning a contest with support, and the rules that matter.", LEARN, "Start the tutorial", "primary");
+  step("2", "Practise against bots", "You against six bots in a short game. Each phase resolves the moment you commit.", "#/practice", "Practice game", "");
+  step("3", "Play with friends", "Start a game and send the invite link. Bots take any seat nobody claims.", "#/new", "New game", "");
+}
+
+function learnButton(parent: HTMLElement) {
+  const a = html("a", { class: "btn primary wide learn-btn", href: LEARN, role: "button" }, parent);
+  html("span", {}, a, "Learn to play");
+  html("span", { class: "learn-min" }, a, "10 min");
 }
 
 function resultWords(g: MyGame): string {
@@ -533,6 +565,65 @@ function newGamePage() {
     } catch (e) {
       errorLine(out, e);
       create.disabled = false;
+    }
+  });
+}
+
+// ------------------------------------------------------------------ practice
+function practicePage() {
+  const main = page("Practice game");
+  const { cover, right } = lid(main, "new");
+  html("h1", { class: "page-title" }, cover, "Practice game");
+  html("p", { class: "lid-line small" }, cover, "You against six bots, in a short game to 2034. It's private and there's no waiting: each phase resolves the moment you commit, so you can play it through in one sitting or come back to it.");
+  const out = html("div", { class: "form-out", "aria-live": "polite" }, cover);
+  const acts = html("div", { class: "lid-actions" }, cover);
+  const go1 = html("button", { class: "btn commit-btn big", type: "button" }, acts, "");
+  html("a", { class: "link-btn", href: LEARN }, acts, "Take the tutorial first");
+
+  heading(right, "Your power");
+  let chosen = "USA";
+  const list = html("ul", { class: "power-list", role: "radiogroup", "aria-label": "Your power" }, right);
+  const rows: HTMLElement[] = [];
+  const pick = (p: string) => {
+    chosen = p;
+    for (const r of rows) {
+      const on = r.dataset.power === p;
+      r.classList.toggle("active", on);
+      r.setAttribute("aria-checked", String(on));
+      r.tabIndex = on ? 0 : -1;
+    }
+    go1.textContent = `Start as ${map.powers[p]?.name ?? p}`;
+  };
+  for (const p of POWER_ORDER) {
+    const P = map.powers[p];
+    if (!P) continue;
+    const card = html("button", { class: "power-row", type: "button", role: "radio", "data-power": p }, html("li", {}, list));
+    const us = html("span", { class: "pr-units" }, card);
+    for (const u of map.start.units.filter((x) => x.power === p)) us.append(counterSvg(u.type, p, 30));
+    const body = html("span", { class: "pr-body" }, card);
+    const h = html("span", { class: "pr-head" }, body);
+    html("span", { class: "pr-name" }, h, P.name);
+    if (p === "USA") html("span", { class: "pr-tag" }, h, "The tutorial's power");
+    html("span", { class: "pr-char" }, body, CHARACTER[p] ?? "");
+    card.addEventListener("click", () => pick(p));
+    rows.push(card);
+  }
+  pick(chosen);
+  go1.addEventListener("click", async () => {
+    out.replaceChildren();
+    go1.disabled = true;
+    go1.textContent = "Setting up the board…";
+    try {
+      const v = await api<GameView>("POST", "games", {
+        name: `${me?.display_name ?? "My"} practice game`, visibility: "private", deadline_hours: 72, press: "none",
+        last_year: 2034, power: chosen,
+      });
+      await api("POST", `games/${v.game.id}/start`);
+      go(`#/g/${v.game.id}`);
+    } catch (e) {
+      errorLine(out, e);
+      go1.disabled = false;
+      pick(chosen);
     }
   });
 }

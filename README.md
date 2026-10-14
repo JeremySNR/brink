@@ -16,6 +16,13 @@ invite link. Each friend takes a power and bots play the empty seats; orders are
 72 hours a phase), and a phase resolves as soon as everyone is ready. Private press between players, and
 every phase replays on the board. How it's built and deployed: [docs/HOSTING.md](docs/HOSTING.md).
 
+## Learn to play
+
+https://www.brinkgame.app/?learn is a ten-minute tutorial on the real board: you play the United States
+through hand-placed positions (your first move, a standoff, winning with support, holding both slots) and
+the real engine resolves every order. The lessons live in `web/public/tutorial.json`;
+`tests/test_tutorial.py` plays every lesson's solution so a rules change can't quietly break one.
+
 ## Play in the browser, locally
 
 You against six bots:

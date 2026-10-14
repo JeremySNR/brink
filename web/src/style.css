@@ -1368,3 +1368,197 @@ kbd {
 }
 
 .lg-contested { stroke: var(--red); stroke-width: 1.4; stroke-dasharray: 2.2 1.4; }
+
+/* ------------------------------------------------------------------ tutorial: the programmed-instruction card
+   Learn to play (?learn, src/tutorial.ts). A player-aid card lifted off the sheet, top-left of the map where
+   the cartouche sits in replay: an ink strip with the lesson pips, a case number in rulebook red, the
+   instruction, and the learner's move. Marks on the map are printed ink outlines, never red (red is the
+   learner's own hatching and arrows). */
+.tutorial-mode .cartouche, .tutorial-mode .you-chip { display: none; }
+.coach {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 4;
+  width: 352px;
+  max-width: calc(100% - 36px);
+  max-height: calc(100% - 92px);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-hi);
+  border: 2px solid var(--ink);
+  box-shadow: 0 6px 16px rgba(29, 29, 27, 0.16);
+}
+.coach.collapsed { width: auto; }
+.coach-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 0 10px;
+  min-height: 30px;
+  background: var(--ink);
+  color: var(--paper-hi);
+}
+.coach-kicker {
+  font-family: var(--f-cond);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.coach-pips { display: flex; gap: 3px; margin: 0 0 0 auto; padding: 0; list-style: none; }
+.coach-pips button {
+  width: 19px;
+  height: 19px;
+  padding: 0;
+  border: 1.5px solid var(--paper-hi);
+  background: transparent;
+  color: var(--paper-hi);
+  font: 700 11px/1 var(--f-cond);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.coach-pips .done button { background: var(--paper-hi); color: var(--ink); }
+.coach-pips .on button { background: var(--red); border-color: var(--red); color: var(--paper-hi); }
+.coach-pips button:focus-visible { outline: 2px solid var(--paper-hi); outline-offset: 1px; }
+.coach-toggle {
+  align-self: stretch;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1.5px solid var(--ink-3);
+  background: transparent;
+  color: var(--paper-hi);
+  font: 600 12px/1 var(--f-cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.coach-toggle:hover { background: var(--ink-2); }
+.coach-toggle:focus-visible { outline: 2px solid var(--paper-hi); outline-offset: -4px; }
+.coach-title {
+  margin: 0;
+  padding: 11px 16px 9px;
+  border-bottom: 2px solid var(--ink);
+  font-family: var(--f-cond);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.coach.collapsed .coach-title { display: none; }
+.coach-case { color: var(--red); }
+.coach-body {
+  overflow-y: auto;
+  padding: 12px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.coach-body p { margin: 0; max-width: 62ch; }
+.coach-h { margin: 0; font-family: var(--f-cond); font-weight: 700; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; }
+.coach-kick { font-family: var(--f-cond); font-weight: 600; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.coach-loading { padding: 14px 16px; color: var(--ink-2); font-size: 13px; }
+.coach-task { border-top: 2px solid var(--ink); padding-top: 9px; display: grid; gap: 5px; }
+.coach-task-k {
+  justify-self: start;
+  padding: 2px 7px 1px;
+  background: var(--red);
+  color: var(--paper-hi);
+  font: 700 12px/1.2 var(--f-cond);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.coach-task-t { font-weight: 700; font-size: 14px; }
+.coach-guide { color: var(--ink-2); min-height: 1.45em; }
+.coach-guide:empty { display: none; }
+.coach-arrow { color: var(--red); font-weight: 700; }
+.coach-hint { color: var(--ink-3); font-size: 12.5px; }
+.coach-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.coach-nav .btn:last-child { margin-left: auto; }
+.coach-count { font-family: var(--f-cond); font-weight: 600; font-size: 13px; color: var(--ink-3); letter-spacing: 0.04em; }
+.coach-go { height: 44px; padding: 0 16px; font-size: 15px; letter-spacing: 0.08em; width: auto; }
+.coach-stamp {
+  justify-self: start;
+  align-self: flex-start;
+  padding: 3px 10px 2px;
+  border: 2.5px solid currentColor;
+  font: 700 17px/1.1 var(--f-cond);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+.coach-stamp.pass { color: var(--olive); }
+.coach-stamp.miss { color: var(--ink-2); }
+.coach-units { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 2px 0 0; padding: 0; list-style: none; }
+.coach-units li { display: grid; justify-items: center; gap: 3px; text-align: center; }
+.cu-name { font: 700 14px/1 var(--f-cond); letter-spacing: 0.04em; text-transform: uppercase; }
+.cu-layer { font: 600 11px/1 var(--f-cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.coach-crisis .crisis-track { margin: 0; }
+.coach-end { display: grid; gap: 8px; border-top: 2px solid var(--ink); padding-top: 10px; }
+.coach-end-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.coach-end-acts .coach-go { width: 100%; justify-content: center; }
+
+/* marks on the map: "look here", printed in ink */
+.coach-mark {
+  pointer-events: none;
+  fill: rgba(251, 249, 243, 0.32);
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-dasharray: 7 4;
+  vector-effect: non-scaling-stroke;
+  animation: coach-march 1.2s linear infinite;
+}
+@keyframes coach-march { to { stroke-dashoffset: -22; } }
+.coach-point { outline: 3px dashed var(--ink) !important; outline-offset: 3px; }
+
+/* the aid column's lesson list */
+.syl-list { list-style: none; margin: 4px 0 8px; padding: 0; }
+.syl-list li + li { border-top: 1px dotted var(--rule-soft); }
+.syl-list button {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.syl-list button:hover .syl-t { text-decoration: underline; }
+.syl-n { font: 700 15px/1 var(--f-cond); color: var(--red); }
+.syl-t { font-weight: 600; font-size: 13.5px; }
+.syl-m { font: 600 12px/1 var(--f-cond); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+.syl-list .on .syl-t { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.syl-list .done .syl-m { color: var(--olive); }
+
+@media (min-width: 861px) {
+  /* the selection slip moves clear of the card */
+  .tutorial-mode .selection { left: calc(18px + 352px + 16px); transform: none; max-width: calc(100% - 406px); white-space: normal; flex-wrap: wrap; }
+}
+@media (max-width: 860px) {
+  .coach {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: 66px;
+    width: auto;
+    max-width: none;
+    max-height: 40dvh;
+  }
+  .coach-body p:not(.coach-task-t):not(.coach-guide) { font-size: 12.5px; }
+  .coach-title { font-size: 19px; padding: 9px 12px 7px; }
+  .coach-body { padding: 10px 12px 12px; font-size: 13px; }
+  .coach-kicker { font-size: 11px; letter-spacing: 0.1em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-mark { animation: none; }
+}

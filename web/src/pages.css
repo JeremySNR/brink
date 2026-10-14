@@ -255,3 +255,33 @@ a.btn { text-decoration: none; }
   .trt-deadline .dl-v { font-size: 16px; }
   .gr-seats { display: none; }
 }
+
+/* ------------------------------------------------------------------ learn to play, and a first visit */
+.learn-btn { display: flex; justify-content: center; align-items: center; gap: 10px; }
+.learn-min { font-weight: 600; font-size: 12.5px; letter-spacing: 0.08em; opacity: 0.75; }
+.welcome-steps { list-style: none; margin: 10px 0 0; padding: 0; border-top: 2px solid var(--ink); }
+.welcome-steps li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px dotted var(--rule-soft);
+}
+.ws-n {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid var(--ink);
+  font: 700 17px/1 var(--f-cond);
+  color: var(--red);
+}
+.ws-b { display: grid; gap: 3px; min-width: 0; }
+.ws-b strong { font-family: var(--f-cond); font-weight: 700; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; }
+.ws-b span { color: var(--ink-2); font-size: 13px; line-height: 1.45; max-width: 52ch; }
+.welcome-steps .btn { white-space: nowrap; }
+@media (max-width: 560px) {
+  .welcome-steps li { grid-template-columns: 34px minmax(0, 1fr); }
+  .welcome-steps .btn { grid-column: 2; justify-self: start; }
+}

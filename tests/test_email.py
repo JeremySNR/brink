@@ -112,6 +112,18 @@ def test_due_email_after_advance_and_not_for_a_ready_player(resend, db_url, play
     assert [m["to"] for m in sent] == ([["bob@example.com"]] if "CHN" in new["pending"]["powers"] else [])
 
 
+def test_solo_games_send_no_turn_emails(resend, db_url, players):
+    a = players[0]
+    gid, g = started(players, 1)                                # ada alone against six bots
+    a.ok("POST", f"/api/games/{gid}/submit", {"step": g["game"]["step"], "orders": [], "ready": True})
+    assert game_row(db_url, gid)["step"] > g["game"]["step"]   # resolved at once
+    set_deadline_past(db_url, gid)
+    with connect(db_url) as conn:
+        mail.send_due(conn, gid)
+        mail.send_reminders(conn, now=dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=30))
+    assert resend.sent == []
+
+
 def test_concurrent_senders_send_once(resend, db_url, players, monkeypatch):
     monkeypatch.delenv("RESEND_API_KEY")
     gid, _ = started(players, 2)                                # no emails at start: no key

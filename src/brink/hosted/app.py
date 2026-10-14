@@ -19,6 +19,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from starlette.concurrency import run_in_threadpool
 
+from .. import tutorial
 from . import email as mail
 from . import email_templates as T
 from . import service as svc
@@ -128,6 +129,19 @@ async def lobby(req: Request):
 @app.get("/api/invite/{code}")
 async def invite(req: Request, code: str):
     return await handle(req, svc.invite, code, auth="none")
+
+
+@app.post("/api/tutorial/{action}")
+async def tutorial_sandbox(req: Request, action: str):
+    """The tutorial's sandbox: hand-placed positions through the real engine (brink.tutorial). No sign-in,
+    no database: the client holds the state."""
+    try:
+        b = await _body(req)
+        return ok(await run_in_threadpool(tutorial.handle, svc.game_map(), action, b))
+    except svc.ApiError as e:
+        return err(e.status, e.message)
+    except tutorial.TutorialError as e:
+        return err(400, str(e))
 
 
 @app.api_route("/api/cron/tick", methods=["GET", "POST"])

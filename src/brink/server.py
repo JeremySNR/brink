@@ -14,6 +14,7 @@ API (all JSON):
     POST   /api/games/{id}/orders           {orders: [text], decision: id, submit: true}
                                             -> {results, accepted, state}; waits for the next decision
     DELETE /api/games/{id}                  stop the game thread
+    POST   /api/tutorial/{start|validate|step}  the tutorial's sandbox (brink.tutorial)
 
 Game state: {id, power, status: waiting|thinking|over|error, record (game.json format),
 pending (the open decision, see HumanPlayer) | null, error}.
@@ -32,6 +33,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from . import tutorial
 from .bots.human import GameAborted, HumanPlayer
 from .bots.search import SearchBot
 from .bots.strategist import StrategistBot, Temperament
@@ -272,6 +274,11 @@ class PlayServer:
             def _api(self, method: str, parts: list[str]):
                 if parts == ["health"]:
                     return self._json(200, {"ok": True})
+                if len(parts) == 2 and parts[0] == "tutorial" and method == "POST":
+                    try:
+                        return self._json(200, tutorial.handle(app.map, parts[1], self._body()))
+                    except tutorial.TutorialError as e:
+                        raise _BadRequest(str(e))
                 if parts == ["games"]:
                     if method == "GET":
                         with app.lock:

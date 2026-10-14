@@ -18,22 +18,26 @@ import { HostedBackend } from "./hosted/game";
 import type { GameView } from "./hosted/api";
 import { startHosted } from "./hosted/pages";
 import { PlayController } from "./play";
+import { Coach, TutorialBackend, startIndex } from "./tutorial";
+import type { Lessons } from "./tutorial";
 import { BUFF, POWER_COLOURS, RED, UNIT_NAMES, arrowInk, homeFill, swingFill } from "./theme";
 import type { Board, GameRecord, MapData, Phase, Unit } from "./types";
 import { html, loadJSON, normaliseRecord, seasonLabel, svg } from "./util";
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
-/** What the board is showing: a replay (`?game=`), local play against bots (`?play`, `brink serve`), or a
- * hosted multiplayer game (`#/g/<id>`, the hosted API). */
+/** What the board is showing: a replay (`?game=`), local play against bots (`?play`, `brink serve`), a
+ * hosted multiplayer game (`#/g/<id>`, the hosted API), or the tutorial (`?learn`, src/tutorial.ts). */
 type BoardMode =
   | { kind: "replay"; url: string }
   | { kind: "local"; param: string | null }
-  | { kind: "hosted"; id: string; view: GameView };
+  | { kind: "hosted"; id: string; view: GameView }
+  | { kind: "tutorial"; param: string | null };
 
 async function main() {
   const params = new URLSearchParams(location.search);
   if (params.has("play")) return startBoard({ kind: "local", param: params.get("play") });
+  if (params.has("learn")) return startBoard({ kind: "tutorial", param: params.get("learn") });
   if (params.has("game")) return startBoard({ kind: "replay", url: params.get("game") || "sample-game.json" });
   // hosted multiplayer: pages around the board
   document.body.classList.add("pages-mode");
@@ -52,12 +56,13 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
   document.body.classList.remove("pages-mode");
   const playMode = mode.kind !== "replay";
   const gameUrl = mode.kind === "replay" ? mode.url : "";
-  let board: Board, map: MapData, rec: GameRecord;
+  let board: Board, map: MapData, rec: GameRecord, lessons: Lessons | null = null;
   try {
-    [board, map, rec] = await Promise.all([
+    [board, map, rec, lessons] = await Promise.all([
       loadJSON<Board>("board.json"),
       preMap ? Promise.resolve(preMap) : loadJSON<MapData>("map.json"),
       playMode ? Promise.resolve({ map: "brink-v0", phases: [], result: null } as GameRecord) : loadJSON<GameRecord>(gameUrl),
+      mode.kind === "tutorial" ? loadJSON<Lessons>("tutorial.json") : Promise.resolve(null),
     ]);
   } catch (e) {
     $("#map").innerHTML = `<div class="load-error"><h2>Couldn't load the board</h2><p>${String(e)}</p>
@@ -65,11 +70,13 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
     return;
   }
   rec = normaliseRecord(rec, map);
-  $("#game-name").textContent = mode.kind === "hosted" ? mode.view.game.name : playMode ? "Play against six bots"
+  $("#game-name").textContent = mode.kind === "hosted" ? mode.view.game.name : mode.kind === "tutorial" ? "Learn to play"
+    : playMode ? "Play against six bots"
     : gameUrl === "sample-game.json" ? "Sample game" : `Replay: ${gameUrl.split("/").pop()!.replace(/\.json$/, "")}`;
   document.body.classList.toggle("play-mode", playMode);
   document.body.classList.toggle("hosted-mode", mode.kind === "hosted");
-  if (mode.kind === "hosted") {
+  document.body.classList.toggle("tutorial-mode", mode.kind === "tutorial");
+  if (mode.kind === "hosted" || mode.kind === "tutorial") {
     const brand = document.querySelector<HTMLElement>(".topbar .brand .logotype");
     if (brand) {
       const a = html("a", { href: "#/", class: "brand-link", "aria-label": "Brink: your games" });
@@ -374,6 +381,7 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
       overlay.selected = null;
     }
     view.paintPhase(ph);
+    document.dispatchEvent(new CustomEvent("brink:phase", { detail: { index: current, live: liveIndex, phase: ph } }));
     if (isLive()) {
       selected = null;
       overlay.selected = null;
@@ -453,7 +461,10 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
   view.fit(false);
   go(start >= 0 ? start : 0);
   if (playMode) {
-    const backend = mode.kind === "hosted" ? new HostedBackend(mode.id, mode.view, map) : undefined;
+    let coach: Coach | null = null;
+    const first = mode.kind === "tutorial" && lessons ? startIndex(lessons, mode.param) : 0;
+    const backend = mode.kind === "hosted" ? new HostedBackend(mode.id, mode.view, map)
+      : mode.kind === "tutorial" && lessons ? new TutorialBackend(lessons, first, (root) => coach?.syllabus(root)) : undefined;
     play = new PlayController({
       view, map, overlay,
       setRecord(next, live, goTo) {
@@ -475,7 +486,10 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
       phase: (i) => rec.phases[i],
       stateCards: (root, ph) => panel.render(ph, current, rec.phases.length, { root, header: false, orders: false, you: play?.power ?? undefined }),
     }, backend);
-    play.start(mode.kind === "local" ? mode.param : mode.kind === "hosted" ? mode.id : null);
+    if (backend instanceof TutorialBackend) {
+      coach = new Coach(lessons!, backend, play, view, signedIn);
+      coach.open(first);
+    } else play.start(mode.kind === "local" ? mode.param : mode.kind === "hosted" ? mode.id : null);
   }
   const focus = new URLSearchParams(location.search).get("focus")?.toUpperCase();
   if (focus && board.provinces[focus]) setTimeout(() => view.zoomTo(focus), 50);
@@ -571,3 +585,12 @@ function buildLegend(root: HTMLElement) {
 }
 
 main();
+
+/** Whether this browser holds a sign-in (for the tutorial's last button; the pages check properly). */
+function signedIn(): boolean {
+  try {
+    return Object.keys(localStorage).some((k) => k === "brink.devUser" || /^sb-.+-auth-token$/.test(k));
+  } catch {
+    return false;
+  }
+}

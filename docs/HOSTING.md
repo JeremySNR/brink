@@ -78,6 +78,7 @@ All JSON; errors are `{"error": "..."}` with a 4xx/5xx status. Signed-in endpoin
 | `GET /api/games/mine` | yes | my games, whose-turn first (`my_turn`: my power is in the pending decision and not ready) |
 | `POST /api/games {name, visibility, deadline_hours, press, last_year, power\|null}` | yes | create a forming game, creator seated |
 | `GET /api/invite/{code}` | – | game summary for an invite link |
+| `POST /api/tutorial/{start\|validate\|step}` | – | the tutorial's sandbox (`brink.tutorial`): no database, the client holds the state |
 | `POST /api/games/{id}/join {power\|null, code}` | yes | take (or switch to) a seat while forming |
 | `POST /api/games/{id}/leave` · `/cancel` · `/start` | yes | forming only; cancel and start are the creator's |
 | `GET /api/games/{id}?since=<phase idx>` | optional | meta, seats (names, ready ticks, never orders), pending summary, my decision options, my submission, deadline, phases since idx, result; advances first if past the deadline |
@@ -103,6 +104,9 @@ Two emails, nothing else (no game-started, game-over or press emails; sign-in li
 - **Deadline reminder**: from the per-minute tick, to each human in the open decision who hasn't marked
   Ready once the deadline is within 6 hours (3 hours for 12-hour games). Once per player per step. It
   says whether they have orders saved (they count at the deadline anyway).
+
+Both only for games with more than one human: a game against bots alone (the practice game) waits for
+nobody but its player and resolves the moment they're Ready, so it sends no turn emails.
 
 `src/brink/hosted/email.py` builds them from real game data (the open decision, the last phase's events and
 the player's order results, the Crisis track, their centres) and sends them through Resend's batch

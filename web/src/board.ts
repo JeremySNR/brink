@@ -39,6 +39,8 @@ export class BoardView {
   readonly blocks = new Map<string, Block>();
   k = 1;
   f = 1;
+  /** Screen pixels covered by floating furniture (the tutorial's card): zooms centre in what's left. */
+  inset = { left: 0, bottom: 0 };
   private zoomer: ZoomBehavior<SVGSVGElement, unknown>;
   private fitT: ZoomTransform = zoomIdentity;
   private listeners: (() => void)[] = [];
@@ -62,7 +64,7 @@ export class BoardView {
     this.viewport = svg("g", { class: "viewport" }, this.svg);
     for (const name of [
       "ocean", "seas", "shallow", "lakes", "seaBorders", "land", "landBorders", "coast", "closures",
-      "routes", "wraps", "reach", "labels", "orders", "units", "badges",
+      "routes", "wraps", "reach", "coach", "labels", "orders", "units", "badges",
     ]) {
       this.layer[name] = svg("g", { class: `layer-${name}` }, this.viewport);
     }
@@ -462,9 +464,9 @@ export class BoardView {
     const el = this.paths.get(pid);
     if (!el) return;
     const bb = el.getBBox();
-    const r = this.svg.getBoundingClientRect();
+    const r = this.visible();
     const k = clamp(Math.min(r.width / (bb.width * 3), r.height / (bb.height * 3)), this.fitT.k, this.fitT.k * 6);
-    const t = zoomIdentity.translate(r.width / 2, r.height / 2).scale(k).translate(-(bb.x + bb.width / 2), -(bb.y + bb.height / 2));
+    const t = zoomIdentity.translate(r.cx, r.cy).scale(k).translate(-(bb.x + bb.width / 2), -(bb.y + bb.height / 2));
     select(this.svg).transition().duration(500).call(this.zoomer.transform, t);
   }
 
@@ -479,15 +481,23 @@ export class BoardView {
       x1 = Math.max(x1, bb.x + bb.width); y1 = Math.max(y1, bb.y + bb.height);
     }
     if (!isFinite(x0)) return;
-    const r = this.svg.getBoundingClientRect();
+    const r = this.visible();
     const w = Math.max(x1 - x0, 80) * 2.6, h = Math.max(y1 - y0, 50) * 2.6;
     const [b0, b1] = this.band();
     const k = clamp(Math.min(r.width / w, r.height / h), Math.max(this.fitT.k, r.height / (b1 - b0)), this.fitT.k * 5);
     // fill the screen: never show beyond the inhabited latitudes
     const vh = r.height / k;
     const cy = clamp((y0 + y1) / 2, b0 + vh / 2, Math.max(b0 + vh / 2, b1 - vh / 2));
-    const t = zoomIdentity.translate(r.width / 2, r.height / 2).scale(k).translate(-(x0 + x1) / 2, -cy);
+    const t = zoomIdentity.translate(r.cx, r.cy).scale(k).translate(-(x0 + x1) / 2, -cy);
     select(this.svg).transition().duration(600).call(this.zoomer.transform, t);
+  }
+
+  /** The part of the board not covered by `inset`: its size and centre, in svg pixels. */
+  private visible() {
+    const r = this.svg.getBoundingClientRect();
+    const width = Math.max(r.width - this.inset.left, r.width * 0.4);
+    const height = Math.max(r.height - this.inset.bottom, r.height * 0.4);
+    return { width, height, cx: r.width - width / 2, cy: height / 2 };
   }
 
   tint(hex: string, a: number) {

@@ -402,13 +402,17 @@ def _deliver(conn, game: dict, kind: str, now: dt.datetime) -> dict:
     if game.get("status") != "active" or not pend:
         return {"sent": 0, "failed": 0}
     rows = [r for r in _candidates(conn, game) if not r["ready"]]
+    humans = conn.execute("select count(*) as n from game_seats where game_id = %s and user_id is not null",
+                          (game["id"],)).fetchone()["n"]
+    if humans == 1:
+        # a game against bots alone waits for nobody but you, and resolves the moment you're Ready:
+        # turn emails are for games with other people in them
+        rows = []
     won = _claim(conn, str(game["id"]), game["step"], kind, [str(r["user_id"]) for r in rows])
     rows = [r for r in rows if str(r["user_id"]) in won]
     if not rows:
         return {"sent": 0, "failed": 0}
     gmap = svc.game_map()
-    humans = conn.execute("select count(*) as n from game_seats where game_id = %s and user_id is not null",
-                          (game["id"],)).fetchone()["n"]
     last = conn.execute("select record from game_phases where game_id = %s order by idx desc limit 1",
                         (game["id"],)).fetchone()
     state = svc.load_state(conn, game) if pend.get("kind") == "winter" else None

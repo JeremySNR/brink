@@ -1,0 +1,301 @@
+{
+  "power": "USA",
+  "chapters": [
+    {
+      "id": "goal",
+      "kind": "cards",
+      "title": "The board and the goal",
+      "minutes": 2,
+      "setup": { "power": "USA" },
+      "cards": [
+        {
+          "title": "Welcome to Brink",
+          "body": [
+            "It's the 2030s. Seven powers compete for the world's swing states: the United States, China, the European Union, Russia, India, Japan and the Gulf.",
+            "You'll play the United States. This tutorial takes about ten minutes, and every move you make in it is resolved by the real rules."
+          ],
+          "fit": true
+        },
+        {
+          "title": "Your homes",
+          "body": [
+            "Washington, Texas and California are your homes, printed in your blue. Each is a supply centre, and centres pay for units: the more you hold, the bigger your forces.",
+            "Your three starting units stand on them."
+          ],
+          "focus": ["WAS", "TEX", "CAL", "MEX"],
+          "mark": ["WAS", "TEX", "CAL"]
+        },
+        {
+          "title": "Swing states",
+          "body": [
+            "The buff provinces are the twenty swing states. Nobody owns them at the start.",
+            "Win them over and they become your supply centres too. Hold nine at once and you win outright. Near you: Mexico, Brazil and the Southern Cone."
+          ],
+          "focus": ["MEX", "BRA", "ARG", "TEX"],
+          "mark": ["MEX", "BRA", "ARG"]
+        },
+        {
+          "title": "Two layers of power",
+          "body": [
+            "Units come in two layers. Military: the Army and the Fleet. Civil: the Capital (money) and Influence (people and media).",
+            "Every land province has two slots, one military and one civil, so two units can share it. Military units stop each other; civil units stop each other; the two layers pass through each other."
+          ],
+          "units": ["A", "F", "C", "I"],
+          "focus": ["WAS", "TEX", "CAL"]
+        },
+        {
+          "title": "How a year runs",
+          "body": [
+            "Each year has a Spring and a Fall. Every power writes orders in secret, then they all resolve at once. Then comes Winter, when swing states change hands and everyone builds.",
+            "The turn record across the top is the game's clock. A game runs to 2040."
+          ],
+          "point": "#trt-years"
+        }
+      ]
+    },
+    {
+      "id": "first-move",
+      "kind": "play",
+      "title": "Your first move",
+      "minutes": 3,
+      "setup": {
+        "power": "USA",
+        "units": [
+          { "power": "USA", "type": "F", "at": "WAS" },
+          { "power": "USA", "type": "A", "at": "TEX" },
+          { "power": "USA", "type": "C", "at": "CAL" },
+          { "power": "EU", "type": "C", "at": "PAR" },
+          { "power": "EU", "type": "A", "at": "BER" }
+        ]
+      },
+      "script": { "S2031M": { "EU": ["C PAR - BRA"] } },
+      "end": "S2032M",
+      "focus": ["CAL", "MEX", "TEX", "BRA"],
+      "steps": {
+        "S2031M": {
+          "say": [
+            "Military units can't enter a swing state until it's aligned, so money and influence go in first.",
+            "Your Capital in California can move straight into Mexico."
+          ],
+          "task": "Move your Capital from California into Mexico.",
+          "guide": [
+            { "until": "sel:C CAL", "text": "Click your Capital in California: the counter with stacked ingots, marked USA." },
+            { "until": "order:C CAL - MEX", "text": "The places it can go are hatched in red. Click Mexico." },
+            { "text": "That's your order, drawn in red. Press Commit orders." }
+          ],
+          "solution": ["C CAL - MEX"],
+          "mark": ["CAL", "MEX"]
+        },
+        "F2031M": {
+          "say": ["Nothing threatens Mexico this Fall. A unit with no order simply holds where it is."],
+          "task": "Commit with no new orders: everything holds.",
+          "guide": [{ "text": "Press Commit orders." }],
+          "solution": []
+        },
+        "W2031A": {
+          "say": [
+            "Winter. A swing state aligns to whoever holds both its slots, or one slot with the other empty. Your Capital alone has aligned Mexico: it's now your supply centre, tinted blue.",
+            "Four centres, three units: you build one new unit at home."
+          ],
+          "task": "Build one unit at a home with a free slot.",
+          "guide": [
+            { "until": "prefix:BUILD", "text": "Click California on the map, then choose a unit to build there in the panel. Leave the nuclear umbrellas as they are: more on those later." },
+            { "text": "Press Commit to finish the Winter." }
+          ],
+          "solution": ["BUILD A CAL"],
+          "mark": ["CAL", "TEX", "WAS"]
+        }
+      },
+      "results": {
+        "S2031M": {
+          "check": "order:C CAL - MEX=ok",
+          "success": "Your Capital is in Mexico. At the same moment, Europe's Capital crossed the Atlantic on a trade route into Brazil. Nobody saw anyone's orders until they resolved: that's the heart of the game.",
+          "miss": "Your Capital didn't reach Mexico this time. Replay the lesson and move it there."
+        },
+        "W2031A": {
+          "check": "owner:MEX=USA",
+          "success": "Mexico is yours and you have a new unit. That's the loop of Brink: move in, align, build, grow.",
+          "miss": "Mexico didn't align to you. Replay the lesson to see it happen."
+        }
+      },
+      "done": "You aligned your first swing state and built with it."
+    },
+    {
+      "id": "support",
+      "kind": "play",
+      "title": "Standoffs and support",
+      "minutes": 2,
+      "setup": {
+        "power": "USA",
+        "year": 2032,
+        "units": [
+          { "power": "USA", "type": "C", "at": "TEX" },
+          { "power": "USA", "type": "I", "at": "AND" },
+          { "power": "USA", "type": "C", "at": "MEX" },
+          { "power": "EU", "type": "C", "at": "PAR" }
+        ],
+        "ownership": { "MEX": "USA" }
+      },
+      "script": { "S2032M": { "EU": ["C PAR - BRA"] }, "F2032M": { "EU": ["C PAR - BRA"] } },
+      "end": "S2033M",
+      "focus": ["TEX", "BRA", "AND", "MEX"],
+      "steps": {
+        "S2032M": {
+          "say": [
+            "This time Brazil is empty, and Europe wants it as much as you do.",
+            "Every unit in Brink has the same strength. When two try to enter the same place at once, the stronger side gets in."
+          ],
+          "task": "Move your Capital from Texas into Brazil, along the South Atlantic trade route.",
+          "guide": [
+            { "until": "sel:C TEX", "text": "Click your Capital in Texas." },
+            { "until": "order:C TEX - BRA", "text": "Click Brazil." },
+            { "text": "Press Commit orders." }
+          ],
+          "solution": ["C TEX - BRA"],
+          "mark": ["TEX", "BRA"]
+        },
+        "F2032M": {
+          "say": [
+            "To win a contest you need more strength than the other side. Any unit can support another unit's move, from either layer, as long as it could move there itself.",
+            "Your Influence in the Andes is right next to Brazil."
+          ],
+          "task": "Order Texas into Brazil again, with your Influence in the Andes supporting it.",
+          "guide": [
+            { "until": "order:C TEX - BRA", "text": "First the move: click your Capital in Texas, then Brazil." },
+            { "until": "sel:I AND", "text": "Now click your Influence in the Andes: the counter with broadcast arcs." },
+            { "until": "mode:support-unit", "text": "Press S, or choose Support in the slip at the top of the map." },
+            { "until": "mode:support-dest", "text": "Click the unit you're supporting: your Capital in Texas." },
+            { "until": "order:I AND S C TEX - BRA", "text": "Click Brazil, the destination you're supporting." },
+            { "text": "Two orders, one plan. Press Commit orders." }
+          ],
+          "solution": ["C TEX - BRA", "I AND S C TEX - BRA"],
+          "mark": ["TEX", "AND", "BRA"]
+        },
+        "W2032A": {
+          "say": ["Winter: Brazil aligns to you. Five centres and three units means two builds."],
+          "task": "Build up to two units, then commit.",
+          "guide": [
+            { "until": "prefix:BUILD", "text": "Click one of your homes, then choose a unit in the panel." },
+            { "text": "Add a second build if you like, then press Commit. Builds you don't use are lost." }
+          ],
+          "solution": ["BUILD C TEX", "BUILD A CAL"]
+        }
+      },
+      "results": {
+        "S2032M": {
+          "check": "order:C TEX - BRA=bounce",
+          "success": "A standoff. Europe's Capital tried for Brazil too: one against one, so both bounced and Brazil stays empty. The crossed box on each arrow marks a move that failed.",
+          "miss": "You got into Brazil first time, so you must have brought support. That's exactly the trick the next turn teaches."
+        },
+        "F2032M": {
+          "check": "order:C TEX - BRA=ok",
+          "success": "Two against one: your Capital took Brazil and Europe's bounced off. Support is how every contest in Brink is won.",
+          "miss": "Brazil held out. Replay the lesson and give the move its support."
+        }
+      },
+      "done": "You won a contest with support. Plans that need two units are the core of good play."
+    },
+    {
+      "id": "both-slots",
+      "kind": "play",
+      "title": "Both slots",
+      "minutes": 1,
+      "setup": {
+        "power": "USA",
+        "year": 2033,
+        "units": [
+          { "power": "USA", "type": "A", "at": "TEX" },
+          { "power": "USA", "type": "C", "at": "MEX" },
+          { "power": "USA", "type": "F", "at": "WAS" },
+          { "power": "EU", "type": "C", "at": "PAR" }
+        ],
+        "ownership": { "MEX": "USA" }
+      },
+      "end": "F2033M",
+      "focus": ["TEX", "MEX", "CAL"],
+      "steps": {
+        "S2033M": {
+          "say": [
+            "Mexico is aligned to you now, and an aligned state is open to Armies and Fleets.",
+            "With a unit in each slot, a rival has to dislodge one of yours to break in. A swing state with a rival unit inside is contested: it pays you nothing until you clear it out."
+          ],
+          "task": "Move your Army from Texas into Mexico's military slot.",
+          "guide": [
+            { "until": "sel:A TEX", "text": "Click your Army in Texas: the box with a cross." },
+            { "until": "order:A TEX - MEX", "text": "Click Mexico." },
+            { "text": "Press Commit orders." }
+          ],
+          "solution": ["A TEX - MEX"],
+          "mark": ["TEX", "MEX"]
+        }
+      },
+      "results": {
+        "S2033M": {
+          "check": "order:A TEX - MEX=ok",
+          "success": "Both of Mexico's slots are yours: an Army and a Capital side by side. That's a state that's hard to take.",
+          "miss": "The Army didn't arrive. Replay the lesson and move it into Mexico."
+        }
+      },
+      "done": "Hold both slots and your states are safe."
+    },
+    {
+      "id": "the-rest",
+      "kind": "cards",
+      "title": "The world around you",
+      "minutes": 2,
+      "setup": { "power": "USA" },
+      "cards": [
+        {
+          "title": "The Crisis track",
+          "body": [
+            "One track is shared by everyone. It rises every year (faster from 2036) and with every closed chokepoint and every war between nuclear powers.",
+            "At 6 everyone builds one fewer. At 10 the world collapses and every power scores zero. Commons orders bring it down: cooperation is part of winning."
+          ],
+          "crisis": 3,
+          "point": ".aid.crisis"
+        },
+        {
+          "title": "Nuclear homes",
+          "body": [
+            "Five powers are nuclear: their homes can never be attacked, so rivalry plays out in the swing states.",
+            "Japan and the Gulf aren't nuclear. They shelter under American umbrellas, which you can withdraw in secret."
+          ],
+          "focus": ["TOK", "RIY", "OSA", "DUB"],
+          "mark": ["TOK", "OSA", "OKI", "RIY", "DUB", "JED"]
+        },
+        {
+          "title": "Chokepoints and special orders",
+          "body": [
+            "A Fleet in a chokepoint like Hormuz or Malacca can close it to rivals, cutting their trade routes, at a cost to the Crisis track.",
+            "Capitals can sanction a rival, Influence can disrupt a rival's support from two provinces away, and any unit can work for the Commons."
+          ],
+          "focus": ["HOR", "MLC", "SUZ"],
+          "mark": ["HOR", "MLC", "SUZ", "PAN", "BOS", "TWS"]
+        },
+        {
+          "title": "The Assembly",
+          "body": [
+            "Each Winter the power with the fewest centres chairs the Assembly and may put a resolution to the vote: sanctions, peacekeeping, a climate accord.",
+            "Votes are weighted by swing states held, and each power has one veto for the whole game."
+          ]
+        },
+        {
+          "title": "Talk, then act",
+          "body": [
+            "Between moves, players negotiate in private messages. Deals aren't binding: only the orders are.",
+            "Bots take any seat nobody claims, so a game can start with two friends or seven."
+          ]
+        },
+        {
+          "title": "Winning",
+          "body": [
+            "Align nine swing states at once and you win outright. Otherwise the game ends after Winter 2040 and scores favour a clear lead.",
+            "If the Crisis track reaches 10, nobody wins."
+          ],
+          "mark": ["MEX", "BRA", "ARG", "UKR", "TUR", "MAG", "EGY", "IRN", "NGA", "ETH", "COD", "ZAF", "KAZ", "PAK", "KOR", "VNM", "PHL", "IDN", "AUS", "ARC"],
+          "fit": true
+        }
+      ]
+    }
+  ]
+}
