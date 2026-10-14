@@ -2,7 +2,7 @@
 // forming game's seats and invite, invite links, profile. Hash routes:
 //
 //   #/            landing (signed out) or My games + Open games (signed in)
-//   #/signin      email magic link        #/me        display name, sign out
+//   #/signin      email magic link        #/me        display name, turn emails, sign out
 //   #/new         new game                #/join/CODE  invite landing
 //   #/g/<id>      forming: seats + invite; active or finished: the board (handed to main.ts)
 //
@@ -281,6 +281,24 @@ function mePage() {
   html("button", { class: "btn primary", type: "submit" }, row, "Save name");
   const out = html("div", { class: "form-out", "aria-live": "polite" }, form);
   if (me?.email) html("p", { class: "help" }, right, `Signed in as ${me.email}.`);
+  // turn emails: "your orders are due" when a phase opens, and one reminder before the deadline
+  const mail = html("div", { class: "form-card" }, right);
+  const ml = html("label", { class: "opt check" }, mail);
+  const mcb = html("input", { type: "checkbox" }, ml) as HTMLInputElement;
+  mcb.checked = me?.email_notifications ?? true;
+  html("span", {}, ml, "Email me when my orders are due");
+  html("p", { class: "help" }, mail, "One email when a phase needs your decision, and one more a few hours before the deadline if you haven't marked Ready.");
+  const mout = html("div", { class: "form-out", "aria-live": "polite" }, mail);
+  mcb.addEventListener("change", async () => {
+    mout.replaceChildren();
+    try {
+      me = await api<Me>("PUT", "me", { email_notifications: mcb.checked });
+      html("p", { class: "help" }, mout, mcb.checked ? "Turn emails are on." : "Turn emails are off.");
+    } catch (e) {
+      mcb.checked = !mcb.checked;
+      errorLine(mout, e);
+    }
+  });
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     out.replaceChildren();
