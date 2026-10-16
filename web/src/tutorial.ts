@@ -146,7 +146,6 @@ export class Coach {
     private backend: TutorialBackend,
     private play: PlayController,
     private view: BoardView,
-    private signedIn: () => boolean,
   ) {
     this.index = lessons.chapters.indexOf(backend.chapter);
     this.el = html("section", { class: "coach", "aria-live": "polite", "aria-label": "Instruction card" }, document.getElementById("stage"));
@@ -385,8 +384,8 @@ export class Coach {
     html("p", { class: "coach-h" }, end, "You know enough to play.");
     html("p", {}, end, "The rest you'll pick up at the table. A practice game puts you against six bots with no deadline pressure: each phase resolves as soon as you commit.");
     const acts = html("div", { class: "coach-end-acts" }, end);
-    const go = html("a", { class: "btn commit-btn coach-go", href: "./#/practice", role: "button" }, acts,
-      this.signedIn() ? "Start a practice game" : "Sign in and play a practice game");
+    const go = html("a", { class: "btn commit-btn coach-go", href: "./?practice=USA", role: "button" }, acts,
+      "Start a guest practice game");
     go.focus({ preventScroll: true });
     html("a", { class: "btn", href: "./?game=games/sim-1000.json" }, acts, "Watch a whole game");
     html("a", { class: "link-btn", href: "./" }, acts, "Back to Brink");

@@ -95,6 +95,7 @@ export interface Order {
   target_power?: string;
   via?: string;
   note?: string;
+  reason?: string;
 }
 
 export interface Assembly {

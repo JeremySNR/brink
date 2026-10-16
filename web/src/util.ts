@@ -45,6 +45,7 @@ export async function loadJSON<T>(url: string): Promise<T> {
 export function normaliseOrder(o: Order): Order {
   const t = o.text.trim().toUpperCase().split(/\s+/);
   const out: Order = { ...o };
+  out.note = out.reason ?? out.note;
   const isUnit = (s: string | undefined) => !!s && /^[AFCI]$/.test(s);
   if (!out.unit && isUnit(t[0]) && t[1] && !["UMBRELLA", "WITHDRAW"].includes(t[1])) {
     out.unit = { type: t[0] as UnitType, at: t[1] };

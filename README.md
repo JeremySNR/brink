@@ -23,6 +23,22 @@ through hand-placed positions (your first move, a standoff, winning with support
 the real engine resolves every order. The lessons live in `web/public/tutorial.json`;
 `tests/test_tutorial.py` plays every lesson's solution so a rules change can't quietly break one.
 
+## Practise and try out plans
+
+Open `/?practice=USA` for an account-free game against six bots through 2034, or choose a power from
+`/#/practice`. Games and drafts save in this browser; the practice page offers **Continue your guest
+game**. The tutorial leads straight into practice without sign-in.
+
+The **Turn briefing** shows progress toward victory, contested and reachable swing states, and the
+Crisis projection with its known inputs. Orders may be illegal: drafting and submission do not warn or block them.
+After the turn resolves, the replay explains invalid orders, failed attacks, cut support and dislodgement.
+
+Choose **Try moves in sandbox** to copy your current position and draft into a separate board. Switch
+powers to write hypothetical enemy or ally orders, then **Resolve sandbox** to use the real rules.
+**Undo resolution** restores the position and all drafts; **Reset to copied position** starts over.
+Unordered units hold and missing retreats disband. Experiments never submit orders to the live game
+or reveal other players' drafts. Sandboxes save in this browser; undo history lasts for the current tab.
+
 ## Play in the browser, locally
 
 You against six bots:

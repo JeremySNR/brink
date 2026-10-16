@@ -1565,3 +1565,15 @@ kbd {
 }
 @media (prefers-reduced-motion: reduce) {
 }
+
+/* Additional player aids use the same printed rules, paper and ink as the board. */
+.order-item { flex-wrap: wrap; }
+.order-reason { display: block; flex-basis: 100%; font-family: var(--f-ui); font-size: 12px; line-height: 1.5; color: var(--ink-2); text-transform: none; }
+.brief-goal { font-family: var(--f-cond); font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+.brief-crisis { margin: 10px 0; border-top: 1px dotted var(--rule); padding-top: 8px; }
+.brief-crisis summary { cursor: pointer; font-size: 13px; line-height: 1.5; font-weight: 600; }
+.turn-briefing .btn { margin-top: 8px; }
+.workshop-card { background: var(--paper); border-bottom: 3px solid var(--ink); }
+.workshop-card .opt { display: grid; gap: 6px; margin: 10px 0; font-size: 13px; }
+.workshop-card .field { width: 100%; min-width: 0; }
+.workshop-card .btn-row { flex-wrap: wrap; margin: 10px 0; }

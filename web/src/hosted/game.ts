@@ -47,6 +47,10 @@ export class HostedBackend implements PlayBackend {
     return (await api<{ results: Check[] }>("POST", `games/${this.id}/validate`, { orders: texts })).results;
   }
 
+  async snapshot(): Promise<Record<string, unknown>> {
+    return (await api<{ state: Record<string, unknown> }>("GET", `games/${this.id}/sandbox`)).state;
+  }
+
   async submit(p: Pending, texts: string[], ready: boolean): Promise<PlayState> {
     return this.take(await api<GameView>("POST", `games/${this.id}/submit`, {
       step: p.id, orders: texts, ready, since: this.phases.length,
@@ -259,7 +263,7 @@ class PressPanel {
 
   private seen(): Record<string, number> {
     try {
-      return JSON.parse(localStorage.getItem(`brink.press.${this.gameId}`) || "{}");
+      return JSON.parse(localStorage.getItem(`brink.press.${this.gameId}.${this.me}`) || "{}");
     } catch {
       return {};
     }
@@ -270,7 +274,7 @@ class PressPanel {
     if ((s[key] ?? 0) >= id) return;
     s[key] = id;
     try {
-      localStorage.setItem(`brink.press.${this.gameId}`, JSON.stringify(s));
+      localStorage.setItem(`brink.press.${this.gameId}.${this.me}`, JSON.stringify(s));
     } catch {
       /* ignore */
     }

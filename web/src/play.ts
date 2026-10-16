@@ -4,7 +4,7 @@
 // decision at a time); HostedBackend (src/hosted/game.ts) talks to the hosted multiplayer API, where a
 // decision is saved, marked ready, and resolved when every player is ready or the deadline passes.
 // The backend publishes the open decision ("pending"); this controller turns it into board interactions
-// (Backstabbr-style order entry), drafts, validation and submission. The board shows the game record's
+// (Backstabbr-style order entry), drafts and submission. The board shows the game record's
 // phases followed by one "live" phase: the current position with the drafted orders on it.
 import type { BoardView } from "./board";
 import type { Overlay } from "./overlay";
@@ -13,6 +13,7 @@ import { RULE, aidSection } from "./panel";
 import { POWER_ORDER, UNIT_NAMES } from "./theme";
 import type { GameRecord, MapData, Order, Phase, Unit, UnitType } from "./types";
 import { html, normaliseOrder, seasonLabel, svg } from "./util";
+import { storeSandbox } from "./workshop";
 
 // ------------------------------------------------------------------ API shapes
 export interface URef { type: UnitType; at: string }
@@ -31,6 +32,9 @@ export interface DisbandChoice { unit: URef; name: string; text: string }
 export interface Status {
   centres: number; units: number; swing: number; protected_by: string[]; protecting: string[];
   vetoes_left: number; vote_weight: number; nuclear: boolean; effects: string[];
+  briefing?: { primacy: number; threatened: string[]; contested: string[];
+    crisis: { current: number; baseline: number; closed: number; clash: number; commons: number;
+      per_point: number; projected: number; applied: boolean } };
 }
 /** The open decision. Local play asks one kind at a time; hosted play asks a whole Winter at once
  * (kind "winter": the vote, adjustments and umbrellas together, flagged in `parts`). */
@@ -73,7 +77,7 @@ export interface Check { text: string; ok: boolean; reason: string | null }
 /** Where decisions come from and go to. */
 export interface PlayBackend {
   /** local: `brink serve`; hosted: the multiplayer API; tutorial: the lessons' sandbox (src/tutorial.ts). */
-  readonly kind: "local" | "hosted" | "tutorial";
+  readonly kind: "local" | "hosted" | "tutorial" | "practice" | "sandbox";
   /** Load a game (null: none to resume; local play then shows the start screen). */
   load(param: string | null): Promise<PlayState | null>;
   refresh(): Promise<PlayState>;
@@ -93,6 +97,10 @@ export interface PlayBackend {
   unseenFrom?(): number | null;
   markSeen?(n: number): void;
   exit?(): void;
+  snapshot?(): Promise<Record<string, unknown>>;
+  controls?(root: HTMLElement): void;
+  draftChanged?(p: Pending, texts: string[]): void;
+  draftOrders?(): Order[];
 }
 
 const isAdjust = (p: Pending) => p.kind === "adjust" || (p.kind === "winter" && !!p.parts?.adjust);
@@ -173,8 +181,6 @@ export class PlayController {
   private proposal: string | null = null;
   private vote: string | null = null;
   private umbrellas = new Set<string>();
-  private checks = new Map<string, Check>();
-  private validateTimer = 0;
   // hosted: the decision is saved as you go and resolves when everyone is ready
   private ready = false;
   private saveTimer = 0;
@@ -220,7 +226,7 @@ export class PlayController {
         return;
       }
     } catch (e) {
-      if (this.hosted) return this.showError(String(e));
+      if (this.backend.kind !== "local") return this.showError(String(e));
       /* unknown game (server restarted): fall through to a new one */
     }
     if (!this.hosted) this.showStart();
@@ -264,19 +270,23 @@ export class PlayController {
     const n = st.record.phases.length;
     const sig = `${n}|${st.pending?.id ?? "-"}|${st.status}|${st.ready ? 1 : 0}|${st.position?.name ?? ""}`;
     this.schedulePoll(st);
-    if (!fresh && sig === this.sig) return; // nothing new: keep the board and panel as they are
+    if (!fresh && sig === this.sig) {
+      this.paintHostedWaiting();
+      return; // keep drafts, focus, and the board intact while other players' status changes
+    }
     this.sig = sig;
     const before = fresh ? null : (this.state?.record.phases.length ?? 0);
     this.state = st;
     this.id = st.id;
     this.power = st.power;
     this.host.overlay.you = st.power;
-    const newDecision = st.pending?.id !== this.pending?.id || st.pending?.kind !== this.pending?.kind;
+    const newDecision = fresh || st.pending?.id !== this.pending?.id || st.pending?.kind !== this.pending?.kind || st.power !== this.pending?.power;
     this.pending = st.pending;
     this.ready = !!st.ready;
     if (newDecision) {
       this.resetDrafts(st.saved ?? null);
       this.saveState = "saved";
+      this.savedAt = null;
     }
     const rec: PlayRecord = st.record;
     const livePos = st.pending ? st.pending.phase : st.position ?? null;
@@ -434,7 +444,6 @@ export class PlayController {
     this.proposal = null;
     this.vote = null;
     this.umbrellas = new Set(this.pending?.current ?? []);
-    this.checks.clear();
     this.sel = null;
     this.retreatSel = null;
     this.buildSite = null;
@@ -455,12 +464,12 @@ export class PlayController {
     } catch {
       /* ignore */
     }
-    const texts = local ?? serverSaved;
+    const texts = this.backend.kind === "sandbox" ? serverSaved : local ?? serverSaved;
     if (texts) this.applyTexts(texts);
   }
 
   private draftKey() {
-    return `brink.play.${this.id}.${this.pending?.id}`;
+    return `brink.play.${this.id}.${this.pending?.id}${this.backend.kind === "sandbox" ? `.${this.power}` : ""}`;
   }
 
   /** Re-apply order texts to the drafts (restoring a saved draft). */
@@ -486,11 +495,11 @@ export class PlayController {
         }
       } else if (p.kind === "orders") {
         if (T.includes(" WITHDRAW ")) this.withdraw.add(T.split(/\s+/)[2]);
-        else
-          for (const [k, ix] of this.index) {
-            const o = ix.choice.options.find((x) => x.text === T);
-            if (o) this.orders.set(k, o);
-          }
+        else {
+          // Restore the submitted text, including orders absent from the legal-options list.
+          const o = draftOrder(T);
+          if (o.unit && this.index.has(keyOf(o.unit))) this.orders.set(keyOf(o.unit), o);
+        }
       } else if (p.kind === "retreats") {
         const [ty, at] = T.split(/\s+/);
         this.retreats.set(`${ty} ${at}`, T);
@@ -559,40 +568,72 @@ export class PlayController {
   }
 
   private changed() {
+    if (this.pending) this.backend.draftChanged?.(this.pending, this.texts());
     try {
       localStorage.setItem(this.draftKey(), JSON.stringify(this.texts()));
     } catch {
       /* ignore */
     }
     this.host.redraw();
-    window.clearTimeout(this.validateTimer);
-    this.validateTimer = window.setTimeout(() => this.validate(), 120);
     this.scheduleSave();
   }
 
-  private async validate() {
-    const p = this.pending;
-    if (!p || !this.id) return;
-    const texts = this.texts();
-    if (!texts.length) return;
-    try {
-      const results = await this.backend.validate(texts);
-      if (this.pending?.id !== p.id) return;
-      let dirty = false;
-      for (const c of results) {
-        const prev = this.checks.get(c.text);
-        if (!prev || prev.ok !== c.ok) dirty = true;
-        this.checks.set(c.text, c);
-      }
-      if (dirty) this.host.redraw();
-    } catch {
-      /* validation is advisory */
-    }
+  /** Switch sandbox power or restore a copied decision without retaining the old power's draft. */
+  replaceState(st: PlayState) {
+    this.overShown = false;
+    this.accept(st, true);
+    document.getElementById("panel")?.scrollTo({ top: 0 });
   }
 
-  private voidReason(text: string): string | null {
-    const c = this.checks.get(text);
-    return c && !c.ok ? c.reason ?? "void" : null;
+  private briefing(root: HTMLElement, p: Pending) {
+    const b = p.status.briefing;
+    if (!b || this.backend.kind === "tutorial") return;
+    const card = aidSection(root, null, "Turn briefing", undefined, "turn-briefing");
+    html("p", { class: "brief-goal" }, card, `${p.status.swing} of ${b.primacy} swing states toward victory`);
+    const places = (ids: string[]) => ids.map((id) => this.host.map.provinces[id]?.name ?? id).join(", ");
+    if (b.contested.length) html("p", { class: "help" }, card, `Contested: ${places(b.contested)}. These states currently give you no supply.`);
+    html("p", { class: "help" }, card, b.threatened.length
+      ? `In reach of other powers: ${places(b.threatened)}. They could move here; this is not a prediction.`
+      : p.status.swing ? "No other power can currently move directly into your aligned swing states." : "Send civil units into swing states and hold them through Winter to gain alignment.");
+    const previous = this.state?.record.phases.at(-1);
+    if (previous) {
+      const gained = Object.keys(p.phase.ownership).filter((id) => p.phase.ownership[id] === p.power && previous.ownership[id] !== p.power);
+      const lost = Object.keys(previous.ownership).filter((id) => previous.ownership[id] === p.power && p.phase.ownership[id] !== p.power);
+      if (gained.length || lost.length) html("p", { class: "help" }, card,
+        `Since the last resolved phase: ${[gained.length ? `gained ${places(gained)}` : "", lost.length ? `lost ${places(lost)}` : ""].filter(Boolean).join("; ")}.`);
+    }
+    const c = b.crisis;
+    const details = html("details", { class: "brief-crisis" }, card);
+    html("summary", {}, details, c.applied ? `Crisis ${c.current} · Winter change applied` : `Crisis ${c.current} · ${c.projected} at Winter if nothing else changes`);
+    html("p", { class: "help" }, details,
+      `Year +${c.baseline}; closed chokepoints +${c.closed}; nuclear clash +${c.clash}; ${c.commons} successful Commons −${Math.floor(c.commons / c.per_point)}.`);
+    if (!c.applied) {
+      const drafted = [...this.orders.values()].filter((o) => o.kind === "commons").length;
+      const more = c.per_point - c.commons % c.per_point;
+      html("p", { class: "help" }, details, `${more} more successful Commons order${more === 1 ? "" : "s"} this year earn the next −1. ${drafted ? `You have drafted ${drafted}; these are not counted yet. ` : ""}Future orders and dislodgements can change this projection.`);
+    }
+    this.sandboxButton(card, p);
+  }
+
+  private sandboxButton(card: HTMLElement, p: Pending | null) {
+    if (this.backend.snapshot && this.backend.kind !== "sandbox" && this.power) {
+      const button = html("button", { class: "btn small", type: "button" }, card, "Try moves in sandbox");
+      button.addEventListener("click", async () => {
+        const opened = window.open("about:blank", "_blank");
+        if (opened) opened.opener = null;
+        button.disabled = true;
+        try {
+          const state = await this.backend.snapshot!();
+          if (this.hosted && p && state.step !== p.id) throw new Error("The game advanced. Refresh the board before copying this position.");
+          const url = storeSandbox(state, this.power!, p ? this.texts() : []);
+          if (opened) opened.location.href = new URL(url, location.href).href;
+          else html("a", { href: url, target: "_blank", class: "btn" }, card, "Open sandbox");
+        } catch (e) {
+          opened?.close();
+          html("p", { class: "void", role: "alert" }, card, String(e));
+        } finally { button.disabled = false; }
+      });
+    }
   }
 
   // ================================================================== board rendering
@@ -605,7 +646,6 @@ export class PlayController {
     const orders: Order[] = [];
     const add = (o: Partial<Order> & { text: string; kind: string }) => {
       const n = normaliseOrder({ power: p.power, unit: null, to: null, target: null, result: "ok", ...o } as Order);
-      n.result = this.voidReason(o.text) ? "void" : "ok";
       orders.push(n);
     };
     if (p.kind === "orders") {
@@ -620,7 +660,7 @@ export class PlayController {
       for (const b of this.builds) add({ text: b.text, kind: "build", unit: { type: b.type, at: b.at } });
       for (const d of p.disband ?? []) if (this.disbands.has(keyOf(d.unit))) add({ text: d.text, kind: "disband", unit: d.unit });
     }
-    return { ...base, orders };
+    return { ...base, orders: [...(this.backend.draftOrders?.() ?? []).filter((o) => o.power !== p.power), ...orders] };
   }
 
   /** Highlights + the selection bar for the live phase. */
@@ -650,7 +690,10 @@ export class PlayController {
       const ix = this.index.get(this.sel.key)!;
       const here = provOf(ix.choice.unit.at);
       const s = this.sel;
-      if (s.mode === "move") {
+      if (this.backend.kind !== "tutorial") {
+        mark(here, "origin");
+        if (s.target) mark(s.target.split(" ")[1], "pick");
+      } else if (s.mode === "move") {
         mark(here, "origin");
         for (const d of ix.moves.keys()) mark(d);
       } else if (s.mode === "support-unit") {
@@ -678,7 +721,7 @@ export class PlayController {
       const c = (p.units as RetreatChoice[]).find((x) => keyOf(x.unit) === this.retreatSel);
       if (c) {
         mark(c.unit.at, "origin");
-        for (const d of c.to) mark(d);
+        if (this.backend.kind === "tutorial") for (const d of c.to) mark(d);
         this.retreatBar(bar, c);
       }
     } else if (isAdjust(p) && (p.change ?? 0) > 0) {
@@ -722,7 +765,7 @@ export class PlayController {
   private orderBar(bar: HTMLElement, ix: UnitIndex) {
     const s = this.sel!;
     const hints: Record<Mode, string> = {
-      move: "click a highlighted province to move, its own to hold",
+      move: "click a province to move, its own to hold",
       "support-unit": "support: click the unit to support",
       "support-dest": "support: click where it goes (its own province: support hold)",
       "convoy-army": "convoy: click the Army to carry",
@@ -735,21 +778,20 @@ export class PlayController {
       this.btn(acts, "Back", () => this.setMode("move"), { key: "Esc" });
     } else {
       if (ix.hold) this.btn(acts, "Hold", () => this.setOrder(ix.hold!), { key: "H" });
-      if (ix.supHold.size || ix.supMove.size) this.btn(acts, "Support", () => this.setMode("support-unit"), { key: "S" });
-      if (ix.convoys.size) this.btn(acts, "Convoy", () => this.setMode("convoy-army"), { key: "C" });
-      if (ix.commons) this.btn(acts, "Commons", () => this.setOrder(ix.commons!), { title: "Work on the global commons (lowers the Crisis)" });
-      if (ix.disrupts.size) this.btn(acts, "Disrupt", () => this.setMode("disrupt"), { key: "D" });
-      if (ix.sanctions.size) {
+      this.btn(acts, "Support", () => this.setMode("support-unit"), { key: "S" });
+      if (ix.choice.unit.type === "F") this.btn(acts, "Convoy", () => this.setMode("convoy-army"), { key: "C" });
+      if ("CI".includes(ix.choice.unit.type)) this.btn(acts, "Commons", () => this.setOrder(draftOrder(`${s.key} COMMONS`)), { title: "Work on the global commons (lowers the Crisis)" });
+      if (ix.choice.unit.type === "I") this.btn(acts, "Disrupt", () => this.setMode("disrupt"), { key: "D" });
+      if (ix.choice.unit.type === "C") {
         const sel = html("select", { class: "bar-select", "aria-label": "Sanction a power" }, acts);
         html("option", { value: "" }, sel, "Sanction…");
-        for (const p of ix.sanctions.keys()) html("option", { value: p }, sel, `Sanction ${this.host.map.powers[p]?.name ?? p}`);
+        for (const p of POWER_ORDER.filter((p) => p !== this.power)) html("option", { value: p }, sel, `Sanction ${this.host.map.powers[p]?.name ?? p}`);
         sel.addEventListener("click", (ev) => ev.stopPropagation());
         sel.addEventListener("change", () => {
-          const o = ix.sanctions.get(sel.value);
-          if (o) this.setOrder(o);
+          if (sel.value) this.setOrder(draftOrder(`${s.key} SANCTION ${sel.value}`));
         });
       }
-      if (ix.closes.length) {
+      if (ix.choice.unit.type === "F") {
         const cur = this.orders.get(s.key);
         const curAgainst = cur?.kind === "close" ? cur.text.split(/\s+/).slice(3) : null;
         const sel = html("select", { class: "bar-select", "aria-label": "Close the chokepoint" }, acts);
@@ -779,7 +821,7 @@ export class PlayController {
   }
 
   private retreatBar(bar: HTMLElement, c: RetreatChoice) {
-    this.barHead(bar, c.name, c.to.length ? "dislodged: click where it retreats" : "dislodged with nowhere to go", c.unit.type);
+    this.barHead(bar, c.name, "dislodged: click where it retreats", c.unit.type);
     const acts = html("span", { class: "bar-actions" }, bar);
     this.btn(acts, "Disband", () => {
       this.retreats.set(keyOf(c.unit), `${c.unit.type} ${c.unit.at} D`);
@@ -872,10 +914,9 @@ export class PlayController {
       const s = this.sel;
       if (s) {
         const ix = this.index.get(s.key)!;
-        if (s.mode === "support-unit" && (ix.supHold.has(key) || ix.supMove.has(key))) return this.setMode("support-dest", key);
-        if (s.mode === "convoy-army" && ix.convoys.has(key)) return this.setMode("convoy-dest", key);
+        if (s.mode === "support-unit") return this.setMode("support-dest", key);
+        if (s.mode === "convoy-army" && u.type === "A") return this.setMode("convoy-dest", key);
         if (s.key === key && s.mode === "move") return ix.hold ? this.setOrder(ix.hold) : undefined;
-        if (s.mode === "move" && u.power === p.power && !ix.moves.has(provOf(u.at))) return this.select(key);
         return this.onProvinceClick(provOf(u.at));
       }
       if (u.power === p.power && this.index.has(key)) return this.select(key);
@@ -921,37 +962,27 @@ export class PlayController {
           if (pid === here) return ix.hold ? this.setOrder(ix.hold) : undefined;
           const mv = ix.moves.get(pid);
           if (mv) return this.setOrder(mv);
-          const mine = this.unitsAt(pid).find((u) => u.power === p.power && this.index.has(`${u.type} ${u.at}`));
-          if (mine) return this.select(`${mine.type} ${mine.at}`);
-          this.flash(`${ix.choice.name.replace(/^\S+ /, "")} can't move to ${this.host.map.provinces[pid]?.name ?? pid}.`);
-          return this.cancel();
+          return this.setOrder(draftOrder(`${s.key} - ${pid}`));
         }
         case "support-unit": {
-          const cands = this.unitsAt(pid).map((u) => `${u.type} ${u.at}`).filter((k) => ix.supHold.has(k) || ix.supMove.has(k));
+          const cands = this.unitsAt(pid).map((u) => `${u.type} ${u.at}`);
           if (cands.length) return this.setMode("support-dest", cands[0]);
-          return this.flash("That unit can't be supported from here.");
+          return;
         }
         case "support-dest": {
           const t = s.target!;
-          if (pid === provOf(t.split(" ")[1]) && ix.supHold.has(t)) return this.setOrder(ix.supHold.get(t)!);
-          const o = ix.supMove.get(t)?.get(pid);
-          if (o) return this.setOrder(o);
-          return this.flash("Not a destination this unit can support.");
+          return this.setOrder(draftOrder(`${s.key} S ${t}${pid === provOf(t.split(" ")[1]) ? " H" : ` - ${pid}`}`));
         }
         case "convoy-army": {
-          const cands = this.unitsAt(pid).map((u) => `${u.type} ${u.at}`).filter((k) => ix.convoys.has(k));
+          const cands = this.unitsAt(pid).filter((u) => u.type === "A").map((u) => `${u.type} ${u.at}`);
           if (cands.length) return this.setMode("convoy-dest", cands[0]);
-          return this.flash("No Army there that this Fleet can convoy.");
+          return;
         }
         case "convoy-dest": {
-          const o = ix.convoys.get(s.target!)?.get(pid);
-          if (o) return this.setOrder(o);
-          return this.flash("The convoy can't reach there.");
+          return this.setOrder(draftOrder(`${s.key} C ${s.target} - ${pid}`));
         }
         case "disrupt": {
-          const o = ix.disrupts.get(pid);
-          if (o) return this.setOrder(o);
-          return this.flash("Out of Disrupt range.");
+          return this.setOrder(draftOrder(`${s.key} DISRUPT ${pid}`));
         }
       }
       return;
@@ -959,7 +990,7 @@ export class PlayController {
     if (p.kind === "retreats") {
       const c = (p.units as RetreatChoice[]).find((x) => keyOf(x.unit) === this.retreatSel);
       if (!c) return;
-      const dest = c.to.find((d) => provOf(d) === pid);
+      const dest = c.to.find((d) => provOf(d) === pid) ?? pid;
       if (dest) {
         this.retreats.set(keyOf(c.unit), `${c.unit.type} ${c.unit.at} R ${dest}`);
         return this.nextRetreat();
@@ -1021,9 +1052,9 @@ export class PlayController {
     const p = this.pending;
     if (p?.kind === "orders" && this.sel) {
       const ix = this.index.get(this.sel.key)!;
-      if (k === "s" && (ix.supHold.size || ix.supMove.size)) return this.setMode("support-unit"), true;
-      if (k === "c" && ix.convoys.size) return this.setMode("convoy-army"), true;
-      if (k === "d" && ix.disrupts.size) return this.setMode("disrupt"), true;
+      if (k === "s") return this.setMode("support-unit"), true;
+      if (k === "c" && ix.choice.unit.type === "F") return this.setMode("convoy-army"), true;
+      if (k === "d" && ix.choice.unit.type === "I") return this.setMode("disrupt"), true;
       if (k === "h" && ix.hold) return this.setOrder(ix.hold), true;
       if (ev.key === "Backspace" || ev.key === "Delete") return this.clearOrder(this.sel.key), true;
     }
@@ -1069,6 +1100,11 @@ export class PlayController {
 
   // ================================================================== panel
   renderBanner(root: HTMLElement, i: number) {
+    if (this.backend.controls) {
+      const controls = html("div");
+      this.backend.controls(controls);
+      root.prepend(controls);
+    }
     const live = this.host.liveIndex();
     const st = this.state;
     if (!st) return;
@@ -1110,6 +1146,7 @@ export class PlayController {
     if (live !== null) this.backend.markSeen?.(live);
     const p = this.pending;
     if (!p) return this.waitingPanel(root);
+    this.backend.controls?.(root);
     const map = this.host.map;
     const ph = p.phase;
     const head = html("section", { class: "phase-head" }, root);
@@ -1131,6 +1168,7 @@ export class PlayController {
     html("em", { class: "move-tag" }, st, this.ready ? "Ready" : "Your move");
     st.append(document.createTextNode(` ${map.powers[p.power]?.name}. ${kindLabel[p.kind]}.`));
 
+    this.briefing(root, p);
     switch (p.kind) {
       case "orders": this.ordersCard(root, p); break;
       case "retreats": this.retreatsCard(root, p); break;
@@ -1157,7 +1195,9 @@ export class PlayController {
     html("kbd", {}, c, "Enter");
     c.disabled = this.busy;
     c.addEventListener("click", () => this.commit());
-    html("p", { class: "foot-note" }, foot, p.kind === "orders"
+    html("p", { class: "foot-note" }, foot, this.backend.kind === "sandbox"
+      ? "Resolve all powers’ drafts now. You can undo or reset to the copied position."
+      : p.kind === "orders"
       ? "Orders resolve together once every power has written theirs. Unordered units hold."
       : "Takes effect when every power has decided.");
     this.fab.textContent = label;
@@ -1182,14 +1222,25 @@ export class PlayController {
       c.addEventListener("click", () => this.commit());
       this.fab.textContent = label;
     }
+    html("p", { class: "foot-note", id: "hosted-waiting-note" }, foot, this.hostedWaitingNote());
+  }
+
+  private hostedWaitingNote(): string {
     const dl = this.backend.deadline?.();
     const wait = this.backend.waitingFor?.() ?? "";
-    html("p", { class: "foot-note" }, foot,
-      `The phase resolves when every player is ready, or at the deadline${dl ? ` (${deadlineWords(dl)})` : ""}. Saved orders count at the deadline; unordered units hold.${wait ? ` ${wait}` : ""}`);
+    return `The phase resolves when every player is ready, or at the deadline${dl ? ` (${deadlineWords(dl)})` : ""}. Saved orders count at the deadline; unordered units hold.${wait ? ` ${wait}` : ""}`;
+  }
+
+  private paintHostedWaiting() {
+    const foot = document.getElementById("hosted-waiting-note");
+    if (foot) foot.textContent = this.hostedWaitingNote();
+    const waiting = document.getElementById("hosted-waiting-players");
+    if (waiting) waiting.textContent = this.backend.waitingFor?.() || "Waiting for the other players.";
   }
 
   /** Hosted: nothing for you to decide right now (others are deciding, or you're out). */
   private waitingPanel(root: HTMLElement) {
+    this.backend.controls?.(root);
     const i = this.host.liveIndex();
     if (i === null) return;
     const ph = this.host.phase(i);
@@ -1199,15 +1250,17 @@ export class PlayController {
     html("span", { class: "num" }, h, String(ph.year));
     const sub = html("p", { class: "phase-sub" }, head);
     if (this.power) sub.append(codeCounter(this.power, 18));
-    html("span", {}, sub, this.backend.waitingFor?.() || "Waiting for the other players.");
+    html("span", { id: "hosted-waiting-players" }, sub, this.backend.waitingFor?.() || "Waiting for the other players.");
     const dl = this.backend.deadline?.();
     if (dl) html("p", { class: "phase-sub" }, head, `Deadline ${deadlineWords(dl)}.`);
     this.backend.sections?.(root, true);
+    this.sandboxButton(root, null);
     this.host.stateCards(root, ph);
   }
 
   private commitLabel(): string {
     const p = this.pending!;
+    if (this.backend.kind === "sandbox") return "Resolve sandbox";
     if (this.hosted) return "Ready";
     switch (p.kind) {
       case "orders": return "Commit orders";
@@ -1230,8 +1283,6 @@ export class PlayController {
     html("div", { class: "draft-name" }, body, name);
     if (text) html("div", { class: "notation" }, body, text);
     else html("div", { class: "draft-empty" }, body, empty);
-    const why = text ? this.voidReason(text) : null;
-    if (why) html("div", { class: "void" }, body, `Void: ${why}`);
     const acts = html("div", { class: "draft-acts" }, li);
     if (opts.onEdit) {
       const e = html("button", { class: "link-btn", type: "button", "aria-label": `${opts.editLabel ?? "Edit"} ${name}` }, acts, opts.editLabel ?? "Edit");
@@ -1255,7 +1306,7 @@ export class PlayController {
     const units = p.units as UnitChoice[];
     const n = units.filter((u) => this.orders.has(keyOf(u.unit))).length;
     const card = aidSection(root, RULE.orders, "Your orders", `${n} of ${units.length} written`, "decision");
-    html("p", { class: "help" }, card, "Click a counter, then where it should go. With a unit selected: S support, C convoy, H hold, D disrupt, Esc to cancel.");
+    html("p", { class: "help" }, card, "Click a counter, then where it should go. With a unit selected: S support, C convoy, H hold, D disrupt, Esc to cancel. Orders are checked when the turn resolves.");
     const ul = html("ul", { class: "draft-list" }, card);
     for (const c of units) {
       const k = keyOf(c.unit);
@@ -1287,12 +1338,12 @@ export class PlayController {
 
   private retreatsCard(root: HTMLElement, p: Pending) {
     const card = aidSection(root, RULE.resolution, "Dislodged units", undefined, "decision");
-    html("p", { class: "help" }, card, "Click a dislodged counter, then a highlighted province to retreat there, or Disband (X). Units without an order are disbanded.");
+    html("p", { class: "help" }, card, "Click a dislodged counter, then a province to retreat there, or Disband (X). Units without an order are disbanded.");
     const ul = html("ul", { class: "draft-list" }, card);
     for (const c of p.units as RetreatChoice[]) {
       const k = keyOf(c.unit);
       const t = this.retreats.get(k) ?? null;
-      const empty = c.to.length ? `Can retreat to ${c.to.map((x) => this.host.map.provinces[provOf(x)]?.name ?? x).join(", ")}` : "No retreat: will be disbanded";
+      const empty = "Disbands (no order yet)";
       const li = this.draftRow(ul, c.unit.type, c.name.replace(/^\S+ /, ""), t, empty, {
         selected: this.retreatSel === k,
         onEdit: () => { this.retreatSel = k; this.host.redraw(); },
@@ -1477,7 +1528,7 @@ export class PlayController {
     }
     c.title = `You play ${map.powers[power]?.name}`;
     const nb = html("button", { class: "link-btn", type: "button" }, c, this.hosted ? "My games" : "New game");
-    nb.addEventListener("click", () => (this.hosted ? this.backend.exit?.() : this.showStart()));
+    nb.addEventListener("click", () => (this.backend.kind !== "local" ? this.backend.exit?.() : this.showStart()));
   }
 
   showStart() {
@@ -1645,7 +1696,7 @@ export class PlayController {
     const nw = html("button", { class: "btn commit-btn", type: "button" }, row, this.hosted ? "My games" : "New game");
     nw.addEventListener("click", () => {
       closeModal();
-      if (this.hosted) this.backend.exit?.();
+      if (this.backend.kind !== "local") this.backend.exit?.();
       else this.showStart();
     });
   }
@@ -1657,7 +1708,7 @@ export class PlayController {
     const b = html("button", { class: "btn primary", type: "button" }, row, this.hosted ? "Back to my games" : "Start a new game");
     b.addEventListener("click", () => {
       closeModal();
-      if (this.hosted) this.backend.exit?.();
+      if (this.backend.kind !== "local") this.backend.exit?.();
       else this.showStart();
     });
   }
@@ -1699,6 +1750,10 @@ export class LocalBackend implements PlayBackend {
 
   async validate(texts: string[]): Promise<Check[]> {
     return (await api<{ results: Check[] }>("POST", `/api/games/${this.id}/validate`, { orders: texts })).results;
+  }
+
+  async snapshot(): Promise<Record<string, unknown>> {
+    return (await api<{ state: Record<string, unknown> }>("GET", `/api/games/${this.id}/sandbox`)).state;
   }
 
   async submit(p: Pending, texts: string[]): Promise<PlayState> {
@@ -1760,6 +1815,12 @@ export function tickBox(on: boolean, px = 16): SVGSVGElement {
   svg("rect", { x: 1, y: 1, width: 14, height: 14 }, s);
   if (on) svg("path", { d: "M4 8.3l2.7 2.7L12 5.2" }, s);
   return s;
+}
+
+/** Decode notation for display only; legality belongs to turn resolution. */
+function draftOrder(text: string): Opt {
+  const o = normaliseOrder({ text, kind: "", power: "", unit: null, to: null, target: null, result: "ok" });
+  return { text, kind: o.kind, unit: o.unit, to: o.to ?? null, target: o.target ?? null };
 }
 
 function indexUnit(c: UnitChoice): UnitIndex {

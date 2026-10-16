@@ -600,7 +600,30 @@ def adjudicate(gmap: BrinkMap, units: Iterable[Unit], orders: Iterable[tuple[str
             flags.add("dislodged")
             if res in ("ok", "bounce", "failed") or (res == "cut" and x.kind == "support"):
                 res = "dislodged"
-        results.append(OrderResult(x.power, x.order, res, x.void, flags, x.unit))
+        reason = x.void
+        if reason is None and res == "bounce":
+            slot = (x.dest, x.unit.layer)
+            attack = r.attack_strength(x)
+            if attack == 0:
+                reason = "Your own unit remained in the destination. You cannot dislodge your own unit."
+            else:
+                opp = r.head_to_head(x)
+                defence = r.defend_strength(opp) if opp else r.hold_strength(slot)
+                rivals = [r.prevent_strength(ox[i]) for i in r.moves_into.get(slot, ()) if i != x.idx]
+                strongest = max([defence, *rivals])
+                reason = (f"Attack strength {attack}; opposing strength {strongest}. "
+                          "A move needs strictly greater strength to succeed.")
+        elif reason is None and res == "dislodged":
+            reason = "A stronger attack dislodged this unit. It must retreat or disband."
+        elif reason is None and res == "cut":
+            reason = "An attack or Disrupt cut this support; it added no strength."
+        elif reason is None and x.mismatch:
+            reason = "The supported or convoyed unit did not issue the matching order."
+        elif reason is None and "no_path" in flags:
+            reason = "The required route did not survive resolution (including any convoy or chokepoint closure)."
+        elif reason is None and res == "failed":
+            reason = "This special order did not take effect after all orders resolved."
+        results.append(OrderResult(x.power, x.order, res, reason, flags, x.unit))
     results.extend(results_extra)
 
     return MovementResult(results=results, units=new_units, dislodged=dislodged, standoffs=standoffs,

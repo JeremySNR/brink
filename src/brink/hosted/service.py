@@ -554,6 +554,15 @@ def _orders_arg(value) -> list[str]:
     return out
 
 
+def sandbox_copy(conn: Connection, user: User, game_id: str) -> dict:
+    from ..workshop import snapshot
+    g, _, _ = _seated(conn, user, game_id)
+    if g["status"] != "active":
+        raise bad("Open an active game to copy its position.")
+    # Read only: no deadline advancement, no submissions query, no press.
+    return {"state": snapshot(load_state(conn, g), list(game_map().power_order))}
+
+
 def validate_orders(conn: Connection, user: User, game_id: str, body: dict) -> dict:
     g, _, mine = _seated(conn, user, game_id)
     if g["status"] != "active":

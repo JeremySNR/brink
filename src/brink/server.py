@@ -33,7 +33,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from . import tutorial
+from . import tutorial, workshop
 from .bots.human import GameAborted, HumanPlayer
 from .bots.search import SearchBot
 from .bots.strategist import StrategistBot, Temperament
@@ -274,6 +274,11 @@ class PlayServer:
             def _api(self, method: str, parts: list[str]):
                 if parts == ["health"]:
                     return self._json(200, {"ok": True})
+                if len(parts) == 2 and parts[0] == "workshop" and method == "POST":
+                    try:
+                        return self._json(200, workshop.handle(app.map, parts[1], self._body()))
+                    except workshop.WorkshopError as e:
+                        raise _BadRequest(str(e))
                 if len(parts) == 2 and parts[0] == "tutorial" and method == "POST":
                     try:
                         return self._json(200, tutorial.handle(app.map, parts[1], self._body()))
@@ -306,6 +311,11 @@ class PlayServer:
                     if s is None:
                         return self._error(HTTPStatus.NOT_FOUND, f"no game {parts[1]}")
                     rest = parts[2:]
+                    if rest == ["sandbox"] and method == "GET":
+                        d = s.human.decision
+                        if not d or d.kind != "orders":
+                            raise _BadRequest("Copy a local game during a movement decision.")
+                        return self._json(200, {"state": workshop.snapshot(s.game.to_state(), list(app.map.power_order))})
                     if not rest and method == "GET":
                         return self._json(200, s.state())
                     if not rest and method == "DELETE":

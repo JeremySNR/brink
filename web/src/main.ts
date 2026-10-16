@@ -18,6 +18,7 @@ import { HostedBackend } from "./hosted/game";
 import type { GameView } from "./hosted/api";
 import { startHosted } from "./hosted/pages";
 import { PlayController } from "./play";
+import { WorkshopBackend } from "./workshop";
 import { Coach, TutorialBackend, startIndex } from "./tutorial";
 import type { Lessons } from "./tutorial";
 import { BUFF, POWER_COLOURS, RED, UNIT_NAMES, arrowInk, homeFill, swingFill } from "./theme";
@@ -31,11 +32,14 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as
 type BoardMode =
   | { kind: "replay"; url: string }
   | { kind: "local"; param: string | null }
+  | { kind: "practice" | "sandbox"; param: string | null }
   | { kind: "hosted"; id: string; view: GameView }
   | { kind: "tutorial"; param: string | null };
 
 async function main() {
   const params = new URLSearchParams(location.search);
+  if (params.has("practice")) return startBoard({ kind: "practice", param: params.get("practice") });
+  if (params.has("sandbox")) return startBoard({ kind: "sandbox", param: params.get("sandbox") });
   if (params.has("play")) return startBoard({ kind: "local", param: params.get("play") });
   if (params.has("learn")) return startBoard({ kind: "tutorial", param: params.get("learn") });
   if (params.has("game")) return startBoard({ kind: "replay", url: params.get("game") || "sample-game.json" });
@@ -71,15 +75,16 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
   }
   rec = normaliseRecord(rec, map);
   $("#game-name").textContent = mode.kind === "hosted" ? mode.view.game.name : mode.kind === "tutorial" ? "Learn to play"
+    : mode.kind === "sandbox" ? "Sandbox · What if?" : mode.kind === "practice" ? "Guest practice"
     : playMode ? "Play against six bots"
     : gameUrl === "sample-game.json" ? "Sample game" : `Replay: ${gameUrl.split("/").pop()!.replace(/\.json$/, "")}`;
   document.body.classList.toggle("play-mode", playMode);
   document.body.classList.toggle("hosted-mode", mode.kind === "hosted");
   document.body.classList.toggle("tutorial-mode", mode.kind === "tutorial");
-  if (mode.kind === "hosted" || mode.kind === "tutorial") {
+  if (mode.kind !== "local" && mode.kind !== "replay") {
     const brand = document.querySelector<HTMLElement>(".topbar .brand .logotype");
     if (brand) {
-      const a = html("a", { href: "#/", class: "brand-link", "aria-label": "Brink: your games" });
+      const a = html("a", { href: "./#/", class: "brand-link", "aria-label": "Brink: your games" });
       brand.replaceWith(a);
       a.append(brand);
     }
@@ -399,6 +404,8 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
       play.renderBanner($("#panel-body"), current);
       return;
     }
+    // The first render runs before PlayController exists. Keep the hosted game route intact.
+    if (playMode) return;
     const url = new URL(location.href);
     url.hash = ph.name;
     history.replaceState(null, "", url);
@@ -464,6 +471,7 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
     let coach: Coach | null = null;
     const first = mode.kind === "tutorial" && lessons ? startIndex(lessons, mode.param) : 0;
     const backend = mode.kind === "hosted" ? new HostedBackend(mode.id, mode.view, map)
+      : mode.kind === "practice" || mode.kind === "sandbox" ? new WorkshopBackend(mode.kind, map)
       : mode.kind === "tutorial" && lessons ? new TutorialBackend(lessons, first, (root) => coach?.syllabus(root)) : undefined;
     play = new PlayController({
       view, map, overlay,
@@ -487,9 +495,16 @@ async function startBoard(mode: BoardMode, preMap?: MapData) {
       stateCards: (root, ph) => panel.render(ph, current, rec.phases.length, { root, header: false, orders: false, you: play?.power ?? undefined }),
     }, backend);
     if (backend instanceof TutorialBackend) {
-      coach = new Coach(lessons!, backend, play, view, signedIn);
+      coach = new Coach(lessons!, backend, play, view);
       coach.open(first);
-    } else play.start(mode.kind === "local" ? mode.param : mode.kind === "hosted" ? mode.id : null);
+    } else {
+      if (backend instanceof WorkshopBackend) backend.onChange = (state) => {
+        const changedPower = play!.power !== state.power;
+        play!.replaceState(state);
+        if (changedPower) play!.focusHome();
+      };
+      play.start("param" in mode ? mode.param : mode.kind === "hosted" ? mode.id : null);
+    }
   }
   const focus = new URLSearchParams(location.search).get("focus")?.toUpperCase();
   if (focus && board.provinces[focus]) setTimeout(() => view.zoomTo(focus), 50);
@@ -585,12 +600,3 @@ function buildLegend(root: HTMLElement) {
 }
 
 main();
-
-/** Whether this browser holds a sign-in (for the tutorial's last button; the pages check properly). */
-function signedIn(): boolean {
-  try {
-    return Object.keys(localStorage).some((k) => k === "brink.devUser" || /^sb-.+-auth-token$/.test(k));
-  } catch {
-    return false;
-  }
-}

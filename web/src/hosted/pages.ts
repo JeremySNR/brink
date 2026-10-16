@@ -65,13 +65,13 @@ async function route() {
   if (head === "signin") return signinPage();
   if (head === "join" && arg) return joinPage(arg.toUpperCase());
   if (head === "g" && arg) return gamePage(arg);
+  if (head === "practice") return practicePage();
   if (!session()) {
-    if (head === "me" || head === "new" || head === "practice") return needSignIn(`#/${head}`);
+    if (head === "me" || head === "new") return needSignIn(`#/${head}`);
     return landingPage();
   }
   if (head === "me") return mePage();
   if (head === "new") return newGamePage();
-  if (head === "practice") return practicePage();
   return homePage();
 }
 
@@ -172,13 +172,14 @@ function landingPage() {
   html("p", { class: "lid-line" }, cover, "A game of great-power competition in the 2030s for seven players. Secret simultaneous orders, no dice. Power runs on two layers, military and civil; you win by aligning swing states, not by conquest, and a shared Crisis track can end the game with everyone losing.");
   html("p", { class: "lid-line small" }, cover, "Play it with friends, one power each. Bots take the empty seats. Orders are due by a deadline, so a game fits around your week.");
   const go1 = html("div", { class: "lid-actions" }, cover);
+  html("a", { class: "btn commit-btn big", href: LEARN }, go1, "Try a guided game");
+  html("a", { class: "btn wide", href: "#/practice" }, go1, "Practise against bots · no sign-in");
   if (configured()) {
-    const b = html("a", { class: "btn commit-btn big", href: "#/signin" }, go1, "Sign in to play");
+    const b = html("a", { class: "btn wide", href: "#/signin" }, go1, "Sign in to play with friends");
     b.setAttribute("role", "button");
   } else {
     html("p", { class: "help" }, go1, "Sign-in isn't configured on this server. You can still learn the game, watch one, or play against six bots locally with brink serve.");
   }
-  learnButton(go1);
   html("a", { class: "btn wide", href: SAMPLE_REPLAY }, go1, "Watch a sample game");
 
   heading(right, "How a game runs");
@@ -414,12 +415,6 @@ function welcome(el: HTMLElement) {
   step("3", "Play with friends", "Start a game and send the invite link. Bots take any seat nobody claims.", "#/new", "New game", "");
 }
 
-function learnButton(parent: HTMLElement) {
-  const a = html("a", { class: "btn primary wide learn-btn", href: LEARN, role: "button" }, parent);
-  html("span", {}, a, "Learn to play");
-  html("span", { class: "learn-min" }, a, "10 min");
-}
-
 function resultWords(g: MyGame): string {
   const r = g.result;
   if (!r) return "Finished";
@@ -574,8 +569,7 @@ function practicePage() {
   const main = page("Practice game");
   const { cover, right } = lid(main, "new");
   html("h1", { class: "page-title" }, cover, "Practice game");
-  html("p", { class: "lid-line small" }, cover, "You against six bots, in a short game to 2034. It's private and there's no waiting: each phase resolves the moment you commit, so you can play it through in one sitting or come back to it.");
-  const out = html("div", { class: "form-out", "aria-live": "polite" }, cover);
+  html("p", { class: "lid-line small" }, cover, "You against six bots, in a short game to 2034. No sign-in and no deadline: each phase resolves when you commit. Your game stays in this browser, so you can return to it here.");
   const acts = html("div", { class: "lid-actions" }, cover);
   const go1 = html("button", { class: "btn commit-btn big", type: "button" }, acts, "");
   html("a", { class: "link-btn", href: LEARN }, acts, "Take the tutorial first");
@@ -609,22 +603,19 @@ function practicePage() {
     rows.push(card);
   }
   pick(chosen);
-  go1.addEventListener("click", async () => {
-    out.replaceChildren();
-    go1.disabled = true;
-    go1.textContent = "Setting up the board…";
-    try {
-      const v = await api<GameView>("POST", "games", {
-        name: `${me?.display_name ?? "My"} practice game`, visibility: "private", deadline_hours: 72, press: "none",
-        last_year: 2034, power: chosen,
-      });
-      await api("POST", `games/${v.game.id}/start`);
-      go(`#/g/${v.game.id}`);
-    } catch (e) {
-      errorLine(out, e);
-      go1.disabled = false;
-      pick(chosen);
+  go1.addEventListener("click", () => { location.href = `./?practice=${chosen}`; });
+  try {
+    const last = localStorage.getItem("brink.practice.last");
+    if (last && localStorage.getItem(`brink.workshop.${last}`)) {
+      html("a", { class: "btn wide", href: `./?practice=${encodeURIComponent(last)}` }, acts, "Continue your guest game");
     }
+  } catch { /* a new game still works without browser storage */ }
+  list.addEventListener("keydown", (ev) => {
+    if (!["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"].includes(ev.key)) return;
+    ev.preventDefault();
+    const i = (POWER_ORDER as readonly string[]).indexOf(chosen);
+    const next = (i + (ev.key === "ArrowDown" || ev.key === "ArrowRight" ? 1 : -1) + rows.length) % rows.length;
+    pick(POWER_ORDER[next]); rows[next].focus();
   });
 }
 

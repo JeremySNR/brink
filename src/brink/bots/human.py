@@ -343,8 +343,29 @@ def _power_info(game: "Game", power: str) -> dict:
         "protecting": sorted(b for a, b in game.umbrellas if a == power),
         "vetoes_left": 1 if game.can_veto(power) else 0, "vote_weight": game.votes_weight(power),
         "nuclear": game.map.nuclear(power),
-        "effects": _effects(game),
+        "effects": _effects(game), "briefing": _briefing(game, power),
     }}
+
+
+def _briefing(game: "Game", power: str) -> dict:
+    """Public facts and conditional risks, never other powers' submitted orders."""
+    pos, rules = game.position(), game.rules
+    targets = {s for s in game.map.swing_states() if game.ownership.get(s) == power}
+    threatened = set()
+    for u in game.units:
+        if u.power != power:
+            threatened.update(prov_of(o.to) for o in pos.legal_moves(u) if prov_of(o.to) in targets)
+    contested = sorted(s for s in targets if any(u.prov == s and u.power != power for u in game.units))
+    commons = sum(game.year_commons.values())
+    baseline = rules.baseline_late if game.year >= rules.late_from else rules.baseline
+    delta = baseline + len(game.year_closed) + int(game.year_clash) - commons // rules.commons_per_point
+    applied = game.stage in ("propose", "winter")
+    return {
+        "primacy": rules.primacy, "threatened": sorted(threatened), "contested": contested,
+        "crisis": {"current": game.crisis, "baseline": baseline, "closed": len(game.year_closed),
+                   "clash": int(game.year_clash), "commons": commons, "per_point": rules.commons_per_point,
+                   "projected": game.crisis if applied else max(0, game.crisis + delta), "applied": applied},
+    }
 
 
 def _effects(game: "Game") -> list[str]:

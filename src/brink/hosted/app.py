@@ -19,7 +19,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import tutorial
+from .. import tutorial, workshop
 from . import email as mail
 from . import email_templates as T
 from . import service as svc
@@ -147,6 +147,24 @@ async def tutorial_sandbox(req: Request, action: str):
 @app.api_route("/api/cron/tick", methods=["GET", "POST"])
 async def tick(req: Request):
     return await handle(req, svc.tick, auth="none")
+
+
+@app.post("/api/workshop/{action}")
+async def workshop_action(req: Request, action: str):
+    try:
+        raw = await req.body()
+        if len(raw) > 2_100_000:
+            return err(413, "That position is too large.")
+        return ok(await run_in_threadpool(workshop.handle, svc.game_map(), action, await _body(req)))
+    except svc.ApiError as e:
+        return err(e.status, e.message)
+    except workshop.WorkshopError as e:
+        return err(400, str(e))
+
+
+@app.get("/api/games/{game_id}/sandbox")
+async def sandbox_copy(req: Request, game_id: str):
+    return await handle(req, svc.sandbox_copy, game_id)
 
 
 # ---------------------------------------------------------------------------------------------- account

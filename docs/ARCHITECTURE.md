@@ -282,3 +282,35 @@ Cost per `advance` (full map, Apple silicon, one core): an `orders` step with 6-
 ~65 ms (max ~85 ms). Retreats, propose and winter take 3-7 ms. `pending` for every power takes 2-4 ms;
 `from_state` takes ~2 ms. A game is ~42-60 decision points.
 
+
+## Guest practice and move sandboxes
+
+`brink.workshop` uses the same session/engine API with browser-owned state. No database or account is
+needed for `POST /api/workshop/{start,view,validate,step}` (also served by `brink serve`). Practice uses
+six StrategistBots and ends after 2034. The request's bot configuration is replaced on the server, state
+and order sizes are bounded, and invalid positions return a JSON error. The browser saves the game and
+drafts locally and exposes a Continue link on the practice page.
+
+A sandbox copies an active position, including retreats, Winter decisions, current resolutions, drift,
+and year-to-date Crisis inputs. All powers' decisions are supplied by the person experimenting;
+unspecified decisions use civil-disorder defaults. A step is one simultaneous engine decision.
+`GET /api/games/{id}/sandbox` requires a seat in hosted games and only reads engine state: it does not
+query submissions or press, advance deadlines, or write to a game. Seeds, player identities and bot
+alliances are stripped. Local threaded games support copying at movement decisions.
+
+The copied position opens at `?sandbox=<browser-local id>` with the player's current draft, a power
+selector, Resolve, Undo resolution (up to 20 steps in the current tab), and Reset to copied position.
+Sandbox state and per-power drafts persist in localStorage, separately from the source game; undo
+history does not survive a reload. There is no automatic transfer of sandbox orders back to live play.
+`?practice=<power>` starts a guest game; the URL is replaced with its persistent browser-local id.
+Neither kind of URL is a share link or a cross-device save.
+
+Decision status now includes a `briefing`: victory target, contested states, states reachable by other
+powers, and year-to-date Crisis arithmetic. Threats are reachability, not predictions. Draft Commons
+are shown separately from successful Commons. Resolved orders carry `reason`; the web client accepts
+legacy `note` as a fallback and displays explanations in the replay.
+
+Order entry deliberately permits illegal movement, support, convoy and retreat orders. Live drafts
+are never validated or marked void; restored drafts are decoded from their text rather than filtered
+through legal options. The engine adjudicates them at resolution and records the reason. Normal play
+does not highlight legal destinations; tutorial lessons retain their teaching highlights.

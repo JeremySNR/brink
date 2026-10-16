@@ -205,7 +205,11 @@ export class Panel {
         html("span", { class: "notation" }, li, o.text);
         if (!ok) {
           const b = html("span", { class: `result r-${o.result}` }, li, RESULT_LABEL[o.result] ?? o.result);
-          if (o.note) b.title = o.note;
+          const reason = o.reason ?? o.note;
+          if (reason) {
+            b.title = reason;
+            html("span", { class: "order-reason" }, li, reason);
+          }
         }
         li.addEventListener("mouseenter", () => this.h.onOrderHover(i));
         li.addEventListener("focus", () => this.h.onOrderHover(i));
